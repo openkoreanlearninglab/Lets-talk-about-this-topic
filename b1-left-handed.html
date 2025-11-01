@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>왼손잡이에 대한 오해와 진실</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* 기본 폰트 설정 */
+        body { font-family: 'Nanum Gothic', sans-serif; }
+        /* 어휘 목록 사이드바 폰트 */
+        .vocab-sidebar { font-family: 'IBM Plex Sans KR', sans-serif; }
+        /* 어휘 팝업 스타일 */
+        .vocab-popup { font-family: 'Nanum Gothic', sans-serif; z-index: 50; max-width: 320px; white-space: normal; }
+        /* 호버 툴팁 스타일 */
+        .hover-tooltip { position: fixed; z-index: 9999; background: white; border: 2px solid #22c55e; border-radius: 8px; padding: 12px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); max-width: 320px; font-family: 'Nanum Gothic', sans-serif; animation: fadeIn 0.15s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        /* 일반 어휘 강조 스타일 */
+        .highlight-general { font-weight: 600; color: #374151; cursor: pointer; position: relative; transition: background-color 0.2s; }
+        /* 마우스 호버 또는 활성화 시 스타일 */
+        .highlight-general:hover, .active-highlight { background-color: #dcfce7; border-radius: 3px; }
+        .script-highlight { background-color: #e0f2fe; border-radius: 8px; }
+        .vocab-highlight { background-color: #dcfce7; border: 2px solid #22c55e; border-radius: 8px; }
+
+        /* --- 말풍선 스타일 --- */
+        /* Updated tail styles to match new class names */
+        .bubble-tail-left.bubble-kkn20::after { /* Yuna Style 1 */
+            content: "";
+            position: absolute;
+            bottom: 6px;
+            left: -8px;
+            width: 0px;
+            height: 0px;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 8px solid #dcfce7; /* green-100 */
+            transition: border-color 0.3s;
+        }
+        /* Add style for Yuna Style 2 if needed */
+        /* .bubble-tail-left.bubble-kkn30::after { ... } */
+
+        .bubble-tail-right.bubble-other::after { /* Woody Style */
+            content: "";
+            position: absolute;
+            bottom: 6px;
+            right: -8px;
+            width: 0px;
+            height: 0px;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-left: 8px solid white;
+            transition: border-color 0.3s;
+        }
+
+        /* Active styles targeting new classes */
+        .bubble-active.bubble-tail-left.bubble-kkn20::after,
+        /* Add active style for Yuna Style 2 if needed */
+        /* .bubble-active.bubble-tail-left.bubble-kkn30::after, */
+        .bubble-active.bubble-tail-right.bubble-other::after {
+            border-right-color: #fef9c3; /* yellow-100 */
+            border-left-color: #fef9c3; /* yellow-100 */
+        }
+
+
+        /* --- 디바이스별 레이아웃 스타일 --- */
+        [data-layout-mode="split"] .video-materials-content { display: flex; flex-direction: row; gap: 1.5rem; }
+        [data-layout-mode="split"] .video-wrapper { width: 60%; position: sticky; top: 1rem; align-self: flex-start; }
+        [data-layout-mode="split"] .script-wrapper { width: 40%; max-height: calc(100vh - 4rem); overflow-y: auto; }
+        [data-layout-mode="split"] .vocab-sidebar, [data-layout-mode="mobile"] .vocab-sidebar { display: none; }
+        [data-layout-mode="mobile"] .video-materials-content, [data-layout-mode="mobile"] .video-materials-content > div { display: flex; flex-direction: column; }
+        
+        /* 인쇄 전용 스타일 */
+        .print-only { display: none; }
+        @media print {
+            @page { size: A4; margin: 0.75cm 1cm; }
+            .no-print { display: none !important; }
+            .print-only { display: inline-block !important; }
+            body, html { background: white !important; font-size: 9pt; }
+            .mx-auto { max-width: none !important; padding: 0 !important; margin: 0 !important; border: none !important; box-shadow: none !important; }
+            body > #root > div { padding: 0 !important; }
+            * { box-shadow: none !important; border-color: transparent !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            p, h1, h2, h3, h4, span, li { color: black !important; }
+            p, li { line-height: 1.5; }
+            header.text-center { margin-bottom: 1rem !important; }
+            .pt-10 { padding-top: 1rem !important; }
+            .mb-8 { margin-bottom: 0.4pt !important; }
+            h1, h2 { font-size: 12pt !important; margin-bottom: 15px; }
+            h3 { font-size: 12pt !important; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="root"></div>
+    <script type="text/babel">
+        /**
+         * @typedef {Object} ScriptLine
+         * @property {string} id - Unique identifier (e.g., 's1')
+         * @property {string} speaker - Speaker name ('유나' | '우디')
+         * @property {string} kor - Korean text
+         * @property {string} eng - English translation
+         * @property {[number, number]} [time] - Optional [start, end] timestamps
+         */
+
+        // --- 아이콘 컴포넌트 ---
+        const Icon = React.memo(({ children, className = 'w-6 h-6' }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>);
+        const Video = ({ className }) => <Icon className={className}><path d="m22 8-6 4 6 4V8Z"></path><rect width="14" height="12" x="2" y="6" rx="2" ry="2"></rect></Icon>;
+        const BookOpen = ({ className }) => <Icon className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></Icon>;
+        const MessageSquare = ({ className }) => <Icon className={className}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></Icon>;
+        const ThumbsUp = ({ className }) => <Icon className={className}><path d="M7 10v12"></path><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a2 2 0 0 1 3 1.88V5Z"></path></Icon>;
+        const List = ({ className }) => <Icon className={className}><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></Icon>;
+        const Spinner = ({ className = 'w-5 h-5' }) => (
+            <svg className={`animate-spin ${className}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+        );
+
+        // --- 공용 컴포넌트: 번역 버튼 ---
+        const TranslateButton = React.memo(({ textToTranslate }) => {
+            const { useState, useEffect, useRef, useCallback } = React;
+            const [translation, setTranslation] = useState(null);
+            const [isLoading, setIsLoading] = useState(false);
+            const [error, setError] = useState(null);
+            const [show, setShow] = useState(false);
+            const [buttonLang, setButtonLang] = useState('Translation');
+            const isMounted = useRef(true);
+
+            useEffect(() => {
+                isMounted.current = true;
+                setButtonLang('English');
+                return () => { isMounted.current = false; };
+            }, []);
+
+            const handleTranslate = useCallback(async () => {
+                if (show) { setShow(false); return; }
+                if (translation) { setShow(true); return; }
+                if (!textToTranslate.trim()) return;
+
+                setIsLoading(true);
+                setError(null);
+                try {
+                    const targetLanguage = 'English';
+                    const prompt = `Translate the following Korean text to ${targetLanguage}. Provide only the most natural-sounding translation, without any additional explanations or quotation marks.`;
+                    const payload = { contents: [{ role: "user", parts: [{ text: prompt }, { text: textToTranslate }] }] };
+                    // NOTE: The API key is intentionally left blank.
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    const result = await response.json();
+                    if (isMounted.current && result.candidates?.[0]?.content.parts[0].text) {
+                        setTranslation(result.candidates[0].content.parts[0].text.trim());
+                        setShow(true);
+                    } else { throw new Error("Invalid API response format."); }
+                } catch (err) { if (isMounted.current) setError("번역에 실패했어요."); }
+                finally { if (isMounted.current) setIsLoading(false); }
+            }, [show, translation, textToTranslate]);
+
+            return (
+                <div className="mt-1 no-print">
+                    <button onClick={handleTranslate} disabled={isLoading} className="text-xs text-gray-500 hover:text-gray-800 font-semibold py-1 px-2 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors disabled:text-gray-300">{isLoading ? '번역 중...' : (show ? '번역 숨기기' : `번역 (${buttonLang})`)}</button>
+                    {show && translation && <p className="text-gray-600 text-base mt-2 mb-2 whitespace-pre-wrap">{translation}</p>}
+                    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+                </div>
+            );
+        });
+
+        // --- [동영상 자료] 탭 관련 컴포넌트 ---
+        const HighlightedText = React.memo(({ text, highlightData, onWordHover, onWordLeave, lineId, activeWordId }) => {
+            if (!text || !highlightData) return text;
+            const { regex, wordMap, sortedWords } = highlightData;
+            const parts = text.split(regex);
+            return (<>{parts.map((part, index) => {
+                if (!part) return null;
+                if (index % 2 === 0) return part;
+                const trimmedPart = part.trim();
+                const baseForm = sortedWords.find(word => {
+                    const vocabItem = wordMap.get(word);
+                    if (vocabItem.variants && vocabItem.variants.includes(trimmedPart)) return true;
+                    const cleanPart = trimmedPart.replace(/\s/g, '');
+                    const cleanWord = word.replace(/\s/g, '');
+                    if (word.endsWith('다')) return cleanPart.startsWith(cleanWord.slice(0, -1));
+                    return cleanPart.startsWith(cleanWord);
+                });
+                if (!baseForm) return part;
+                const info = wordMap.get(baseForm);
+                if (!info) return part;
+                const uniqueWordId = `${lineId}-${index}-${baseForm}`;
+                const classes = ['highlight-general', 'font-bold', activeWordId === uniqueWordId ? 'active-highlight' : ''].join(' ');
+                return <span
+                    key={index}
+                    className={classes}
+                    onMouseEnter={(e) => onWordHover(e, baseForm, lineId, index)}
+                    onMouseLeave={onWordLeave}
+                >{part}</span>;
+            })}</>);
+        });
+
+        const HoverTooltip = React.memo(({ data, position }) => {
+            if (!data || !position) return null;
+            return (
+                <div
+                    className="hover-tooltip"
+                    style={{ left: `${position.x}px`, top: `${position.y}px` }}
+                >
+                    <p className="font-bold text-lg text-green-700 mb-2">{data.term}</p>
+                    <p className="text-gray-700 text-base">{data.mainDef}</p>
+                    {data.subDefs && data.subDefs.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-gray-200">
+                            <ul className="space-y-1">
+                                {data.subDefs.map((sub, i) => (
+                                    <li key={i} className="text-sm">
+                                        <span className="font-semibold text-gray-600">{sub.subTerm}:</span>{' '}
+                                        <span className="text-gray-600">{sub.subDef}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                </div>
+            );
+        });
+
+        const VocabItem = React.memo(React.forwardRef(({ item, isHighlighted }, ref) => {
+            const { useState } = React;
+            const [showExamples, setShowExamples] = useState(false);
+
+            return (
+                <div ref={ref} className={`p-4 rounded-lg border-b ${isHighlighted ? 'vocab-highlight' : 'bg-white'}`}>
+                    <p className="font-bold text-lg text-green-700">{item.term}</p>
+                    <div className="pl-4 mt-2 border-l-2">
+                        <p className="text-gray-700">{item.mainDef}</p>
+                        {item.subDefs && item.subDefs.length > 0 && (
+                            <div className="mt-3 pt-3 border-t">{item.subDefs.map((sub, index) => (
+                                <div key={index} className="text-sm mt-2">
+                                    <p className="font-semibold">{sub.subTerm}</p>
+                                    <p className="text-gray-600 pl-2">{sub.subDef}</p>
+                                </div>
+                            ))}</div>
+                        )}
+                    </div>
+                    {item.examples && item.examples.length > 0 && (
+                        <div className="mt-3 no-print">
+                            <button onClick={() => setShowExamples(!showExamples)} className="text-xs bg-green-200 hover:bg-green-300 text-gray-600 py-1 px-2 rounded-md">
+                                {showExamples ? 'Close Examples' : 'Sentence Examples'}
+                            </button>
+                            {showExamples && (
+                                <div className="mt-3 p-3 bg-green-50 rounded-lg space-y-3 text-sm">
+                                    {item.examples.map((ex, index) => (
+                                        <div key={index}>
+                                            <p className="font-medium text-gray-800">{ex.kor}</p>
+                                            <p className="text-gray-400 hover:text-gray-700 transition-colors">{ex.eng}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            );
+        }));
+
+        const VideoMaterialsTab = ({scriptContent, vocabAndGrammarList, highlightData, vocabMap}) => {
+            const { useState, useRef, useEffect, useCallback, useMemo } = React;
+            const [activeWordId, setActiveWordId] = useState(null);
+            const [player, setPlayer] = useState(null);
+            const [activeScriptLine, setActiveScriptLine] = useState(null);
+            const [isSyncEnabled, setIsSyncEnabled] = useState(true);
+            const [repeatingLine, setRepeatingLine] = useState(null);
+            const [hoverPopupData, setHoverPopupData] = useState(null);
+            const [highlightedVocab, setHighlightedVocab] = useState(null);
+            const [translationsVisible, setTranslationsVisible] = useState({});
+            const [playerHeight, setPlayerHeight] = useState(0);
+            const [isVocabSidebarVisible, setIsVocabSidebarVisible] = useState(true);
+            const [isPortrait, setIsPortrait] = useState(window.matchMedia("(orientation: portrait)").matches);
+
+            const scriptLineRefs = useRef({});
+            const vocabRefs = useRef({});
+            const intervalRef = useRef();
+            const playerContainerRef = useRef(null);
+            const hoverTimeoutRef = useRef(null);
+
+            const activeScriptLineRef = useRef(activeScriptLine);
+            activeScriptLineRef.current = activeScriptLine;
+
+            // --- Phase 2: Indexing for performance ---
+            const timeIndex = useMemo(() => {
+                return scriptContent
+                    .filter(line => line.time)
+                    .map(line => ({ start: line.time[0], end: line.time[1], id: line.id }))
+                    .sort((a, b) => a.start - b.start);
+            }, [scriptContent]);
+
+            const onPlayerReady = useCallback((event) => setPlayer(event.target), []);
+
+            const setupPlayer = useCallback(() => {
+                if (window.YT && window.YT.Player) {
+                    const newPlayer = new window.YT.Player('youtube-player', {
+                        height: '100%',
+                        width: '100%',
+                        videoId: 'YTVDuOi6L1c',
+                        events: { 'onReady': onPlayerReady }
+                    });
+                    setPlayer(newPlayer);
+                }
+            }, [onPlayerReady]);
+
+            useEffect(() => {
+                const mediaQuery = window.matchMedia("(orientation: portrait)");
+                const handleOrientationChange = (e) => setIsPortrait(e.matches);
+                mediaQuery.addEventListener('change', handleOrientationChange);
+                return () => mediaQuery.removeEventListener('change', handleOrientationChange);
+            }, []);
+
+            useEffect(() => {
+                if (window.YT && document.getElementById('youtube-player')) {
+                    if (!player) setupPlayer();
+                } else if (!window.YT) {
+                    window.onYouTubeIframeAPIReady = setupPlayer;
+                }
+                return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+            }, [setupPlayer, player]);
+
+            useEffect(() => {
+                let ro;
+                if (playerContainerRef.current) {
+                    const updateHeight = () => { if (playerContainerRef.current) setPlayerHeight(playerContainerRef.current.offsetHeight); };
+                    ro = new ResizeObserver(updateHeight);
+                    ro.observe(playerContainerRef.current);
+                    updateHeight();
+                }
+                return () => ro?.disconnect();
+            }, []);
+
+            useEffect(() => {
+                if (player && isSyncEnabled && !repeatingLine) {
+                    intervalRef.current = setInterval(() => {
+                        if (player.getCurrentTime) {
+                            const currentTime = player.getCurrentTime();
+                            const currentLine = timeIndex.find(line => currentTime >= line.start && currentTime < line.end);
+                            const currentLineId = currentLine ? currentLine.id : null;
+                            if (activeScriptLineRef.current !== currentLineId) {
+                                setActiveScriptLine(currentLineId);
+                            }
+                        }
+                    }, 250);
+                } else {
+                    clearInterval(intervalRef.current);
+                }
+                return () => clearInterval(intervalRef.current);
+            }, [player, isSyncEnabled, repeatingLine, timeIndex]);
+
+            useEffect(() => {
+                if (activeScriptLine && isSyncEnabled) {
+                    const lineElement = scriptLineRefs.current[activeScriptLine];
+                    if (lineElement && playerContainerRef.current) {
+                        const playerBottom = playerContainerRef.current.getBoundingClientRect().bottom;
+                        const gap = 19;
+                        const targetTop = playerBottom + gap;
+                        const elementTop = lineElement.getBoundingClientRect().top;
+                        const scrollByAmount = elementTop - targetTop;
+                        if (Math.abs(scrollByAmount) > 5) {
+                            window.scrollBy({ top: scrollByAmount, behavior: 'smooth' });
+                        }
+                    }
+                }
+            }, [activeScriptLine, isSyncEnabled]);
+
+            useEffect(() => {
+                if (repeatingLine && player && player.seekTo) {
+                    const [start, end] = repeatingLine.time;
+                    player.seekTo(start);
+                    if(player.playVideo) player.playVideo();
+                    intervalRef.current = setInterval(() => {
+                        if (player.getCurrentTime && player.getCurrentTime() >= end) {
+                            player.seekTo(start);
+                        }
+                    }, 200);
+                }
+                return () => clearInterval(intervalRef.current);
+            }, [repeatingLine, player]);
+
+            const handleRepeatClick = (line) => {
+                setRepeatingLine(prev => (prev && prev.id === line.id) ? null : line);
+            };
+
+            const handleWordHover = useCallback((e, baseForm) => {
+                e.stopPropagation();
+                if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+
+                const wordData = vocabMap.get(baseForm);
+                if (wordData) {
+                    const rect = e.target.getBoundingClientRect();
+                    let x = rect.left;
+                    let y = rect.bottom + 5;
+                    const tooltipWidth = 320;
+                    if (x + tooltipWidth > window.innerWidth) {
+                        x = rect.right - tooltipWidth;
+                        if (x < 0) x = 10;
+                    }
+                    const tooltipHeight = 200; // Approximate height
+                    if (y + tooltipHeight > window.innerHeight + window.scrollY) {
+                        y = rect.top - tooltipHeight - 5;
+                    }
+                    setHoverPopupData({ data: wordData, position: { x, y } });
+                    setHighlightedVocab(wordData.term);
+
+                    const vocabElement = vocabRefs.current[wordData.term];
+                    if (vocabElement) {
+                        vocabElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }
+            }, [vocabMap]);
+
+            const handleWordLeave = useCallback(() => {
+                hoverTimeoutRef.current = setTimeout(() => {
+                    setHoverPopupData(null);
+                    setHighlightedVocab(null);
+                }, 200);
+            }, []);
+
+            const toggleTranslation = (lineId) => {
+                setTranslationsVisible(prev => ({ ...prev, [lineId]: !prev[lineId] }));
+            };
+
+            return (
+                <div className="video-materials-content">
+                    {hoverPopupData && <HoverTooltip data={hoverPopupData.data} position={hoverPopupData.position} />}
+                    <div ref={playerContainerRef} className="video-wrapper sticky top-0 z-40 bg-gray-50 py-4 no-print">
+                        <div className={`w-full rounded-xl shadow-lg border-4 border-white overflow-hidden transition-all duration-300 ease-in-out aspect-video`}>
+                            <div id="youtube-player" className="w-full h-full"></div>
+                        </div>
+                    </div>
+                    <div className="script-wrapper flex flex-col md:flex-row gap-6">
+                        <main className="flex-grow">
+                            <div className="space-y-6">
+                                {scriptContent.map(line => {
+                                    const hasTranslation = !!line.eng;
+                                    const isActive = activeScriptLine === line.id;
+
+                                    if (line.kor.startsWith('•')) {
+                                        return (
+                                            <div key={line.id} ref={el => scriptLineRefs.current[line.id] = el}
+                                                className={`p-3 my-2 rounded-lg transition-colors duration-300 ${isActive ? 'bg-yellow-100' : ''}`}>
+                                                <p className="whitespace-pre-wrap text-lg text-gray-800">
+                                                    <HighlightedText text={line.kor} highlightData={highlightData} onWordHover={handleWordHover} onWordLeave={handleWordLeave} lineId={line.id} activeWordId={activeWordId} />
+                                                </p>
+                                                {translationsVisible[line.id] && hasTranslation && (
+                                                    <p className="text-gray-600 text-base mt-2">{line.eng}</p>
+                                                )}
+                                                <div className="flex items-center gap-2 mt-2 no-print">
+                                                    {hasTranslation && (
+                                                        <button onClick={() => toggleTranslation(line.id)} className="text-xs text-gray-600 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-md transition">
+                                                            {translationsVisible[line.id] ? 'Hide translation' : 'Translation'}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+
+                                    const isYuna = line.speaker === '유나';
+                                    const bubbleWrapperClasses = `flex flex-col max-w-[100%] sm:max-w-[100%] ${isYuna ? 'items-start' : 'items-end self-end'}`;
+                                    const bubbleBaseClasses = 'relative px-5 py-3 rounded-2xl shadow-md transition-colors duration-300';
+                                    const yunaBubbleColor = 'bg-green-100';
+                                    const woodyBubbleColor = 'bg-white';
+                                    const activeBubbleColor = 'bg-yellow-100';
+                                    // Determine tailClass based on speaker
+                                    const tailClass = isYuna ? 'bubble-tail-left bubble-kkn20' : 'bubble-tail-right bubble-other';
+                                    const bubbleClasses = `${bubbleBaseClasses} ${isActive ? activeBubbleColor : (isYuna ? yunaBubbleColor : woodyBubbleColor)} ${tailClass} ${isActive ? 'bubble-active' : ''}`;
+                                    const speakerNameClasses = `font-bold mb-1 ${isYuna ? 'text-green-800' : 'text-blue-800'}`;
+
+                                    return (
+                                        <div key={line.id} ref={el => scriptLineRefs.current[line.id] = el} className="flex flex-col w-full">
+                                            <div className={bubbleWrapperClasses}>
+                                                <p className={`${speakerNameClasses} ${isYuna ? 'self-start' : 'self-end'}`}>{line.speaker}</p>
+                                                <div className={bubbleClasses}>
+                                                    <p className="whitespace-pre-wrap text-lg text-gray-800">
+                                                        <HighlightedText text={line.kor} highlightData={highlightData} onWordHover={handleWordHover} onWordLeave={handleWordLeave} lineId={line.id} activeWordId={activeWordId} />
+                                                    </p>
+                                                </div>
+                                                <div className={`w-full flex flex-col ${isYuna ? 'items-start' : 'items-end'}`}>
+                                                    {translationsVisible[line.id] && hasTranslation && (
+                                                        <p className="text-gray-500 text-base mt-2 px-2">{line.eng}</p>
+                                                    )}
+                                                    <div className="flex items-center gap-2 mt-2 px-2 no-print">
+                                                        {line.time && (
+                                                            <button onClick={() => handleRepeatClick(line)} className={`text-xs px-2 py-1 rounded-md transition ${repeatingLine?.id === line.id ? 'bg-red-200 hover:bg-red-300 text-red-800' : 'bg-green-100 hover:bg-green-200 text-green-800'}`}>
+                                                                {repeatingLine?.id === line.id ? 'Stop loop' : 'Loop playback'}
+                                                            </button>
+                                                        )}
+                                                        {hasTranslation && (
+                                                            <button onClick={() => toggleTranslation(line.id)} className="text-xs text-gray-600 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-md transition">
+                                                                {translationsVisible[line.id] ? 'Hide translation' : 'Translation'}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </main>
+                        <aside className="vocab-sidebar w-full md:w-auto flex-shrink-0 no-print">
+                            <div className="sticky z-30" style={{ top: `${playerHeight + 32}px` }}>
+                                <div className="flex flex-row items-stretch gap-2 mb-2" style={{ maxWidth: '7cm' }}>
+                                    <label htmlFor="sync-toggle" className="flex-1 flex items-center justify-between cursor-pointer bg-white py-1.5 px-3 rounded-lg shadow-md border">
+                                        <span className="text-xs font-medium text-gray-900 whitespace-nowrap">Auto-scroll</span>
+                                        <div className="relative">
+                                            <input type="checkbox" id="sync-toggle" className="sr-only" checked={isSyncEnabled} onChange={() => setIsSyncEnabled(!isSyncEnabled)} />
+                                            <div className={`block w-10 rounded-full transition-colors ${isSyncEnabled ? 'bg-green-500' : 'bg-gray-200'}`} style={{ height: '0.35cm' }}></div>
+                                            <div className={`dot absolute left-1 top-[2.6px] bg-white w-2 h-2 rounded-full transition-transform ${isSyncEnabled ? 'transform translate-x-6' : ''}`}></div>
+                                        </div>
+                                    </label>
+                                    <label htmlFor="vocab-toggle" className="flex-1 flex items-center justify-between cursor-pointer bg-white py-1.5 px-3 rounded-lg shadow-md border">
+                                        <span className="text-xs font-medium text-gray-900 whitespace-nowrap">Vocabulary</span>
+                                        <div className="relative">
+                                            <input type="checkbox" id="vocab-toggle" className="sr-only" checked={isVocabSidebarVisible} onChange={() => setIsVocabSidebarVisible(!isVocabSidebarVisible)} />
+                                            <div className={`block w-10 rounded-full transition-colors ${isVocabSidebarVisible ? 'bg-green-500' : 'bg-gray-200'}`} style={{ height: '0.35cm' }}></div>
+                                            <div className={`dot absolute left-1 top-[2.6px] bg-white w-2 h-2 rounded-full transition-transform ${isVocabSidebarVisible ? 'transform translate-x-6' : ''}`}></div>
+                                        </div>
+                                    </label>
+                                </div>
+                                {isVocabSidebarVisible && (
+                                    <div className="w-full overflow-y-auto" style={{maxWidth: '7cm', maxHeight: `calc(100vh - ${playerHeight + 96}px)`}}>
+                                        <div className="border rounded-lg bg-white p-2 shadow-lg">
+                                            <div className="space-y-1">
+                                            {vocabAndGrammarList.map(item => (
+                                                <VocabItem
+                                                    key={item.term}
+                                                    item={item}
+                                                    ref={el => vocabRefs.current[item.term] = el}
+                                                    isHighlighted={highlightedVocab === item.term}
+                                                />
+                                            ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            )
+        }
+
+        // --- [퀴즈&토론] 탭 관련 컴포넌트 ---
+        const ComprehensionQuiz = ({ sentences }) => {
+            const { useState, useMemo } = React;
+            const [selectedWords, setSelectedWords] = useState({});
+            const [results, setResults] = useState({});
+            const [translationsVisible, setTranslationsVisible] = useState({});
+            const [hintsVisible, setHintsVisible] = useState({});
+
+            const shuffledSentences = useMemo(() => {
+                const shuffleArray = (array) => {
+                    const newArray = [...array];
+                    for (let i = newArray.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+                    }
+                    return newArray;
+                };
+                return sentences.map(sentence => ({ ...sentence, bank: shuffleArray(sentence.bank) }));
+            }, [sentences]);
+
+            const handleWordSelect = (id, word) => {
+                setSelectedWords(prev => ({...prev, [id]: word}));
+                const isCorrect = sentences.find(s => s.id === id).answer === word;
+                setResults(prev => ({...prev, [id]: isCorrect}));
+                setHintsVisible(prev => ({ ...prev, [id]: false }));
+            };
+            const handleToggleTranslation = (id) => { setTranslationsVisible(prev => ({...prev, [id]: !prev[id]})); };
+            const handleToggleHint = (id) => { if (results[id] !== true) setHintsVisible(prev => ({...prev, [id]: !prev[id]})); };
+
+            return (
+                <div className="space-y-8">
+                    {shuffledSentences.map((s, index) => (
+                        <div key={s.id} className="p-6 border rounded-xl bg-white shadow-lg transition-all duration-300">
+                            <p className="text-gray-700 font-bold text-lg mb-4">{index + 1}. 다음 빈칸에 알맞은 말을 고르세요. (Choose the correct word for the blank.)</p>
+                            <div className="p-4 bg-gray-100 rounded-lg text-left mb-3 text-gray-900 text-xl font-bold">
+                                {s.parts[0]}
+                                <span className="inline-block bg-yellow-200 text-green-800 px-3 py-1 rounded-md font-extrabold mx-2">
+                                    {hintsVisible[s.id] ? `[ ${s.eng_hint} ]` : (selectedWords[s.id] || '___')}
+                                </span>
+                                {s.parts[1]}
+                                {results[s.id] === true && <span className="inline-block ml-2 text-green-500">✓</span>}
+                                {results[s.id] === false && <span className="inline-block ml-2 text-red-500">✗</span>}
+                            </div>
+                            {translationsVisible[s.id] && (
+                                <div className="text-gray-600 italic p-3 bg-gray-50 rounded-lg text-left mt-2 text-base">
+                                    {results[s.id] ? (<span>{s.eng_parts[0]}<strong className="text-green-600">{s.eng_answer}</strong>{s.eng_parts[1]}</span>)
+                                    : (<span>{s.eng_parts[0]}<span className="font-bold">___</span>{s.eng_parts[1]}</span>)}
+                                </div>
+                            )}
+                            <div className="text-left mb-4 flex gap-2">
+                                <button onClick={() => handleToggleHint(s.id)} className="text-xs bg-yellow-200 hover:bg-yellow-300 text-yellow-800 font-bold py-1 px-3 rounded-full transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed" disabled={results[s.id] === true}>힌트 (Hint)</button>
+                                <button onClick={() => handleToggleTranslation(s.id)} className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-3 rounded-full transition duration-200">번역 (Translation)</button>
+                            </div>
+                            <div className="flex justify-start flex-wrap gap-3">
+                                {s.bank.map(word => (
+                                    <button
+                                        key={word}
+                                        onClick={() => handleWordSelect(s.id, word)}
+                                        className={`px-4 py-2 rounded-lg text-lg font-bold transition-all transform hover:scale-105 shadow-md ${selectedWords[s.id] === word ? (results[s.id] ? 'bg-green-500 text-white ring-2 ring-opacity-50 ring-green-400' : 'bg-red-500 text-white ring-2 ring-red-300') : 'bg-white text-gray-800 hover:bg-gray-100 border'}`}
+                                    >{word}</button>
+                                ))}
+                            </div>
+                            {results[s.id] !== undefined && (
+                                <div className={`mt-4 p-4 border-l-4 rounded-r-lg ${results[s.id] ? 'bg-green-50 border-green-400' : 'bg-red-50 border-red-400'}`}>
+                                    <p className={`font-bold ${results[s.id] ? 'text-green-800' : 'text-red-800'} flex items-center gap-2 text-lg`}>{results[s.id] ? 'Correct!' : 'Try again.'}</p>
+                                    <p className="mt-2 text-gray-700 text-base italic">{results[s.id] ? s.eng_explanation : s.eng_wrongAnswerExplanations[selectedWords[s.id]]}</p>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            );
+        };
+
+        const SentenceChecker = ({ value, onChange, placeholder, question }) => {
+            const { useState } = React;
+            const [feedback, setFeedback] = useState(null);
+            const [isLoading, setIsLoading] = useState(false);
+            const [error, setError] = useState(null);
+
+            const checkSentence = async () => {
+                if (!value || value.trim() === '') {
+                    setError("문장을 입력해야 피드백을 받을 수 있어요.");
+                    setFeedback(null); return;
+                }
+                setIsLoading(true); setError(null); setFeedback(null);
+                const prompt = `You are an advanced Korean language tutor AI for B1-C2 level learners. Analyze the user's sentence in response to a specific question. The user's answer is in Korean. Your entire response MUST be a JSON object, with all string values in Korean (ending in -요) and English.\n\nQuestion: "${question}"\nUser's Answer: "${value}"\n\nYour response MUST be a JSON object with the specified schema.`;
+                const payload = {
+                    contents: [{ role: "user", parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: { type: "OBJECT", properties: { "is_relevant": { "type": "BOOLEAN" }, "relevance_feedback_kor": { "type": "STRING", "nullable": true }, "relevance_feedback_eng": { "type": "STRING", "nullable": true }, "is_correct": { "type": "BOOLEAN", "nullable": true }, "feedback_message_kor": { "type": "STRING", "nullable": true }, "feedback_message_eng": { "type": "STRING", "nullable": true }, "corrected_sentence": { "type": "STRING", "nullable": true }, "explanation_kor": { "type": "STRING", "nullable": true }, "explanation_eng": { "type": "STRING", "nullable": true }, "alternative_expressions": { "type": "ARRAY", "items": { "type": "OBJECT", "properties": { "expression_kor": { "type": "STRING" }, "expression_eng": { "type": "STRING" } }, "required": ["expression_kor", "expression_eng"] } } }, "required": ["is_relevant"] }
+                    }
+                };
+                const apiKey = ""; // NOTE: The API key is intentionally left blank.
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`API error: ${response.statusText}`);
+                    const result = await response.json();
+
+                    // Enhanced error handling for API response
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0 && result.candidates[0].content.parts[0].text) {
+                        try {
+                            const parsedJson = JSON.parse(result.candidates[0].content.parts[0].text);
+                            setFeedback(parsedJson);
+                        } catch (parseError) {
+                            console.error("Error parsing JSON response:", parseError, result.candidates[0].content.parts[0].text);
+                            setError("AI의 응답 형식이 올바르지 않아 처리할 수 없어요.");
+                        }
+                    } else {
+                        console.error("Invalid API response structure:", result);
+                        setError("AI의 응답을 처리하는 데 문제가 발생했어요.");
+                    }
+                } catch (err) {
+                    console.error("Error checking sentence:", err);
+                    setError("문장 검사에 실패했어요. 네트워크 연결을 확인하거나 잠시 후 다시 시도해 주세요.");
+                }
+                finally { setIsLoading(false); }
+            };
+
+
+            const renderFeedbackSection = (title, content) => (content && content.length > 0 && (
+                <div>
+                    <p className="text-gray-800 font-bold text-[17px]">{title}</p>
+                    {Array.isArray(content) ? (
+                        <ul className="list-disc list-inside space-y-2 mt-1">
+                            {content.map((item, index) => (
+                                <li key={index} className="text-gray-600 text-[16px]">
+                                    <p className="font-medium">{item.expression_kor || item.sentence_kor}</p>
+                                    <p className="text-gray-500 italic text-sm">{item.expression_eng || item.sentence_eng}</p>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (<p className="text-gray-700 font-medium text-[18px]">{content}</p>)}
+                </div>
+            ));
+
+            return (
+                <div>
+                    <textarea className="w-full p-3 border rounded-md focus:ring-2 focus:ring-green-400 transition text-lg" rows="3" placeholder={placeholder} value={value} onChange={onChange} />
+                    <button onClick={checkSentence} disabled={isLoading} className="mt-3 flex items-center justify-center gap-2 bg-green-200 text-gray-900 py-2 px-4 rounded-md transition-colors hover:bg-green-300 disabled:opacity-50 disabled:cursor-wait font-semibold text-[14px]">
+                        {isLoading ? <Spinner className="w-5 h-5" /> : '✨'} {isLoading ? '피드백 생성 중...' : 'AI에게 피드백 받기'}
+                    </button>
+                    {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+                    {feedback && (
+                        <div className="mt-4 p-4 bg-green-50 border-l-4 border-green-100 rounded-r-lg space-y-4">
+                            {!feedback.is_relevant && ( <div><p className="font-bold text-red-800 flex items-center gap-2 text-lg">{feedback.relevance_feedback_kor}</p><p className="text-gray-600 italic">{feedback.relevance_feedback_eng}</p></div> )}
+                            {feedback.is_relevant && feedback.is_correct && ( <div><p className="font-bold text-green-800 flex items-center gap-2 text-lg"><ThumbsUp className="w-5 h-5"/> {feedback.feedback_message_kor}</p><p className="text-gray-600 italic">{feedback.feedback_message_eng}</p></div> )}
+                            {feedback.is_relevant && !feedback.is_correct && (<>
+                                {feedback.corrected_sentence && ( <div><p className="text-gray-800 font-bold text-[17px]">✨ 수정된 문장:</p><p className="text-gray-700 font-medium text-[18px]">{feedback.corrected_sentence}</p></div> )}
+                                {(feedback.explanation_kor || feedback.explanation_eng) && ( <div><p className="text-gray-800 font-bold text-[17px]">설명:</p>{feedback.explanation_kor && <p className="text-gray-600 text-[16px]">{feedback.explanation_kor}</p>}{feedback.explanation_eng && <p className="text-gray-500 italic mt-1 text-[15px]">{feedback.explanation_eng}</p>}</div> )}
+                            </>)}
+                            {feedback.alternative_expressions && feedback.alternative_expressions.length > 0 && renderFeedbackSection('💡 다른 표현:', feedback.alternative_expressions)}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const DiscussionSection = ({ questions }) => {
+            const { useState } = React;
+            const [translationsVisible, setTranslationsVisible] = useState({});
+            const [userQuestionAnswers, setUserQuestionAnswers] = useState({});
+            const toggleTranslation = (id) => { setTranslationsVisible(prev => ({ ...prev, [id]: !prev[id] })); };
+
+            return (
+                <div className="space-y-10">
+                    {questions.map((q) => (
+                        <div key={q.num} className="p-6 border rounded-xl bg-white shadow-lg">
+                            <p className="text-gray-900 text-xl font-bold">{q.num}. {q.kor}</p>
+                            {translationsVisible[`q-${q.num}`] && (<p className="whitespace-pre-wrap text-gray-600 italic mt-1 text-base">{q.eng}</p>)}
+                            <button onClick={() => toggleTranslation(`q-${q.num}`)} className="text-xs text-gray-800 bg-gray-200 hover:bg-gray-300 font-bold py-1 px-3 rounded-full transition duration-200 mt-2 mb-6">번역 (Translation)</button>
+                            {q.vocab && q.vocab.length > 0 && (
+                                <div className="mt-4 space-y-4">
+                                    <h3 className="font-bold text-lg text-gray-800">📍핵심 표현 (Essential phrases)</h3>
+                                    {q.vocab.map((v, i) => (
+                                        <div key={i} className="pl-4 border-l-2 border-gray-200 py-2">
+                                            <p className="font-semibold text-green-700 text-lg">{v.term}: <span className="font-medium text-gray-700 text-base">{v.meaning_eng}</span></p>
+                                            <div className="mt-2">
+                                                <h4 className="flex items-center gap-2 text-sm font-bold text-gray-600"><span>💬</span> 대화 속에서 살펴보기 (See it in Context)</h4>
+                                                <div className="mt-1 p-3 bg-gray-100 rounded-lg">
+                                                    <p className="text-gray-800">"{v.context}"</p>
+                                                    {translationsVisible[`q-${q.num}-context-${i}`] && (<p className="text-gray-600 italic text-sm mt-1">{v.context_eng}</p>)}
+                                                    <button onClick={() => toggleTranslation(`q-${q.num}-context-${i}`)} className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-1 px-2 rounded-full transition duration-200 mt-2">번역 (Translation)</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            <div className="mt-6">
+                                <h3 className="font-bold text-lg text-gray-800 mb-2">핵심 표현을 사용해서 질문에 대답해 보세요.</h3>
+                                <SentenceChecker
+                                    value={userQuestionAnswers[`q-${q.num}`] || ''}
+                                    onChange={(e) => setUserQuestionAnswers(prev => ({...prev, [`q-${q.num}`]: e.target.value}))}
+                                    placeholder="여기에 답변을 입력하세요 (Type your response here)"
+                                    question={q.kor}
+                                />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+        };
+
+        const Tabs = ({ tabs }) => {
+            const { useState } = React;
+            const [activeTab, setActiveTab] = useState(0);
+            return (
+                <div>
+                    <div className="border-b border-gray-200 no-print">
+                        <nav className="-mb-px flex space-x-6" aria-label="Tabs">
+                            {tabs.map((tab, index) => (
+                                <button
+                                    key={tab.name} onClick={() => setActiveTab(index)}
+                                    className={`${ index === activeTab ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm sm:text-base transition-colors flex items-center gap-2`}
+                                >{tab.icon} {tab.name}</button>
+                            ))}
+                        </nav>
+                    </div>
+                    <div className="pt-10">{tabs[activeTab].content}</div>
+                </div>
+            );
+        };
+
+        // --- 메인 App 컴포넌트 ---
+        const App = () => {
+            const { useState, useEffect, useMemo } = React;
+            const [containerWidth, setContainerWidth] = useState('30cm');
+            const [layoutMode, setLayoutMode] = useState('large');
+
+            useEffect(() => {
+                const handleResize = () => {
+                    const heightInPx = window.innerHeight; const widthInPx = window.innerWidth;
+                    const isMobileDevice = /Mobi|Android/i.test(navigator.userAgent);
+                    const isTabletDevice = /iPad|Android(?!.*Mobi)/i.test(navigator.userAgent);
+                    const isPortrait = window.matchMedia("(orientation: portrait)").matches;
+                    let newMode = 'large'; let newContainerWidth = '30cm';
+
+                    if ((isMobileDevice || isTabletDevice) && isPortrait) { newMode = 'mobile'; newContainerWidth = '100%'; }
+                    else {
+                        if (heightInPx < 832) { newMode = 'split'; newContainerWidth = '100%'; }
+                        else if (heightInPx < 907) { newMode = 'small'; newContainerWidth = '22cm'; }
+                        else if (heightInPx < 983) { newMode = 'medium'; newContainerWidth = '24cm'; }
+                        else { newMode = 'large'; newContainerWidth = '30cm'; }
+                    }
+                    setContainerWidth(newContainerWidth); setLayoutMode(newMode); document.body.dataset.layoutMode = newMode;
+                    const baseWidthPx = 30 * 37.795; let effectiveWidthPx;
+                    if (newContainerWidth === '100%') { effectiveWidthPx = widthInPx; }
+                    else { const cmValue = parseFloat(newContainerWidth); effectiveWidthPx = cmValue * 37.795; }
+                    if (newMode !== 'large') { const scale = Math.min(1.0, effectiveWidthPx / baseWidthPx); const finalScale = Math.max(0.8, scale); document.documentElement.style.fontSize = `${16 * finalScale}px`; }
+                    else { document.documentElement.style.fontSize = '16px'; }
+                };
+                window.addEventListener('resize', handleResize); handleResize();
+                return () => window.removeEventListener('resize', handleResize);
+            }, []);
+
+            const { scriptContent, vocabAndGrammarList, sentences, discussionQuestions } = useMemo(() => {
+                // Data structures remain multi-line for readability
+                const scriptContent = [
+                    { id: 's1', speaker: '유나', kor: '안녕하세요. <이 주제로 이야기해봐요> 팟캐스트예요.', time: [12.600, 16.030], eng: "Hello! This is the <Let's Talk About This Topic> podcast." },
+                    { id: 's2', speaker: '유나', kor: '저는 유나예요.', time: [16.030, 17.454], eng: "I'm Yuna." },
+                    { id: 's3', speaker: '우디', kor: '안녕하세요! 저는 우디예요.', time: [17.454, 19.888], eng: "Hello! I'm Woody." },
+                    { id: 's4', speaker: '유나', kor: '오늘의 주제는 \'왼손잡이\'예요.', time: [19.888, 22.700], eng: "Today's topic is 'left-handed people'." },
+                    { id: 's5', speaker: '우디', kor: '\'왼손잡이\'는 \'왼손을 자주 쓰는 사람\'이란 뜻이고,', time: [22.700, 26.746], eng: "'Left-handed person' means 'a person who frequently uses their left hand,' and" },
+                    { id: 's6', speaker: '우디', kor: '\'오른손잡이는 오른손을 자주 쓰는 사람\'이란 뜻이죠.', time: [26.746, 30.435], eng: "'right-handed person' means 'a person who frequently uses their right hand,' right?" },
+                    { id: 's7', speaker: '유나', kor: '네 맞아요.', time: [30.435, 31.737], eng: "Yes, that's right." },
+                    { id: 's8', speaker: '유나', kor: '그럼 우디 씨에게 질문할게요.', time: [31.737, 34.114], eng: "Then I'll ask Woody a question." },
+                    { id: 's9', speaker: '유나', kor: '전 세계에서 왼손잡이가 몇 퍼센트 있을까요?', time: [34.114, 38.054], eng: "What percentage of people in the world are left-handed?" },
+                    { id: 's10', speaker: '우디', kor: '음... 1%.', time: [38.054, 39.995], eng: "Hmm... 1%?" },
+                    { id: 's11', speaker: '유나', kor: '아니에요. 약 10%의 사람들이 왼손잡이라고 해요.', time: [39.995, 44.469], eng: "No. About 10% of people are said to be left-handed." },
+                    { id: 's12', speaker: '우디', kor: '😯 헐... 10%요?', time: [44.469, 47.115], eng: "😯 Whoa... 10%?" },
+                    { id: 's13', speaker: '우디', kor: '그럼... 10명 중에 1명이네요.', time: [47.115, 50.000], eng: "Then... that's 1 out of 10 people." },
+                    { id: 's14', speaker: '유나', kor: '생각보다 많죠.', time: [50.000, 51.700], eng: "It's more than you think, right?" },
+                    { id: 's15', speaker: '유나', kor: '그런데 왼손잡이에 대한 편견도 많아요.', time: [51.700, 55.616], eng: "But there are also many prejudices about left-handed people." },
+                    { id: 's16', speaker: '유나', kor: '\'편견\'은 \'잘못 생각하는 것\'이라는 뜻이에요.', time: [55.616, 59.281], eng: "'Prejudice' means 'thinking incorrectly'." },
+                    { id: 's17', speaker: '우디', kor: '무슨 편견이 있어요?', time: [59.281, 61.009], eng: "What prejudices are there?" },
+                    { id: 's18', speaker: '유나', kor: '보통 사람들이 "왼손잡이가 더 창의적이다"라고 생각해요.', time: [61.009, 66.165], eng: "People usually think 'left-handed people are more creative'." },
+                    { id: 's19', speaker: '유나', kor: '창의적은 \'완전히 새로운 것을 생각하다\'라는 뜻이에요.', time: [66.165, 71.306], eng: "'Creative' means 'to think of something completely new'." },
+                    { id: 's20', speaker: '유나', kor: '그런데 이건 편견이에요.', time: [71.306, 73.700], eng: "But this is a prejudice." },
+                    { id: 's21', speaker: '우디', kor: '아니에요. 사실이에요.', time: [73.700, 76.372], eng: "No. It's true." },
+                    { id: 's22', speaker: '우디', kor: '제 친구가 왼손잡이인데, 그림을 진짜 잘 그려요!', time: [76.372, 80.812], eng: "My friend is left-handed and draws really well!" },
+                    { id: 's23', speaker: '우디', kor: '왼손잡이는 다 예술가예요!', time: [80.812, 83.600], eng: "All left-handed people are artists!" },
+                    { id: 's24', speaker: '유나', kor: '🤨 우디 씨, 친구 한 명 때문에 그렇게 생각하는 거예요?', time: [83.600, 87.807], eng: "🤨 Woody, are you thinking that way because of one friend?" },
+                    { id: 's25', speaker: '유나', kor: '그건 일반화예요.', time: [87.807, 89.793], eng: "That's generalization." },
+                    { id: 's26', speaker: '유나', kor: '\'일반화\'는 \'하나를 보고 모두 그렇다고 생각하다\'라는 뜻이에요.', time: [89.793, 95.000], eng: "'Generalization' means 'seeing one thing and thinking everything is like that'." },
+                    { id: 's27', speaker: '우디', kor: '아니에요. 사실이에요.', time: [95.000, 97.546], eng: "No. It's true." },
+                    { id: 's28', speaker: '우디', kor: '레오나르도 다빈치, 알베르트 아인슈타인, 스티브 잡스, 모두 왼손잡이예요! 😤', time: [97.546, 104.294], eng: "Leonardo da Vinci, Albert Einstein, Steve Jobs, they're all left-handed! 😤" },
+                    { id: 's29', speaker: '유나', kor: '그건 우연이에요.', time: [104.294, 106.022], eng: "That's coincidence." },
+                    { id: 's30', speaker: '유나', kor: '\'우연\'은 \'계획하지 않은 일\'이라는 뜻이에요.', time: [106.022, 110.600], eng: "'Coincidence' means 'an unplanned event'." },
+                    { id: 's31', speaker: '우디', kor: '아니에요. 사실이에요.', time: [110.600, 113.509], eng: "No. It's true." },
+                    { id: 's32', speaker: '우디', kor: '과학 수업에서 배웠어요.', time: [113.509, 116.018], eng: "I learned it in science class." },
+                    { id: 's33', speaker: '우디', kor: '왼손잡이는 오른쪽 뇌를 많이 써서 더 창의적이에요.', time: [116.018, 121.307], eng: "Left-handed people use their right brain more, so they're more creative." },
+                    { id: 's34', speaker: '유나', kor: '최근에 뇌과학자들은 그 주장이 사실이 아니라고 말해요.', time: [121.307, 125.659], eng: "Recently, brain scientists say that claim is not true." },
+                    { id: 's35', speaker: '유나', kor: '우리는 창의적인 일을 할 때 오른쪽 뇌만 쓰지 않아요.', time: [125.659, 129.760], eng: "We don't only use the right brain when doing creative work." },
+                    { id: 's36', speaker: '유나', kor: '왼쪽 뇌와 오른쪽 뇌를 함께 써요.', time: [129.760, 132.600], eng: "We use both the left and right brain together." },
+                    { id: 's37', speaker: '우디', kor: '왼손잡이가 실수를 더 많이 해요. 그건 사실 맞죠?', time: [132.600, 138.954], eng: "Left-handed people make more mistakes. That's true, right?" },
+                    { id: 's38', speaker: '유나', kor: '반절은 사실이고, 반절은 오해예요.', time: [138.954, 142.158], eng: "Half is true, half is a misunderstanding." },
+                    { id: 's39', speaker: '유나', kor: '오해는 \'잘못 이해하다\'라는 뜻이에요.', time: [142.158, 145.720], eng: "'Misunderstanding' means 'to understand incorrectly'." },
+                    { id: 's40', speaker: '우디', kor: '무슨 말이에요?', time: [145.720, 147.081], eng: "What do you mean?" },
+                    { id: 's41', speaker: '유나', kor: '예를 들어, 가위나 컴퓨터 마우스를 생각해 보세요.', time: [147.081, 151.243], eng: "For example, think about scissors or a computer mouse." },
+                    { id: 's42', speaker: '유나', kor: '이런 물건들이 오른손잡이를 위해 만들어졌어요.', time: [151.243, 155.281], eng: "These things are made for right-handed people." },
+                    { id: 's43', speaker: '우디', kor: '아... 불편하겠네요.', time: [155.281, 157.900], eng: "Ah... that must be uncomfortable." },
+                    { id: 's44', speaker: '유나', kor: '맞아요. 그래서 왼손잡이들이 더 많이 실수를 해요.', time: [157.900, 162.296], eng: "That's right. So left-handed people make more mistakes." },
+                    { id: 's45', speaker: '유나', kor: '왼손잡이의 문제가 아니라, 환경의 문제예요.', time: [162.296, 166.107], eng: "It's not a problem with left-handed people, but a problem with the environment." },
+                    { id: 's46', speaker: '유나', kor: '\'환경\'은 \'주변 상황\'이라는 뜻이에요.', time: [166.107, 169.200], eng: "'Environment' means 'surrounding situation'." },
+                    { id: 's47', speaker: '우디', kor: '😨 그럼... 왼손잡이는 불편하니까 고쳐야 해요!', time: [169.200, 173.480], eng: "😨 Then... left-handed people should be fixed because it's inconvenient!" },
+                    { id: 's48', speaker: '유나', kor: '우디 씨! 그건 나쁜 생각이에요.', time: [173.480, 176.767], eng: "Woody! That's a bad thought." },
+                    { id: 's49', speaker: '우디', kor: '왜요?', time: [176.767, 177.521], eng: "Why?" },
+                    { id: 's50', speaker: '유나', kor: '왼손잡이는 잘못된 게 아니에요.', time: [177.521, 180.506], eng: "Being left-handed is not wrong." },
+                    { id: 's51', speaker: '유나', kor: '오히려 왼손잡이를 위한 물건을 더 많이 만들어야 해요!', time: [180.506, 185.088], eng: "Rather, we should make more things for left-handed people!" },
+                    { id: 's52', speaker: '우디', kor: '그럼 왼손잡이의 장점은 뭐예요? 아무 것도 없어요?', time: [185.088, 189.714], eng: "Then what are the advantages of being left-handed? Are there none?" },
+                    { id: 's53', speaker: '유나', kor: '있어요. 스포츠에서요.', time: [189.714, 192.741], eng: "There are. In sports." },
+                    { id: 's54', speaker: '우디', kor: '스포츠요?', time: [192.741, 193.999], eng: "Sports?" },
+                    { id: 's55', speaker: '유나', kor: '네. 테니스, 복싱, 야구 같은 스포츠에서는 왼손잡이가 유리해요.', time: [193.999, 199.728], eng: "Yes. In sports like tennis, boxing, and baseball, left-handed people have an advantage." },
+                    { id: 's56', speaker: '우디', kor: '\'유리하다\'는 \'더 좋다\'라는 뜻이에요. 맞죠?', time: [199.728, 204.886], eng: "'Advantageous' means 'better,' right?" },
+                    { id: 's57', speaker: '우디', kor: '그런데 왜 유리해요?', time: [204.886, 207.301], eng: "But why is it advantageous?" },
+                    { id: 's58', speaker: '유나', kor: '많은 선수들이 오른손잡이랑 연습을 해요.', time: [207.301, 211.026], eng: "Many athletes practice with right-handed people." },
+                    { id: 's59', speaker: '유나', kor: '그래서 왼손잡이에 익숙하지 않아요.', time: [211.026, 214.409], eng: "So they're not used to left-handed people." },
+                    { id: 's60', speaker: '유나', kor: '\'익숙하다\'는 \'자주 경험해서 잘 알다\'라는 뜻이에요.', time: [214.409, 219.374], eng: "'Used to' means 'to know well through frequent experience'." },
+                    { id: 's61', speaker: '우디', kor: '오!!! 그럼 오늘부터 저는 왼손잡이가 될 거예요.', time: [219.374, 224.541], eng: "Oh!!! Then from today I'll become left-handed." },
+                    { id: 's62', speaker: '유나', kor: '우디 씨, 그전에 오늘 배운 단어를 정리해 볼까요?', time: [224.541, 229.030], eng: "Woody, before that, shall we review the words we learned today?" },
+                    // --- Phase 3: Optional fields (time is removed for summary lines) ---
+                    { id: 's63', speaker: '우디', kor: '• 왼손잡이: 왼손을 자주 쓰는 사람', time: [229.136, 233.682], eng: "• Left-handed person: a person who frequently uses their left hand" },
+                    { id: 's64', speaker: '우디', kor: '• 오른손잡이: 오른손을 자주 쓰는 사람', time: [233.682, 237.705], eng: "• Right-handed person: a person who frequently uses their right hand" },
+                    { id: 's65', speaker: '우디', kor: '• 편견: 잘못 생각하는 것', time: [237.705, 240.926], eng: "• Prejudice: thinking incorrectly" },
+                    { id: 's66', speaker: '우디', kor: '• 창의적: 완전히 새로운 것을 생각하다', time: [240.926, 245.426], eng: "• Creative: to think of something completely new" },
+                    { id: 's67', speaker: '우디', kor: '• 일반화: 하나를 보고 모두 그렇다고 생각하다', time: [245.426, 250.342], eng: "• Generalization: seeing one thing and thinking everything is like that" },
+                    { id: 's68', speaker: '유나', kor: '• 우연: 계획하지 않은 일', time: [250.342, 253.345], eng: "• Coincidence: an unplanned event" },
+                    { id: 's69', speaker: '유나', kor: '• 오해: 잘못 이해하다', time: [253.345, 255.961], eng: "• Misunderstanding: to understand incorrectly" },
+                    { id: 's70', speaker: '유나', kor: '• 환경: 주변 상황', time: [255.961, 258.225], eng: "• Environment: surrounding situation" },
+                    { id: 's71', speaker: '유나', kor: '• 유리하다: 더 좋다', time: [258.225, 260.592], eng: "• Advantageous: better" },
+                    { id: 's72', speaker: '유나', kor: '• 익숙하다: 자주 경험해서 잘 알다', time: [260.592, 264.991], eng: "• Used to: to know well through frequent experience" },
+                    { id: 's73', speaker: '우디', kor: '유나 씨, 그런데 왼손잡이 친구와 밥 먹을 때,', time: [265.642, 270.697], eng: "Yuna, but when eating with a left-handed friend," },
+                    { id: 's74', speaker: '우디', kor: '그 친구 왼팔이랑 제 오른팔이 맨날 부딪혀요!', time: [270.697, 274.154], eng: "their left arm and my right arm always bump into each other!" },
+                    { id: 's75', speaker: '우디', kor: '그건 어떻게 해요?', time: [274.154, 275.600], eng: "What do I do about that?" },
+                    { id: 's76', speaker: '유나', kor: '우디 씨는 바보예요?', time: [275.600, 277.640], eng: "Woody, are you a fool?" },
+                    { id: 's77', speaker: '유나', kor: '그냥 자리를 바꿔 앉으면 되죠🤣!', time: [277.640, 280.661], eng: "You just need to switch seats🤣!" },
+                    { id: 's78', speaker: '우디', kor: '😅오늘은 여기까지 할게요. 안녕히 계세요!', time: [280.661, 285.600], eng: "😅That's all for today. Goodbye!" },
+                    { id: 's79', speaker: '유나', kor: '안녕히 계세요! 다음에 또 만나요!', time: [285.600, 288.552], eng: "Goodbye! See you next time!" }
+                ];
+                const vocabAndGrammarList = [
+                    { term: '이 주제로 이야기해 봐요', mainDef: "Let's Talk About This Topic", examples: [{ kor: "우리 이 주제로 이야기해요.", eng: "Let's talk about this topic." }, { kor: "다음에는 다른 주제로 이야기해 봐요.", eng: "Let's talk about a different topic next time." }], translations: { en: { main: "Let's Talk About This Topic" } }, subDefs: [{ subTerm: '▢▢을/를 주제로 이야기하다', subDef: 'to talk about [something] as a topic', translations: { en: { def: 'to talk about [something] as a topic' } } }, { subTerm: '-아/어 보다', subDef: 'used to make gentle suggestions without sounding pushy', translations: { en: { def: 'used to make gentle suggestions without sounding pushy' } } }] },
+                    { term: '왼손잡이', mainDef: 'left-handed person', examples: [{ kor: "제 동생은 왼손잡이예요.", eng: "My younger sibling is left-handed." }, { kor: "저는 왼손잡이가 아니에요.", eng: "I am not left-handed." }], translations: { en: { main: 'left-handed person' } } },
+                    { term: '왼손을 자주 쓰는 사람', mainDef: 'a person who frequently uses their left hand', examples: [{ kor: "그 사람은 왼손을 자주 써요.", eng: "That person uses their left hand often." }, { kor: "저는 오른손을 더 자주 써요.", eng: "I use my right hand more often." }], translations: { en: { main: 'a person who frequently uses their left hand' } }, subDefs: [{ subTerm: '-는 사람', subDef: '"a person who..."; used to describe a person who does a certain action', translations: { en: { def: '"a person who..."; used to describe a person who does a certain action' } } }] },
+                    { term: '이라는 뜻', mainDef: 'meaning that / which means', examples: [{ kor: "'친구'라는 뜻은 'friend'예요.", eng: "The meaning of 'chingu' is 'friend'." }, { kor: "이 단어는 좋은 뜻이에요.", eng: "This word has a good meaning." }], translations: { en: { main: 'meaning that / which means' } } },
+                    { term: '오른손잡이', mainDef: 'right-handed person', examples: [{ kor: "저는 오른손잡이예요.", eng: "I am right-handed." }, { kor: "우리 가족은 모두 오른손잡이예요.", eng: "Everyone in my family is right-handed." }], translations: { en: { main: 'right-handed person' } } },
+                    { term: '오른손을 자주 쓰는 사람', mainDef: 'a person who frequently uses their right hand', examples: [{ kor: "대부분 사람은 오른손을 써요.", eng: "Most people use their right hand." }, { kor: "저는 밥을 먹을 때 오른손을 써요.", eng: "I use my right hand when I eat." }], translations: { en: { main: 'a person who frequently uses their right hand' } }, subDefs: [{ subTerm: '-는 사람', subDef: '"a person who..."; used to describe a person who does a certain action', translations: { en: { def: '"a person who..."; used to describe a person who does a certain action' } } }] },
+                    { term: '전 세계에서', mainDef: 'around the world / worldwide', examples: [{ kor: "전 세계에서 한국이 유명해요.", eng: "Korea is famous around the world." }, { kor: "전 세계에 사람들이 많아요.", eng: "There are many people in the world." }], translations: { en: { main: 'around the world / worldwide' } } },
+                    { term: '라고 해요', mainDef: 'they say / it is said', examples: [{ kor: "사람들이 저를 학생이라고 해요.", eng: "People say I am a student." }, { kor: "내일 날씨가 좋다고 해요.", eng: "They say the weather will be good tomorrow." }], translations: { en: { main: 'they say / it is said' } } },
+                    { term: '헐', mainDef: 'Whoa / Oh my (exclamation of surprise)', examples: [{ kor: "헐, 정말 비싸요!", eng: "Whoa, it's really expensive!" }, { kor: "헐, 그거 진짜예요?", eng: "Oh my, is that real?" }], translations: { en: { main: 'Whoa / Oh my (exclamation of surprise)' } } },
+                    { term: '10명 중에 1명이네요', mainDef: "That's 1 out of 10 people", examples: [{ kor: "우리 반은 10명 중에 8명이 여자예요.", eng: "In our class, 8 out of 10 people are women." }, { kor: "이 사과들 중에 하나는 맛이 없어요.", eng: "One of these apples doesn't taste good." }], translations: { en: { main: "That's 1 out of 10 people" } }, subDefs: [{ subTerm: '중에', subDef: '"among" or "out of"; used to indicate selection from a group', translations: { en: { def: '"among" or "out of"; used to indicate selection from a group' } } }, { subTerm: '-네요', subDef: 'sentence ending expressing surprise or realization', translations: { en: { def: 'sentence ending expressing surprise or realization' } } }] },
+                    { term: '생각보다 많죠.', mainDef: "That's more than expected, right? / That's quite a lot, isn't it?", examples: [{ kor: "숙제가 생각보다 많아요.", eng: "There is more homework than I thought." }, { kor: "한국어 공부는 생각보다 재미있어요.", eng: "Studying Korean is more fun than I thought." }], translations: { en: { main: "That's more than expected, right? / That's quite a lot, isn't it?" } }, subDefs: [{ subTerm: '-보다', subDef: '"than"; used for comparison', translations: { en: { def: '"than"; used for comparison' } } }, { subTerm: '-죠', subDef: 'informal sentence ending used for confirmation or emphasis', translations: { en: { def: 'informal sentence ending used for confirmation or emphasis' } } }] },
+                    { term: '왼손잡이에 대한 편견', mainDef: 'prejudice about left-handed people', examples: [{ kor: "그것은 나쁜 편견이에요.", eng: "That is a bad prejudice." }, { kor: "우리는 편견이 없어요.", eng: "We don't have prejudice." }], translations: { en: { main: 'prejudice about left-handed people' } }, subDefs: [{ subTerm: '-에 대한', subDef: '"about" or "regarding"; used to indicate the topic or subject matter', translations: { en: { def: '"about" or "regarding"; used to indicate the topic or subject matter' } } }, { subTerm: '편견', subDef: 'prejudice, bias', translations: { en: { def: 'prejudice, bias' } } }] },
+                    { term: '편견', mainDef: 'prejudice, bias', examples: [{ kor: "그 사람은 편견이 심해요.", eng: "That person is very prejudiced." }, { kor: "편견은 좋지 않아요.", eng: "Prejudice is not good." }], translations: { en: { main: 'prejudice, bias' } } },
+                    { term: '잘못 생각하는 것', mainDef: 'thinking wrongly / misconception', examples: [{ kor: "그것은 잘못된 생각이에요.", eng: "That is a wrong thought." }, { kor: "저는 가끔 잘못 생각해요.", eng: "I sometimes think wrongly." }], translations: { en: { main: 'thinking wrongly / misconception' } }, subDefs: [{ subTerm: '잘못', subDef: 'wrongly, incorrectly', translations: { en: { def: 'wrongly, incorrectly' } } }, { subTerm: '생각하다', subDef: 'to think', translations: { en: { def: 'to think' } } }, { subTerm: '-는 것', subDef: 'used to nominalize verbs by turning a verb into a noun phrase meaning "the act of …," "the fact of …," or "the thing that …"', translations: { en: { def: 'used to nominalize verbs by turning a verb into a noun phrase meaning "the act of …," "the fact of …," or "the thing that …"' } } }] },
+                    { term: '이라는 뜻이에요', mainDef: 'it means that / the meaning is', examples: [{ kor: "이것은 '사랑'이라는 뜻이에요.", eng: "This means 'love'." }, { kor: "그 말은 좋은 뜻이 아니에요.", eng: "That word doesn't have a good meaning." }], translations: { en: { main: 'it means that / the meaning is' } } },
+                    { term: '창의적', mainDef: 'creative', examples: [{ kor: "제 친구는 아주 창의적이에요.", eng: "My friend is very creative." }, { kor: "이 그림은 정말 창의적이에요.", eng: "This picture is really creative." }], translations: { en: { main: 'creative' } } },
+                    { term: '라고 생각해요', mainDef: 'I think that / I believe that', examples: [{ kor: "저는 한국 음식이 맛있다고 생각해요.", eng: "I think Korean food is delicious." }, { kor: "그 영화가 재미있다고 생각해요.", eng: "I think that movie is fun." }], translations: { en: { main: 'I think that / I believe that' } } },
+                    { term: '완전히 새로운 것', mainDef: 'something completely new', examples: [{ kor: "이것은 완전히 새로운 디자인이에요.", eng: "This is a completely new design." }, { kor: "저는 완전히 새로운 것을 원해요.", eng: "I want something completely new." }], translations: { en: { main: 'something completely new' } }, subDefs: [{ subTerm: '-ㄴ 것', subDef: 'used to nominalize descriptive verbs (adjectives) by turning them into a noun phrase meaning "the thing that is …" or "something that is …"', translations: { en: { def: 'used to nominalize descriptive verbs (adjectives) by turning them into a noun phrase meaning "the thing that is …" or "something that is …"' } } }] },
+                    { term: '라는 뜻이에요', mainDef: 'it means that / the meaning is', examples: [{ kor: "이것은 '희망'이라는 뜻이에요.", eng: "This means 'hope'." }, { kor: "그것은 '가족'이라는 뜻이에요.", eng: "That means 'family'." }], translations: { en: { main: 'it means that / the meaning is' } } },
+                    { term: '예술가', mainDef: 'artist', examples: [{ kor: "피카소는 유명한 예술가였어요.", eng: "Picasso was a famous artist." }, { kor: "제 꿈은 예술가예요.", eng: "My dream is to be an artist." }], translations: { en: { main: 'artist' } } },
+                    { term: '일반화', mainDef: 'generalization', examples: [{ kor: "그것은 나쁜 일반화예요.", eng: "That is a bad generalization." }, { kor: "일반화는 위험해요.", eng: "Generalization is dangerous." }], translations: { en: { main: 'generalization' } } },
+                    { term: '하나를 보고 모두 그렇다고 생각하다', mainDef: 'to see one thing and think everyone/everything is like that', examples: [{ kor: "한 사람만 보고 모두를 알 수 없어요.", eng: "You can't know everyone by looking at just one person." }, { kor: "나쁜 일반화를 하지 마세요.", eng: "Don't make bad generalizations." }], translations: { en: { main: 'to see one thing and think everyone/everything is like that' } }, subDefs: [{ subTerm: '보다', subDef: 'to see, to look at', translations: { en: { def: 'to see, to look at' } } }, { subTerm: '-고', subDef: 'used to connect two verbs, meaning "and then" or simply "and," to show actions happening in sequence', translations: { en: { def: 'used to connect two verbs, meaning "and then" or simply "and," to show actions happening in sequence' } } }, { subTerm: '그렇다고 생각하다', subDef: 'to think that it is so / to think that way', translations: { en: { def: 'to think that it is so / to think that way' } } }] },
+                    { term: '우연', mainDef: 'coincidence, chance', examples: [{ kor: "우리는 카페에서 우연히 만났어요.", eng: "We met by chance at the cafe." }, { kor: "이것은 그냥 우연이에요.", eng: "This is just a coincidence." }], translations: { en: { main: 'coincidence, chance' } } },
+                    { term: '계획하지 않은 일', mainDef: "unplanned event / something that wasn't planned", examples: [{ kor: "이 여행은 계획하지 않은 일이었어요.", eng: "This trip was an unplanned event." }, { kor: "가끔 계획하지 않은 일이 더 재미있어요.", eng: "Sometimes unplanned things are more fun." }], translations: { en: { main: "unplanned event / something that wasn't planned" } }, subDefs: [{ subTerm: '계획하다', subDef: 'to plan', translations: { en: { def: 'to plan' } } }, { subTerm: '-지 않다', subDef: '"not..."; used to make negative statements', translations: { en: { def: '"not..."; used to make negative statements' } } }, { subTerm: '-ㄴ/은 일', subDef: '"a thing/matter that..."; used to turn a past-tense verb into a noun phrase describing an event or situation', translations: { en: { def: '"a thing/matter that..."; used to turn a past-tense verb into a noun phrase describing an event or situation' } } }] },
+                    { term: '과학 수업', mainDef: 'science class', examples: [{ kor: "오늘 과학 수업이 재미있었어요.", eng: "Science class was fun today." }, { kor: "저는 과학 수업을 좋아해요.", eng: "I like science class." }], translations: { en: { main: 'science class' } }, subDefs: [{ subTerm: '과학', subDef: 'science', translations: { en: { def: 'science' } } }] },
+                    { term: '오른쪽 뇌를 많이 써서', mainDef: 'because they use the right side of the brain a lot', examples: [{ kor: "저는 머리를 많이 써서 피곤해요.", eng: "I'm tired because I used my brain a lot." }, { kor: "열심히 공부해서 시험을 잘 봤어요.", eng: "I studied hard, so I did well on the test." }], translations: { en: { main: 'because they use the right side of the brain a lot' } }, subDefs: [{ subTerm: '뇌를 쓰다', subDef: 'to use the brain', translations: { en: { def: 'to use the brain' } } }, { subTerm: '-아서/어서', subDef: 'used to connect clauses indicating cause or reason ("because…")', translations: { en: { def: 'used to connect clauses indicating cause or reason ("because…")' } } }] },
+                    { term: '최근에', mainDef: 'recently', examples: [{ kor: "최근에 영화를 봤어요.", eng: "I saw a movie recently." }, { kor: "최근에 날씨가 아주 더워요.", eng: "The weather is very hot recently." }], translations: { en: { main: 'recently' } } },
+                    { term: '뇌과학자들', mainDef: 'brain scientists, neuroscientists', examples: [{ kor: "그 사람은 뇌과학자예요.", eng: "That person is a neuroscientist." }, { kor: "뇌과학자들은 뇌를 연구해요.", eng: "Neuroscientists study the brain." }], translations: { en: { main: 'brain scientists, neuroscientists' } } },
+                    { term: '주장', mainDef: 'claim, argument', examples: [{ kor: "그 사람의 주장은 이상해요.", eng: "That person's claim is strange." }, { kor: "이것은 저의 주장이에요.", eng: "This is my claim." }], translations: { en: { main: 'claim, argument' } } },
+                    { term: '아니라고 말해요', mainDef: "say it's not true / say that's not the case", examples: [{ kor: "저는 학생이 아니라고 말했어요.", eng: "I said I am not a student." }, { kor: "친구가 괜찮다고 말해요.", eng: "My friend says it's okay." }], translations: { en: { main: "say it's not true / say that's not the case" } } },
+                    { term: '창의적인 일을 할 때', mainDef: 'when doing creative work', examples: [{ kor: "저는 창의적인 일을 좋아해요.", eng: "I like creative work." }, { kor: "이 일은 아주 창의적이에요.", eng: "This work is very creative." }], translations: { en: { main: 'when doing creative work' } }, subDefs: [{ subTerm: '창의적이다', subDef: 'to be creative', translations: { en: { def: 'to be creative' } } }, { subTerm: '-ㄴ일', subDef: '"work/task that is..."; used to turn a descriptive verb into a noun phrase describing work or tasks', translations: { en: { def: '"work/task that is..."; used to turn a descriptive verb into a noun phrase describing work or tasks' } } }, { subTerm: '-ㄹ 때', subDef: '"when..."; used to indicate the time when an action occurs', translations: { en: { def: '"when..."; used to indicate the time when an action occurs' } } }] },
+                    { term: '뇌', mainDef: 'brain', examples: [{ kor: "뇌는 아주 중요해요.", eng: "The brain is very important." }, { kor: "사람은 뇌로 생각해요.", eng: "People think with their brains." }], translations: { en: { main: 'brain' } } },
+                    { term: '실수', mainDef: 'mistake, error', examples: [{ kor: "저는 가끔 실수를 해요.", eng: "I sometimes make mistakes." }, { kor: "괜찮아요. 그건 작은 실수예요.", eng: "It's okay. That's a small mistake." }], translations: { en: { main: 'mistake, error' } } },
+                    { term: '반절', mainDef: 'half', examples: [{ kor: "사과 반절만 주세요.", eng: "Please give me only half an apple." }, { kor: "수업이 벌써 반절 지났어요.", eng: "Half of the class has already passed." }], translations: { en: { main: 'half' } } },
+                    { term: '오해', mainDef: 'misunderstanding', examples: [{ kor: "미안해요. 그건 제 오해였어요.", eng: "I'm sorry. That was my misunderstanding." }, { kor: "우리 사이에 오해는 없어요.", eng: "There are no misunderstandings between us." }], translations: { en: { main: 'misunderstanding' } } },
+                    { term: '무슨 말이에요?', mainDef: 'What do you mean?', examples: [{ kor: "지금 무슨 말이에요?", eng: "What are you talking about right now?" }, { kor: "그게 무슨 말이에요? 잘 모르겠어요.", eng: "What does that mean? I don't understand." }], translations: { en: { main: 'What do you mean?' } } },
+                    { term: '이런 물건들', mainDef: 'these objects/things', examples: [{ kor: "저는 이런 물건들을 좋아해요.", eng: "I like things like this." }, { kor: "이런 물건들은 어디에 있어요?", eng: "Where are things like this?" }], translations: { en: { main: 'these objects/things' } }, subDefs: [{ subTerm: '이런', subDef: '"like this" or "this kind of"; demonstrative adjective', translations: { en: { def: '"like this" or "this kind of"; demonstrative adjective' } } }, { subTerm: '물건들', subDef: 'things, objects (plural)', translations: { en: { def: 'things, objects (plural)' } } }] },
+                    { term: '오른손잡이를 위해 만들어졌어요', mainDef: 'were made for right-handed people', examples: [{ kor: "이 의자는 아이들을 위해 만들었어요.", eng: "This chair was made for children." }, { kor: "이 음식은 당신을 위해 준비했어요.", eng: "I prepared this food for you." }], translations: { en: { main: 'were made for right-handed people' } }, subDefs: [{ subTerm: '-을/를 위해 verb', subDef: '"for the sake of..." or "for..."; used with verbs to express purpose or benefit', translations: { en: { def: '"for the sake of..." or "for..."; used with verbs to express purpose or benefit' } } }, { subTerm: '-지다', subDef: 'passive voice suffix; used to form passive verbs meaning "to be [verb]ed"', translations: { en: { def: 'passive voice suffix; used to form passive verbs meaning "to be [verb]ed"' } } }] },
+                    { term: '불편하겠네요', mainDef: 'That must be uncomfortable', examples: [{ kor: "다리가 아파서 불편하겠네요.", eng: "It must be uncomfortable because your leg hurts." }, { kor: "그 신발은 정말 불편하겠어요.", eng: "Those shoes must be really uncomfortable." }], translations: { en: { main: 'That must be uncomfortable' } }, subDefs: [{ subTerm: '불편하다', subDef: 'to be uncomfortable, inconvenient', translations: { en: { def: 'to be uncomfortable, inconvenient' } } }, { subTerm: '-겠네요', subDef: 'used to show an immediate reaction, realization, or empathy, often translated as "I guess … / That must be … / Sounds …"', translations: { en: { def: 'used to show an immediate reaction, realization, or empathy, often translated as "I guess … / That must be … / Sounds …"' } } }] },
+                    { term: '환경', mainDef: 'environment', examples: [{ kor: "공기가 좋은 환경에서 살고 싶어요.", eng: "I want to live in an environment with good air." }, { kor: "이곳은 환경이 아주 깨끗해요.", eng: "The environment here is very clean." }], translations: { en: { main: 'environment' } } },
+                    { term: '주변 상황', mainDef: 'surrounding situation/circumstances', examples: [{ kor: "주변 상황이 조용해요.", eng: "The surrounding situation is quiet." }, { kor: "저는 주변 상황을 잘 몰라요.", eng: "I don't know the surrounding situation well." }], translations: { en: { main: 'surrounding situation/circumstances' } }, subDefs: [{ subTerm: '주변', subDef: 'surroundings, vicinity', translations: { en: { def: 'surroundings, vicinity' } } }, { subTerm: '상황', subDef: 'situation, circumstances', translations: { en: { def: 'situation, circumstances' } } }] },
+                    { term: '불편하니까', mainDef: "because it's uncomfortable", examples: [{ kor: "몸이 불편하니까 병원에 가요.", eng: "I'm going to the hospital because I feel unwell." }, { kor: "자리가 불편하니까 일어났어요.", eng: "I stood up because the seat was uncomfortable." }], translations: { en: { main: "because it's uncomfortable" } }, subDefs: [{ subTerm: '불편하다', subDef: 'to be uncomfortable, inconvenient', translations: { en: { def: 'to be uncomfortable, inconvenient' } } }, { subTerm: '-니까', subDef: '"because" or "since"; used to state a reason or cause', translations: { en: { def: '"because" or "since"; used to state a reason or cause' } } }] },
+                    { term: '고쳐야 해요', mainDef: 'should fix/correct / have to fix', examples: [{ kor: "의자가 고장 나서 고쳐야 해요.", eng: "The chair is broken, so I have to fix it." }, { kor: "저는 나쁜 습관을 고쳐야 해요.", eng: "I have to fix my bad habits." }], translations: { en: { main: 'should fix/correct / have to fix' } }, subDefs: [{ subTerm: '왼손잡이를 고치다', subDef: 'to fix/correct left-handedness (misconception that it needs to be "fixed")', translations: { en: { def: 'to fix/correct left-handedness (misconception that it needs to be "fixed")' } } }, { subTerm: '-야 하다', subDef: '"have to…" or "must…"; used to express necessity or obligation', translations: { en: { def: '"have to…" or "must…"; used to express necessity or obligation' } } }] },
+                    { term: '잘못된 게 아니에요.', mainDef: "It's not something wrong / There's nothing wrong with it", examples: [{ kor: "그것은 잘못된 게 아니에요.", eng: "That's not wrong." }, { kor: "늦게 온 것은 잘못된 게 아니에요.", eng: "Coming late is not a wrong thing." }], translations: { en: { main: "It's not something wrong / There's nothing wrong with it" } }, subDefs: [{ subTerm: '잘못되다', subDef: 'to be wrong, to go wrong', translations: { en: { def: 'to be wrong, to go wrong' } } }, { subTerm: '-ㄴ 것', subDef: 'used to nominalize verbs by turning a verb into a noun phrase meaning "the act of …," "the fact of …," or "the thing that …"', translations: { en: { def: 'used to nominalize verbs by turning a verb into a noun phrase meaning "the act of …," "the fact of …," or "the thing that …"' } } }] },
+                    { term: '오히려', mainDef: 'rather, on the contrary', examples: [{ kor: "비가 와요. 오히려 시원하고 좋아요.", eng: "It's raining. On the contrary, it's cool and nice." }, { kor: "그 약은 효과가 없어요. 오히려 더 아파요.", eng: "That medicine has no effect. Rather, I feel sicker." }], translations: { en: { main: 'rather, on the contrary' } } },
+                    { term: '왼손잡이를 위한 물건', mainDef: 'objects/things for left-handed people', examples: [{ kor: "이것은 아이들을 위한 책이에요.", eng: "This is a book for children." }, { kor: "여기는 노인들을 위한 장소예요.", eng: "This is a place for the elderly." }], translations: { en: { main: 'objects/things for left-handed people' } }, subDefs: [{ subTerm: '-을/를 위한 noun', subDef: '"for..." or "for the sake of..."; used with nouns to express purpose or benefit', translations: { en: { def: '"for..." or "for the sake of..."; used with nouns to express purpose or benefit' } } }, { subTerm: '물건', subDef: 'thing, object', translations: { en: { def: 'thing, object' } } }] },
+                    { term: '장점', mainDef: 'advantage, strength, merit', examples: [{ kor: "이 차의 장점은 아주 빨라요.", eng: "The advantage of this car is that it's very fast." }, { kor: "성실한 것이 저의 장점이에요.", eng: "Being diligent is my strength." }], translations: { en: { main: 'advantage, strength, merit' } } },
+                    { term: '아무 것도 없어요?', mainDef: 'Isn\'t there anything? / Are there no advantages at all?', examples: [{ kor: "가방 안에 아무 것도 없어요.", eng: "There is nothing in the bag." }, { kor: "냉장고에 먹을 것이 아무 것도 없어요.", eng: "There is nothing to eat in the refrigerator." }], translations: { en: { main: 'Isn\'t there anything? / Are there no advantages at all?' } }, subDefs: [{ subTerm: '아무 것', subDef: 'anything, nothing (when used with negative)', translations: { en: { def: 'anything, nothing (when used with negative)' } } }] },
+                    { term: '유리하다', mainDef: 'advantageous, beneficial', examples: [{ kor: "키가 크면 농구에 유리해요.", eng: "Being tall is advantageous for basketball." }, { kor: "이 조건은 우리에게 유리해요.", eng: "These conditions are advantageous to us." }], translations: { en: { main: 'advantageous, beneficial' } } },
+                    { term: '연습을 해요', mainDef: 'practice / do practice', examples: [{ kor: "매일 피아노 연습을 해요.", eng: "I practice piano every day." }, { kor: "한국어 말하기 연습을 해요.", eng: "I practice speaking Korean." }], translations: { en: { main: 'practice / do practice' } } },
+                    { term: '익숙하지 않아요', mainDef: 'not familiar with / not used to', examples: [{ kor: "저는 아직 한국 생활에 익숙하지 않아요.", eng: "I'm not used to life in Korea yet." }, { kor: "저는 매운 음식이 익숙하지 않아요.", eng: "I am not used to spicy food." }], translations: { en: { main: 'not familiar with / not used to' } } },
+                    { term: '익숙하다', mainDef: 'familiar, accustomed to', examples: [{ kor: "이제는 김치가 익숙해요.", eng: "I'm used to kimchi now." }, { kor: "저는 이 동네에 아주 익숙해요.", eng: "I am very familiar with this neighborhood." }], translations: { en: { main: 'familiar, accustomed to' } } },
+                    { term: '자주 경험해서 잘 알다', mainDef: 'to know well because of frequent experience', examples: [{ kor: "저는 이 일을 자주 해서 잘 알아요.", eng: "I do this work often, so I know it well." }, { kor: "그 식당은 자주 가서 잘 알아요.", eng: "I go to that restaurant often, so I know it well." }], translations: { en: { main: 'to know well because of frequent experience' } }, subDefs: [{ subTerm: '경험하다', subDef: 'to experience', translations: { en: { def: 'to experience' } } }, { subTerm: '-아서/어서', subDef: 'used to connect clauses indicating cause or reason ("because…")', translations: { en: { def: 'used to connect clauses indicating cause or reason ("because…")' } } }, { subTerm: '알다', subDef: 'to know', translations: { en: { def: 'to know' } } }] },
+                    { term: '오늘부터', mainDef: 'from today', examples: [{ kor: "오늘부터 운동을 시작할 거예요.", eng: "I will start exercising from today." }, { kor: "오늘부터 우리는 친구예요.", eng: "From today, we are friends." }], translations: { en: { main: 'from today' } } },
+                    { term: '그 전에', mainDef: 'before that', examples: [{ kor: "수업 시작 전에 커피를 마셨어요.", eng: "I drank coffee before class started." }, { kor: "자기 전에 책을 읽어요.", eng: "I read a book before sleeping." }], translations: { en: { main: 'before that' } } },
+                    { term: '오늘 배운 단어', mainDef: 'learned words/vocabulary', examples: [{ kor: "오늘 배운 단어를 복습해요.", eng: "I'm reviewing the words I learned today." }, { kor: "오늘 배운 노래를 다시 들어요.", eng: "I'm listening again to the song I learned today." }], translations: { en: { main: 'learned words/vocabulary' } }, subDefs: [{ subTerm: '배우다', subDef: 'to learn', translations: { en: { def: 'to learn' } } }, { subTerm: '-ㄴ/은', subDef: 'used to turn a past-tense verb into an "adjective-ish" phrase that describes the following noun', translations: { en: { def: 'used to turn a past-tense verb into an "adjective-ish" phrase that describes the following noun' } } }, { subTerm: '단어', subDef: 'word, vocabulary', translations: { en: { def: 'word, vocabulary' } } }] },
+                    { term: '정리해 볼까요?', mainDef: 'Shall we summarize?', examples: [{ kor: "책상을 정리해 볼까요?", eng: "Shall we organize the desk?" }, { kor: "우리 생각을 정리해 볼까요?", eng: "Shall we organize our thoughts?" }], translations: { en: { main: 'Shall we summarize?' } }, subDefs: [{ subTerm: '정리하다', subDef: 'to summarize, to organize', translations: { en: { def: 'to summarize, to organize' } } }, { subTerm: '-아/어 볼까요?', subDef: '"Shall we…?" "How about…?"; used to suggest trying something together', translations: { en: { def: '"Shall we…?" "How about…?"; used to suggest trying something together' } } }] },
+                    { term: '맨날', mainDef: 'always, every day (colloquial)', examples: [{ kor: "그는 맨날 늦게 와요.", eng: "He is always late." }, { kor: "저는 맨날 커피를 마셔요.", eng: "I drink coffee every day." }], translations: { en: { main: 'always, every day (colloquial)' } } },
+                    { term: '부딪치다', mainDef: 'to bump into, to collide', examples: [{ kor: "길에서 사람과 부딪혔어요.", eng: "I bumped into someone on the street." }, { kor: "차가 나무에 부딪혔어요.", eng: "The car bumped into the tree." }], translations: { en: { main: 'to bump into, to collide' } } },
+                    { term: '바보', mainDef: 'fool, idiot', examples: [{ kor: "저는 바보가 아니에요.", eng: "I am not a fool." }, { kor: "그렇게 말하지 마세요. 바보 같아요.", eng: "Don't say that. It sounds foolish." }], translations: { en: { main: 'fool, idiot' } } },
+                    { term: '자리를 바꿔 앉으면 되죠', mainDef: 'We just need to switch seats / All we have to do is change seats', examples: [{ kor: "피곤하면 조금 쉬면 돼요.", eng: "If you are tired, you just need to rest a bit." }, { kor: "모르면 질문하면 돼요.", eng: "If you don't know, you just have to ask." }], translations: { en: { main: 'We just need to switch seats / All we have to do is change seats' } }, subDefs: [{ subTerm: '자리', subDef: 'seat, place', translations: { en: { def: 'seat, place' } } }, { subTerm: '바꿔 앉다', subDef: 'to switch seats, to change seats', translations: { en: { def: 'to switch seats, to change seats' } } }, { subTerm: '-면/으면 되다', subDef: 'used to say that one condition or action is enough, often translated as "all you have to do is …" or "it\'s fine if …."', translations: { en: { def: '"all you have to do is …" or "it\'s fine if …."' } } }, { subTerm: '-죠', subDef: 'informal sentence ending used for confirmation or emphasis', translations: { en: { def: 'informal sentence ending used for confirmation or emphasis' } } }] },
+                    { term: '오늘은 여기까지 할게요', mainDef: "Let's stop here for today / That's all for today", examples: [{ kor: "수업은 여기까지 할게요.", eng: "Let's stop the class here." }, { kor: "오늘은 이 일만 할게요.", eng: "I will only do this work for today." }], translations: { en: { main: "Let's stop here for today / That's all for today" } }, subDefs: [{ subTerm: '여기까지', subDef: 'up to here, this far', translations: { en: { def: 'up to here, this far' } } }, { subTerm: '-게요', subDef: 'used to politely express your decision or intention to do something, especially when it affects the listener', translations: { en: { def: 'used to politely express your decision or intention to do something, especially when it affects the listener' } } }] },
+                ];
+                const sentences = [
+                    { id: 1, parts: ["전 세계에서 약 10%의 사람들이 \"", "\"예요."], answer: "왼손잡이", bank: ["왼손잡이", "오른손잡이", "예술가", "과학자"], eng_parts: ["Approximately 10% of people worldwide are \"", "\"."], eng_answer: "left-handed", eng_hint: "People who use their left hand.", eng_explanation: "The dialogue states that about 10% of the world's population is left-handed.", eng_wrongAnswerExplanations: { "오른손잡이": "'Right-handed people' are mentioned for comparison, but they are not the main topic.", "예술가": "This is a stereotype discussed, not a fact about the population.", "과학자": "This is a stereotype discussed, not a fact about the population." } },
+                    { id: 2, parts: ["왼손잡이에 대한 \"", "\"도 많아요."], answer: "편견", bank: ["편견", "장점", "단점", "사실"], eng_parts: ["There are also many \"", "\" about left-handed people."], eng_answer: "prejudices", eng_hint: "A preconceived opinion.", eng_explanation: "Yuna mentions that there are many prejudices about left-handed people, such as the idea that they are more creative.", eng_wrongAnswerExplanations: { "장점": "Advantages are discussed, but the specific context is about incorrect beliefs.", "단점": "Disadvantages are discussed, but the specific context is about incorrect beliefs.", "사실": "The statement is about beliefs, many of which are not facts." } },
+                    { id: 3, parts: ["보통 사람들은 왼손잡이가 더 \"", "\" 사람이라고 생각해요."], answer: "창의적인", bank: ["예쁜", "강한", "창의적인", "멍청한"], eng_parts: ["People often think left-handed people are more ", " people."], eng_answer: "creative", eng_hint: "Related to thinking of new things.", eng_explanation: "The dialogue identifies the idea of being more '창의적' (creative) as the most common stereotype associated with left-handed people.", eng_wrongAnswerExplanations: { "예쁜": "'Pretty' is not a stereotype mentioned in the dialogue.", "강한": "'Strong' is not a stereotype mentioned in the dialogue.", "멍청한": "'Stupid' is not a stereotype mentioned in the dialogue." } },
+                    { id: 4, parts: ["우디가 친구 한 명을 보고 모든 왼손잡이가 예술가라고 생각하는 건 \"", "\"예요."], answer: "일반화", bank: ["사실", "일반화", "우연", "과학"], eng_parts: ["Woody thinking all left-handed people are artists after seeing one friend is a(n) \"", "\"."], eng_answer: "generalization", eng_hint: "Applying a specific case to a general rule.", eng_explanation: "Yuna points out that concluding all lefties are artists based on one friend is a '일반화' (generalization).", eng_wrongAnswerExplanations: { "사실": "Woody's thought is the opposite of a fact.", "우연": "'Coincidence' doesn't describe an act of flawed reasoning.", "과학": "'Science' does not fit the context." } },
+                    { id: 5, parts: ["다빈치, 아인슈타인, 스티브 잡스가 왼손잡이인 건 \"", "\"이에요."], answer: "우연", bank: ["비밀", "사실", "과학", "우연"], eng_parts: ["The fact that Da Vinci, Einstein, and Steve Jobs were left-handed is a \"", "\"."], eng_answer: "coincidence", eng_hint: "Happening by chance.", eng_explanation: "Yuna explains that famous left-handed people are just a '우연' (coincidence), not proof of a rule.", eng_wrongAnswerExplanations: { "비밀": "'Secret' does not fit the context.", "사실": "While it is a fact that they were left-handed, Yuna's point is that the collection of these facts is a coincidence.", "과학": "'Science' does not fit the context." } },
+                    { id: 6, parts: ["왼손잡이가 실수를 많이 한다는 건 반절은 사실이고, 반절은 \"", "\"예요."], answer: "오해", bank: ["이야기", "오해", "가짜", "종교"], eng_parts: ["The idea that left-handed people make a lot of mistakes is half true and half a(n) \"", "\"."], eng_answer: "misunderstanding", eng_hint: "Incorrectly understanding something.", eng_explanation: "Yuna clarifies that it's an '오해' (misunderstanding) of the *reason* for the mistakes, which is the environment.", eng_wrongAnswerExplanations: { "이야기": "'Story' does not fit the context of explaining a flawed belief.", "가짜": "'Fake' is too strong and simple.", "종교": "'Religion' is irrelevant here." } },
+                    { id: 7, parts: ["가위나 마우스 같은 물건을 쓸 때 왼손잡이는 \"", "\"."], answer: "불편해요", bank: ["불편해요", "유리해요", "익숙해요", "괜찮아요"], eng_parts: ["When using things like scissors or a mouse, left-handed people feel \"", "\"."], eng_answer: "uncomfortable", eng_hint: "Not comfortable.", eng_explanation: "The dialogue explains that using tools designed for right-handers is '불편해요' (uncomfortable/inconvenient) for left-handers.", eng_wrongAnswerExplanations: { "유리해요": "'Advantageous' is the opposite of the correct answer.", "익숙해요": "'Familiar' is unlikely, as the tool is designed for the other hand.", "괜찮아요": "'It's okay' contradicts the point being made." } },
+                    { id: 8, parts: ["왼손잡이가 실수를 많이 하는 건 왼손잡이의 문제가 아니라 \"", "\"의 문제예요."], answer: "환경", bank: ["환경", "개인", "사회", "유전"], eng_parts: ["The reason left-handed people make many mistakes is not a problem with them, but a problem of the \"", "\"."], eng_answer: "environment", eng_hint: "The surroundings.", eng_explanation: "The mistakes are caused by an '환경' (environment) designed for right-handed people.", eng_wrongAnswerExplanations: { "개인": "'Individual' is what Yuna argues against; she says it's not a personal problem.", "사회": "'Society' is a broader concept; 'environment' is more specific to the tools and situations mentioned.", "유전": "'Genetics' is not discussed as the reason for making mistakes." } },
+                    { id: 9, parts: ["테니스, 복싱, 야구 같은 스포츠에서는 왼손잡이가 \"", "\"."], answer: "유리해요", bank: ["유리해요", "불리해요", "상관없어요", "위험해요"], eng_parts: ["In sports like tennis, boxing, and baseball, left-handed people are \"", "\"."], eng_answer: "at an advantage", eng_hint: "In a better position.", eng_explanation: "Left-handers have an advantage in certain sports because opponents are not used to them. Therefore, it is '유리해요' (advantageous).", eng_wrongAnswerExplanations: { "불리해요": "'Disadvantageous' is the opposite of the correct answer.", "상관없어요": "'It doesn't matter' is incorrect, as an advantage is explicitly mentioned.", "위험해요": "'Dangerous' is not mentioned or implied." } },
+                    { id: 10, parts: ["많은 선수들이 오른손잡이와 연습을 해서 왼손잡이에 ", " 않아요."], answer: "익숙하지", bank: ["익숙하지", "불편하지", "유리하지", "창의적이지"], eng_parts: ["Because many athletes practice with right-handers, they are not ", " to left-handers."], eng_answer: "used", eng_hint: "Accustomed to", eng_explanation: "Yuna explains that the advantage in sports comes from the fact that opponents are not '익숙하다' (used to/familiar with) playing against left-handed people because they mostly practice with right-handed people.", eng_wrongAnswerExplanations: { "불편하지": "While opponents might feel uncomfortable, the specific reason given is the lack of familiarity.", "유리하지": "This describes the left-hander's position, not the opponent's feeling of familiarity.", "창의적이지": "This does not fit the context of familiarity or practice." } }
+                ];
+                const discussionQuestions = [
+                    { num: 1, kor: "여러분은 왼손잡이예요, 오른손잡이예요?", eng: "Are you left-handed or right-handed?", vocab: [ { term: "왼손잡이", meaning_eng: "A person who primarily uses their left hand.", context: "오늘의 주제는 ‘왼손잡이’예요.", context_eng: "Today's topic is 'left-handed people'." }, { term: "오른손잡이", meaning_eng: "A person who primarily uses their right hand.", context: "‘오른손잡이는 오른손을 자주 쓰는 사람’이란 뜻이죠.", context_eng: "'right-handed person' means 'a person who frequently uses their right hand,' right?" } ] },
+                    { num: 2, kor: "우디는 \"왼손잡이는 불편하니까 고쳐야 해요!\"라고 말했어요. 왼손잡이를 오른손잡이로 바꿔야 할까요? 여러분은 어떻게 생각해요?", eng: "Woody said, \"Left-handedness is inconvenient, so it should be fixed!\" Should left-handed people be changed to right-handed? What do you think?", vocab: [ { term: "불편하다", meaning_eng: "To be uncomfortable, inconvenient.", context: "아... 불편하겠네요.", context_eng: "Ah... that must be uncomfortable." }, { term: "고치다", meaning_eng: "To fix, to correct.", context: "그럼... 왼손잡이는 불편하니까 고쳐야 해요!", context_eng: "Then... left-handed people should be fixed because it's inconvenient!" } ] },
+                    { num: 3, kor: "왼손잡이를 위한 물건을 더 많이 만들어야 할까요? 만약 여러분이 왼손잡이를 위한 물건을 만들 수 있다면, 어떤 물건을 만들고 싶어요?", eng: "Should more products be made for left-handed people? If you could create a product for left-handed people, what would you want to make?", vocab: [ { term: "왼손잡이를 위한 물건", meaning_eng: "Products for left-handed people.", context: "오히려 왼손잡이를 위한 물건을 더 많이 만들어야 해요!", context_eng: "Rather, we should make more things for left-handed people!" } ] },
+                    { num: 4, kor: "스포츠를 할 때 왼손잡이가 유리하다고 해요. 그럼 오른손잡이가 스포츠를 할 때 왼손으로 연습해야 한다고 생각해요?", eng: "They say being left-handed is advantageous in sports. Do you think right-handed people should practice with their left hand when playing sports?", vocab: [ { term: "유리하다", meaning_eng: "To be advantageous, beneficial.", context: "테니스, 복싱, 야구 같은 스포츠에서는 왼손잡이가 유리해요.", context_eng: "In sports like tennis, boxing, and baseball, left-handed people have an advantage." }, { term: "연습하다", meaning_eng: "To practice.", context: "많은 선수들이 오른손잡이랑 연습을 해요.", context_eng: "Many athletes practice with right-handed people." } ] },
+                    { num: 5, kor: "다른 상황에서도 왼손잡이가 유리할까요?", eng: "Could being left-handed be advantageous in other situations too?", vocab: [ { term: "상황", meaning_eng: "Situation, circumstances.", context: "‘환경’은 ‘주변 상황’이라는 뜻이에요.", context_eng: "'Environment' means 'surrounding situation'." }, { term: "유리하다", meaning_eng: "To be advantageous, beneficial.", context: "테니스, 복싱, 야구 같은 스포츠에서는 왼손잡이가 유리해요.", context_eng: "In sports like tennis, boxing, and baseball, left-handed people have an advantage." } ] },
+                    { num: 6, kor: "“왼손잡이는 오른쪽 뇌를 많이 써서 더 창의적이다”는 과학적 사실이 아니에요. 그런데 왜 많은 사람들은 이런 오해를 할까요?", eng: "“Left-handed people are more creative because they use the right side of their brain more” is not a scientific fact. Why do so many people have this misconception?", vocab: [ { term: "창의적이다", meaning_eng: "To be creative.", context: "왼손잡이가 더 창의적이다.", context_eng: "Left-handed people are more creative." }, { term: "오해", meaning_eng: "Misunderstanding.", context: "반절은 사실이고, 반절은 오해예요.", context_eng: "Half is true, half is a misunderstanding." } ] },
+                    { num: 7, kor: "'창의적인 사람'은 어떤 사람일까요? 무엇이 사람들을 창의적으로 만든다고 생각해요?", eng: "What kind of person is a 'creative person'? What do you think makes people creative?", vocab: [ { term: "창의적인 사람", meaning_eng: "A creative person.", context: "왼손잡이가 더 창의적이다.", context_eng: "Left-handed people are more creative." } ] },
+                    { num: 8, kor: "왼손잡이에 대한 다른 편견을 알고 있어요?", eng: "Do you know of any other prejudices against left-handed people?", vocab: [ { term: "-에 대한", meaning_eng: "About or regarding (a topic).", context: "그런데 왼손잡이에 대한 편견도 많아요.", context_eng: "But there are also many prejudices about left-handed people." }, { term: "편견", meaning_eng: "Prejudice, bias.", context: "그런데 왼손잡이에 대한 편견도 많아요.", context_eng: "But there are also many prejudices about left-handed people." } ] },
+                    { num: 9, kor: "왜 오른손잡이에 대한 편견은 없을까요?", eng: "Why aren't there prejudices against right-handed people?", vocab: [ { term: "-에 대한", meaning_eng: "About or regarding (a topic).", context: "그런데 왼손잡이에 대한 편견도 많아요.", context_eng: "But there are also many prejudices about left-handed people." }, { term: "편견", meaning_eng: "Prejudice, bias.", context: "그런데 왼손잡이에 대한 편견도 많아요.", context_eng: "But there are also many prejudices about left-handed people." } ] },
+                    { num: 10, kor: "왜 사람들은 자주 우연을 일반화할까요?", eng: "Why do people often generalize from coincidences?", vocab: [ { term: "우연", meaning_eng: "Coincidence, chance.", context: "그건 우연이에요.", context_eng: "That's coincidence." }, { term: "일반화", meaning_eng: "Generalization.", context: "그건 일반화예요.", context_eng: "That's generalization." } ] }
+                ];
+                return { scriptContent, vocabAndGrammarList, sentences, discussionQuestions };
+            }, []);
+
+            const { vocabMap, highlightData } = useMemo(() => {
+                const vocabMap = new Map(vocabAndGrammarList.map(item => [item.term, item]));
+                const wordMap = new Map();
+                vocabAndGrammarList.forEach(item => wordMap.set(item.term, item));
+                const allWords = Array.from(wordMap.keys()).sort((a, b) => b.length - a.length);
+                const regexParts = [];
+                allWords.forEach(word => {
+                    const item = wordMap.get(word);
+                    if (item.variants) item.variants.forEach(v => regexParts.push(v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+                    let processed = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s*');
+                    if (word.endsWith('다')) {
+                        const parts = word.split(' ');
+                        const lastPart = parts[parts.length - 1];
+                        if (lastPart.endsWith('다')) {
+                            const stem = lastPart.slice(0, -1).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                            const firstParts = parts.slice(0, -1).map(p => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+                            regexParts.push([...firstParts, `${stem}[가-힣]*`].join('\\s*'));
+                        } else { regexParts.push(`${processed.slice(0, -1)}[가-힣]*`); }
+                    } else { regexParts.push(processed); }
+                });
+                const regexString = [...new Set(regexParts)].sort((a,b) => b.length - a.length).join('|');
+                return { vocabMap, highlightData: { regex: new RegExp(`(${regexString})`, 'g'), wordMap, sortedWords: allWords }};
+            }, [vocabAndGrammarList]);
+
+            const tabs = useMemo(() => {
+                const baseTabs = [
+                    { name: '대화 스크립트 (Transcript)', icon: <Video className="w-6 h-6"/>, content: <VideoMaterialsTab scriptContent={scriptContent} vocabAndGrammarList={vocabAndGrammarList} highlightData={highlightData} vocabMap={vocabMap} /> },
+                    { name: '핵심 어휘 (Key Vocabulary)', icon: <List className="w-6 h-6"/>, content: (
+                        <div>
+                            <h2 className="text-3xl font-extrabold text-gray-900 mb-8 flex items-center gap-3"><List className="w-8 h-8 text-green-600"/> 핵심 어휘 (Key Vocabulary)</h2>
+                            <div className="w-full overflow-y-auto" style={{maxHeight: `calc(100vh - 150px)`}}>
+                                <div className="border rounded-lg bg-white p-2 shadow-lg">
+                                    <div className="space-y-1">{vocabAndGrammarList.map(item => <VocabItem key={item.term} item={item} />)}</div>
+                                </div>
+                            </div>
+                        </div>
+                    )},
+                    { name: '내용 확인 퀴즈 (Comprehension Check-Up)', icon: <BookOpen className="w-6 h-6"/>, content: (
+                        <div>
+                            <h2 className="text-3xl font-extrabold text-gray-900 mb-8 flex items-center gap-3"><BookOpen className="w-8 h-8 text-green-600"/> 내용 확인 퀴즈 (Comprehension Check-Up)</h2>
+                            <ComprehensionQuiz sentences={sentences} />
+                        </div>
+                    )},
+                    { name: '생각해 보기 (Food For Thought)', icon: <MessageSquare className="w-6 h-6"/>, content: (
+                        <div>
+                            <h2 className="text-3xl font-extrabold text-gray-900 mb-8 flex items-center gap-3"><MessageSquare className="w-8 h-8 text-green-600"/> 생각해 보기 (Food For Thought)</h2>
+                            <DiscussionSection questions={discussionQuestions} />
+                        </div>
+                    ) }
+                ];
+                return baseTabs;
+            }, [layoutMode, scriptContent, vocabAndGrammarList, sentences, discussionQuestions, highlightData, vocabMap]);
+
+            return (
+                <div className="bg-gray-50 text-gray-800 p-4 sm:p-6 md:p-8">
+                    <div className="mx-auto transition-all duration-300" style={{ maxWidth: containerWidth }}>
+                        <header className="text-center mb-12">
+                            <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-2">왼손잡이에 대한 오해와 진실</h1>
+                            <p className="text-xl text-gray-500" style={{fontFamily: "'Nanum Gothic', sans-serif"}}>Misconceptions and Truths about Left-Handedness</p>
+                        </header>
+                        <Tabs tabs={tabs} />
+                        {layoutMode === 'mobile' && (
+                            <div className="pt-10">
+                                <h2 className="text-3xl font-extrabold text-gray-900 mb-8 flex items-center gap-3"><List className="w-8 h-8 text-green-600"/> 핵심 어휘 (Key Vocabulary)</h2>
+                                <div className="w-full">
+                                    <div className="border rounded-lg bg-white p-2 shadow-lg">
+                                        <div className="space-y-1">{vocabAndGrammarList.map(item => <VocabItem key={item.term} item={item} />)}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+    
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
