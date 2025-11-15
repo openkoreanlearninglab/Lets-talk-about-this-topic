@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘 일을 다 못했어요</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* 기본 폰트 설정 */
+        body { font-family: 'Nanum Gothic', sans-serif; }
+        /* 어휘 목록 사이드바 폰트 */
+        .vocab-sidebar { font-family: 'IBM Plex Sans KR', sans-serif; }
+        /* 어휘 팝업 스타일 */
+        .vocab-popup { font-family: 'Nanum Gothic', sans-serif; z-index: 50; max-width: 320px; white-space: normal; }
+        /* 호버 툴팁 스타일 */
+        .hover-tooltip { position: fixed; z-index: 9999; background: white; border: 2px solid #22c55e; border-radius: 8px; padding: 12px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); max-width: 320px; font-family: 'Nanum Gothic', sans-serif; animation: fadeIn 0.15s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        /* 일반 어휘 강조 스타일 */
+        .highlight-general { font-weight: 600; color: #374151; cursor: pointer; position: relative; transition: background-color 0.2s; }
+        /* 마우스 호버 또는 활성화 시 스타일 */
+        .highlight-general:hover, .active-highlight { background-color: #dcfce7; border-radius: 3px; }
+        .script-highlight { background-color: #e0f2fe; border-radius: 8px; }
+        .vocab-highlight { background-color: #dcfce7; border: 2px solid #22c55e; border-radius: 8px; }
+
+        /* --- 말풍선 스타일 --- */
+        /* Updated tail styles to match new class names */
+        .bubble-tail-left.bubble-kkn20::after { /* Yuna Style 1 */
+            content: "";
+            position: absolute;
+            bottom: 6px;
+            left: -8px;
+            width: 0px;
+            height: 0px;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 8px solid #dcfce7; /* green-100 */
+            transition: border-color 0.3s;
+        }
+        /* Add style for Yuna Style 2 if needed */
+        /* .bubble-tail-left.bubble-kkn30::after { ... } */
+
+        .bubble-tail-right.bubble-other::after { /* Woody Style */
+            content: "";
+            position: absolute;
+            bottom: 6px;
+            right: -8px;
+            width: 0px;
+            height: 0px;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-left: 8px solid white;
+            transition: border-color 0.3s;
+        }
+
+        /* Active styles targeting new classes */
+        .bubble-active.bubble-tail-left.bubble-kkn20::after,
+        /* Add active style for Yuna Style 2 if needed */
+        /* .bubble-active.bubble-tail-left.bubble-kkn30::after, */
+        .bubble-active.bubble-tail-right.bubble-other::after {
+            border-right-color: #fef9c3; /* yellow-100 */
+            border-left-color: #fef9c3; /* yellow-100 */
+        }
+
+
+        /* --- 디바이스별 레이아웃 스타일 --- */
+        [data-layout-mode="split"] .video-materials-content { display: flex; flex-direction: row; gap: 1.5rem; }
+        [data-layout-mode="split"] .video-wrapper { width: 60%; position: sticky; top: 1rem; align-self: flex-start; }
+        [data-layout-mode="split"] .script-wrapper { width: 40%; max-height: calc(100vh - 4rem); overflow-y: auto; }
+        [data-layout-mode="split"] .vocab-sidebar, [data-layout-mode="mobile"] .vocab-sidebar { display: none; }
+        [data-layout-mode="mobile"] .video-materials-content, [data-layout-mode="mobile"] .video-materials-content > div { display: flex; flex-direction: column; }
+        
+        /* 인쇄 전용 스타일 */
+        .print-only { display: none; }
+        @media print {
+            @page { size: A4; margin: 0.75cm 1cm; }
+            .no-print { display: none !important; }
+            .print-only { display: inline-block !important; }
+            body, html { background: white !important; font-size: 9pt; }
+            .mx-auto { max-width: none !important; padding: 0 !important; margin: 0 !important; border: none !important; box-shadow: none !important; }
+            body > #root > div { padding: 0 !important; }
+            * { box-shadow: none !important; border-color: transparent !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            p, h1, h2, h3, h4, span, li { color: black !important; }
+            p, li { line-height: 1.5; }
+            header.text-center { margin-bottom: 1rem !important; }
+            .pt-10 { padding-top: 1rem !important; }
+            .mb-8 { margin-bottom: 0.4pt !important; }
+            h1, h2 { font-size: 12pt !important; margin-bottom: 15px; }
+            h3 { font-size: 12pt !important; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="root"></div>
+    <script type="text/babel">
+        /**
+         * @typedef {Object} ScriptLine
+         * @property {string} id - Unique identifier (e.g., 's1')
+         * @property {string} speaker - Speaker name ('유나' | '우디')
+         * @property {string} kor - Korean text
+         * @property {string} eng - English translation
+         * @property {[number, number]} [time] - Optional [start, end] timestamps
+         */
+
+        // --- 아이콘 컴포넌트 ---
+        const Icon = React.memo(({ children, className = 'w-6 h-6' }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>);
+        const Video = ({ className }) => <Icon className={className}><path d="m22 8-6 4 6 4V8Z"></path><rect width="14" height="12" x="2" y="6" rx="2" ry="2"></rect></Icon>;
+        const BookOpen = ({ className }) => <Icon className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></Icon>;
+        const MessageSquare = ({ className }) => <Icon className={className}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></Icon>;
+        const ThumbsUp = ({ className }) => <Icon className={className}><path d="M7 10v12"></path><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a2 2 0 0 1 3 1.88V5Z"></path></Icon>;
+        const List = ({ className }) => <Icon className={className}><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></Icon>;
+        const Spinner = ({ className = 'w-5 h-5' }) => (
+            <svg className={`animate-spin ${className}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+        );
+
+        // --- 공용 컴포넌트: 번역 버튼 ---
+        const TranslateButton = React.memo(({ textToTranslate }) => {
+            const { useState, useEffect, useRef, useCallback } = React;
+            const [translation, setTranslation] = useState(null);
+            const [isLoading, setIsLoading] = useState(false);
+            const [error, setError] = useState(null);
+            const [show, setShow] = useState(false);
+            const [buttonLang, setButtonLang] = useState('Translation');
+            const isMounted = useRef(true);
+
+            useEffect(() => {
+                isMounted.current = true;
+                setButtonLang('English');
+                return () => { isMounted.current = false; };
+            }, []);
+
+            const handleTranslate = useCallback(async () => {
+                if (show) { setShow(false); return; }
+                if (translation) { setShow(true); return; }
+                if (!textToTranslate.trim()) return;
+
+                setIsLoading(true);
+                setError(null);
+                try {
+                    const targetLanguage = 'English';
+                    const prompt = `Translate the following Korean text to ${targetLanguage}. Provide only the most natural-sounding translation, without any additional explanations or quotation marks.`;
+                    const payload = { contents: [{ role: "user", parts: [{ text: prompt }, { text: textToTranslate }] }] };
+                    // NOTE: The API key is intentionally left blank.
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    const result = await response.json();
+                    if (isMounted.current && result.candidates?.[0]?.content.parts[0].text) {
+                        setTranslation(result.candidates[0].content.parts[0].text.trim());
+                        setShow(true);
+                    } else { throw new Error("Invalid API response format."); }
+                } catch (err) { if (isMounted.current) setError("번역에 실패했어요."); }
+                finally { if (isMounted.current) setIsLoading(false); }
+            }, [show, translation, textToTranslate]);
+
+            return (
+                <div className="mt-1 no-print">
+                    <button onClick={handleTranslate} disabled={isLoading} className="text-xs text-gray-500 hover:text-gray-800 font-semibold py-1 px-2 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors disabled:text-gray-300">{isLoading ? '번역 중...' : (show ? '번역 숨기기' : `번역 (${buttonLang})`)}</button>
+                    {show && translation && <p className="text-gray-600 text-base mt-2 mb-2 whitespace-pre-wrap">{translation}</p>}
+                    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+                </div>
+            );
+        });
+
+        // --- [동영상 자료] 탭 관련 컴포넌트 ---
+        const HighlightedText = React.memo(({ text, highlightData, onWordHover, onWordLeave, onWordClick, lineId, activeWordId }) => {
+            if (!text || !highlightData) return text;
+            const { regex, wordMap, sortedWords } = highlightData;
+            const parts = text.split(regex);
+            return (<>{parts.map((part, index) => {
+                if (!part) return null;
+                if (index % 2 === 0) return part;
+                const trimmedPart = part.trim();
+                const baseForm = sortedWords.find(word => {
+                    const vocabItem = wordMap.get(word);
+                    if (vocabItem.variants && vocabItem.variants.includes(trimmedPart)) return true;
+                    const cleanPart = trimmedPart.replace(/\s/g, '');
+                    const cleanWord = word.replace(/\s/g, '');
+                    if (word.endsWith('다')) return cleanPart.startsWith(cleanWord.slice(0, -1));
+                    return cleanPart.startsWith(cleanWord);
+                });
+                if (!baseForm) return part;
+                const info = wordMap.get(baseForm);
+                if (!info) return part;
+                const uniqueWordId = `${lineId}-${index}-${baseForm}`;
+                const classes = ['highlight-general', 'font-bold', activeWordId === uniqueWordId ? 'active-highlight' : ''].join(' ');
+                return <span
+                    key={index}
+                    className={classes}
+                    onMouseEnter={(e) => onWordHover(e, baseForm, lineId, index)}
+                    onMouseLeave={onWordLeave}
+                    onClick={(e) => onWordClick && onWordClick(e, baseForm)}
+                >{part}</span>;
+            })}</>);
+        });
+
+        const HoverTooltip = React.memo(({ data, position }) => {
+            if (!data || !position) return null;
+            return (
+                <div
+                    className="hover-tooltip"
+                    style={{ left: `${position.x}px`, top: `${position.y}px` }}
+                    onClick={(e) => e.stopPropagation()} 
+                >
+                    <p className="font-bold text-lg text-green-700 mb-2">{data.term}</p>
+                    <p className="text-gray-700 text-base">{data.mainDef}</p>
+                    {data.subDefs && data.subDefs.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-gray-200">
+                            <ul className="space-y-1">
+                                {data.subDefs.map((sub, i) => (
+                                    <li key={i} className="text-sm">
+                                        <span className="font-semibold text-gray-600">{sub.subTerm}:</span>{' '}
+                                        <span className="text-gray-600">{sub.subDef}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                </div>
+            );
+        });
+
+        const VocabItem = React.memo(React.forwardRef(({ item, isHighlighted }, ref) => {
+            const { useState } = React;
+            const [showExamples, setShowExamples] = useState(false);
+
+            return (
+                <div ref={ref} className={`p-4 rounded-lg border-b ${isHighlighted ? 'vocab-highlight' : 'bg-white'}`}>
+                    <p className="font-bold text-lg text-green-700">{item.term}</p>
+                    <div className="pl-4 mt-2 border-l-2">
+                        <p className="text-gray-700">{item.mainDef}</p>
+                        {item.subDefs && item.subDefs.length > 0 && (
+                            <div className="mt-3 pt-3 border-t">{item.subDefs.map((sub, index) => (
+                                <div key={index} className="text-sm mt-2">
+                                    <p className="font-semibold">{sub.subTerm}</p>
+                                    <p className="text-gray-600 pl-2">{sub.subDef}</p>
+                                </div>
+                            ))}</div>
+                        )}
+                    </div>
+                    {item.examples && item.examples.length > 0 && (
+                        <div className="mt-3 no-print">
+                            <button onClick={() => setShowExamples(!showExamples)} className="text-xs bg-green-200 hover:bg-green-300 text-gray-600 py-1 px-2 rounded-md">
+                                {showExamples ? 'Close Examples' : 'Sentence Examples'}
+                            </button>
+                            {showExamples && (
+                                <div className="mt-3 p-3 bg-green-50 rounded-lg space-y-3 text-sm">
+                                    {item.examples.map((ex, index) => (
+                                        <div key={index}>
+                                            <p className="font-medium text-gray-800">{ex.kor}</p>
+                                            <p className="text-gray-400 hover:text-gray-700 transition-colors">{ex.eng}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            );
+        }));
+
+        const VideoMaterialsTab = ({scriptContent, vocabAndGrammarList, highlightData, vocabMap}) => {
+            const { useState, useRef, useEffect, useCallback, useMemo } = React;
+            const [activeWordId, setActiveWordId] = useState(null);
+            const [player, setPlayer] = useState(null);
+            const [activeScriptLine, setActiveScriptLine] = useState(null);
+            const [isSyncEnabled, setIsSyncEnabled] = useState(true);
+            const [hoverPopupData, setHoverPopupData] = useState(null);
+            const [pinnedPopupData, setPinnedPopupData] = useState(null); // --- 클릭 고정 팝업 상태 ---
+            const [highlightedVocab, setHighlightedVocab] = useState(null);
+            const [translationsVisible, setTranslationsVisible] = useState({});
+            const [playerHeight, setPlayerHeight] = useState(0);
+            const [isVocabSidebarVisible, setIsVocabSidebarVisible] = useState(true);
+            const [isPortrait, setIsPortrait] = useState(window.matchMedia("(orientation: portrait)").matches);
+
+            const scriptLineRefs = useRef({});
+            const vocabRefs = useRef({});
+            const intervalRef = useRef();
+            const playerContainerRef = useRef(null);
+            const hoverTimeoutRef = useRef(null);
+
+            const activeScriptLineRef = useRef(activeScriptLine);
+            activeScriptLineRef.current = activeScriptLine;
+
+            // --- Phase 2: Indexing for performance ---
+            const timeIndex = useMemo(() => {
+                return scriptContent
+                    .filter(line => line.time)
+                    .map(line => ({ start: line.time[0], end: line.time[1], id: line.id }))
+                    .sort((a, b) => a.start - b.start);
+            }, [scriptContent]);
+
+            const onPlayerReady = useCallback((event) => setPlayer(event.target), []);
+
+            const setupPlayer = useCallback(() => {
+                if (window.YT && window.YT.Player) {
+                    const newPlayer = new window.YT.Player('youtube-player', {
+                        height: '100%',
+                        width: '100%',
+                        videoId: 'jbfUEVOCSds',
+                        events: { 'onReady': onPlayerReady }
+                    });
+                    setPlayer(newPlayer);
+                }
+            }, [onPlayerReady]);
+
+            useEffect(() => {
+                const mediaQuery = window.matchMedia("(orientation: portrait)");
+                const handleOrientationChange = (e) => setIsPortrait(e.matches);
+                mediaQuery.addEventListener('change', handleOrientationChange);
+                return () => mediaQuery.removeEventListener('change', handleOrientationChange);
+            }, []);
+
+            useEffect(() => {
+                if (window.YT && document.getElementById('youtube-player')) {
+                    if (!player) setupPlayer();
+                } else if (!window.YT) {
+                    window.onYouTubeIframeAPIReady = setupPlayer;
+                }
+                return () => { 
+                    if (intervalRef.current) clearInterval(intervalRef.current); 
+                    if (window.playClipTimer) clearTimeout(window.playClipTimer);
+                };
+            }, [setupPlayer, player]);
+
+            useEffect(() => {
+                let ro;
+                if (playerContainerRef.current) {
+                    const updateHeight = () => { if (playerContainerRef.current) setPlayerHeight(playerContainerRef.current.offsetHeight); };
+                    ro = new ResizeObserver(updateHeight);
+                    ro.observe(playerContainerRef.current);
+                    updateHeight();
+                }
+                return () => ro?.disconnect();
+            }, []);
+
+            useEffect(() => {
+                if (player && isSyncEnabled) {
+                    intervalRef.current = setInterval(() => {
+                        if (player.getCurrentTime) {
+                            const currentTime = player.getCurrentTime();
+                            const currentLine = timeIndex.find(line => currentTime >= line.start && currentTime < line.end);
+                            const currentLineId = currentLine ? currentLine.id : null;
+                            if (activeScriptLineRef.current !== currentLineId) {
+                                setActiveScriptLine(currentLineId);
+                            }
+                        }
+                    }, 250);
+                } else {
+                    clearInterval(intervalRef.current);
+                }
+                return () => clearInterval(intervalRef.current);
+            }, [player, isSyncEnabled, timeIndex]);
+
+            useEffect(() => {
+                if (activeScriptLine && isSyncEnabled) {
+                    const lineElement = scriptLineRefs.current[activeScriptLine];
+                    if (lineElement && playerContainerRef.current) {
+                        const playerBottom = playerContainerRef.current.getBoundingClientRect().bottom;
+                        const gap = 19;
+                        const targetTop = playerBottom + gap;
+                        const elementTop = lineElement.getBoundingClientRect().top;
+                        const scrollByAmount = elementTop - targetTop;
+                        if (Math.abs(scrollByAmount) > 5) {
+                            window.scrollBy({ top: scrollByAmount, behavior: 'smooth' });
+                        }
+                    }
+                }
+            }, [activeScriptLine, isSyncEnabled]);
+
+            // --- 클릭으로 팝업 고정 해제 ---
+            useEffect(() => {
+                const handleClickAway = () => {
+                    if (pinnedPopupData) {
+                        setPinnedPopupData(null);
+                        setHighlightedVocab(null);
+                    }
+                };
+                window.addEventListener('click', handleClickAway);
+                return () => {
+                    window.removeEventListener('click', handleClickAway);
+                };
+            }, [pinnedPopupData]);
+
+            const handlePlayClip = useCallback((line) => {
+                if (player && player.seekTo && line.time) {
+                    const [start, end] = line.time;
+                    // Calculate duration in milliseconds
+                    const duration = (end - start) * 1000;
+                    
+                    player.seekTo(start);
+                    if (player.playVideo) player.playVideo();
+                    
+                    // Clear any existing timer to prevent multiple pauses
+                    if (window.playClipTimer) {
+                        clearTimeout(window.playClipTimer);
+                    }
+                    
+                    // Set a new timer to pause the video after the clip duration
+                    window.playClipTimer = setTimeout(() => {
+                        if (player.pauseVideo) player.pauseVideo();
+                    }, duration > 0 ? duration : 1000); // Ensure duration is positive, default to 1 sec if not
+                }
+            }, [player]); // Depends on the player object
+
+            const handleWordHover = useCallback((e, baseForm) => {
+                e.stopPropagation();
+                if (pinnedPopupData) return; // --- 핀 고정 팝업이 있으면 호버 팝업을 띄우지 않음 ---
+
+                if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+
+                const wordData = vocabMap.get(baseForm);
+                if (wordData) {
+                    const rect = e.target.getBoundingClientRect();
+                    let x = rect.left;
+                    let y = rect.bottom + 5;
+                    const tooltipWidth = 320;
+                    if (x + tooltipWidth > window.innerWidth) {
+                        x = rect.right - tooltipWidth;
+                        if (x < 0) x = 10;
+                    }
+                    const tooltipHeight = 200; // Approximate height
+                    if (y + tooltipHeight > window.innerHeight + window.scrollY) {
+                        y = rect.top - tooltipHeight - 5;
+                    }
+                    setHoverPopupData({ data: wordData, position: { x, y } });
+                }
+            }, [vocabMap, pinnedPopupData]); // --- pinnedPopupData 의존성 추가 ---
+
+            const handleWordLeave = useCallback(() => {
+                hoverTimeoutRef.current = setTimeout(() => {
+                    setHoverPopupData(null);
+                }, 200);
+            }, []);
+
+            // --- 단어 클릭 시 팝업 고정 ---
+            const handleWordClick = useCallback((e, baseForm) => {
+                e.stopPropagation(); // --- window의 click 이벤트가 실행되지 않도록 함 ---
+                if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+                setHoverPopupData(null); // --- 호버 팝업은 숨김 ---
+
+                const wordData = vocabMap.get(baseForm);
+                if (wordData) {
+                    const rect = e.target.getBoundingClientRect();
+                    let x = rect.left;
+                    let y = rect.bottom + 5;
+                    const tooltipWidth = 320;
+                    if (x + tooltipWidth > window.innerWidth) {
+                        x = rect.right - tooltipWidth;
+                        if (x < 0) x = 10;
+                    }
+                    const tooltipHeight = 200; // Approximate height
+                    if (y + tooltipHeight > window.innerHeight + window.scrollY) {
+                        y = rect.top - tooltipHeight - 5;
+                    }
+
+                    // --- 이미 같은 단어가 고정되어 있으면 고정 해제 ---
+                    if (pinnedPopupData && pinnedPopupData.data.term === wordData.term) {
+                        setPinnedPopupData(null);
+                        setHighlightedVocab(null);
+                    } else {
+                        // --- 새 단어 고정 ---
+                        setPinnedPopupData({ data: wordData, position: { x, y } });
+                        setHighlightedVocab(wordData.term);
+
+                        // --- 어휘 목록 스크롤 ---
+                        const vocabElement = vocabRefs.current[wordData.term];
+                        if (vocabElement) {
+                            vocabElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+                    }
+                }
+            }, [vocabMap, pinnedPopupData]);
+
+            const toggleTranslation = (lineId) => {
+                setTranslationsVisible(prev => ({ ...prev, [lineId]: !prev[lineId] }));
+            };
+
+            const activePopupData = pinnedPopupData || hoverPopupData; // --- 고정된 팝업 우선 ---
+
+            return (
+                <div className="video-materials-content">
+                    {activePopupData && <HoverTooltip data={activePopupData.data} position={activePopupData.position} />}
+                    <div ref={playerContainerRef} className="video-wrapper sticky top-0 z-40 bg-gray-50 py-4 no-print">
+                        <div className={`w-full rounded-xl shadow-lg border-4 border-white overflow-hidden transition-all duration-300 ease-in-out aspect-video`}>
+                            <div id="youtube-player" className="w-full h-full"></div>
+                        </div>
+                    </div>
+                    <div className="script-wrapper flex flex-col md:flex-row gap-6">
+                        <main className="flex-grow">
+                            <div className="space-y-6">
+                                {scriptContent.map(line => {
+                                    const hasTranslation = !!line.eng;
+                                    const isActive = activeScriptLine === line.id;
+
+                                    if (line.kor.startsWith('•')) {
+                                        return (
+                                            <div key={line.id} ref={el => scriptLineRefs.current[line.id] = el}
+                                                className={`p-3 my-2 rounded-lg transition-colors duration-300 ${isActive ? 'bg-yellow-100' : ''}`}>
+                                                <p className="whitespace-pre-wrap text-lg text-gray-800">
+                                                    <HighlightedText text={line.kor} highlightData={highlightData} onWordHover={handleWordHover} onWordLeave={handleWordLeave} onWordClick={handleWordClick} lineId={line.id} activeWordId={activeWordId} />
+                                                </p>
+                                                {translationsVisible[line.id] && hasTranslation && (
+                                                    <p className="text-gray-600 text-base mt-2">{line.eng}</p>
+                                                )}
+                                                <div className="flex items-center gap-2 mt-2 no-print">
+                                                    {hasTranslation && (
+                                                        <button onClick={() => toggleTranslation(line.id)} className="text-xs text-gray-600 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-md transition">
+                                                            {translationsVisible[line.id] ? 'Hide translation' : 'Translation'}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+
+                                    const isYuna = line.speaker === '유나';
+                                    const bubbleWrapperClasses = `flex flex-col max-w-[100%] sm:max-w-[100%] ${isYuna ? 'items-start' : 'items-end self-end'}`;
+                                    const bubbleBaseClasses = 'relative px-5 py-3 rounded-2xl shadow-md transition-colors duration-300';
+                                    const yunaBubbleColor = 'bg-green-100';
+                                    const woodyBubbleColor = 'bg-white';
+                                    const activeBubbleColor = 'bg-yellow-100';
+                                    // Determine tailClass based on speaker
+                                    const tailClass = isYuna ? 'bubble-tail-left bubble-kkn20' : 'bubble-tail-right bubble-other';
+                                    const bubbleClasses = `${bubbleBaseClasses} ${isActive ? activeBubbleColor : (isYuna ? yunaBubbleColor : woodyBubbleColor)} ${tailClass} ${isActive ? 'bubble-active' : ''}`;
+                                    const speakerNameClasses = `font-bold mb-1 ${isYuna ? 'text-green-800' : 'text-blue-800'}`;
+
+                                    return (
+                                        <div key={line.id} ref={el => scriptLineRefs.current[line.id] = el} className="flex flex-col w-full">
+                                            <div className={bubbleWrapperClasses}>
+                                                <p className={`${speakerNameClasses} ${isYuna ? 'self-start' : 'self-end'}`}>{line.speaker}</p>
+                                                <div className={bubbleClasses}>
+                                                    <p className="whitespace-pre-wrap text-lg text-gray-800">
+                                                        <HighlightedText text={line.kor} highlightData={highlightData} onWordHover={handleWordHover} onWordLeave={handleWordLeave} onWordClick={handleWordClick} lineId={line.id} activeWordId={activeWordId} />
+                                                    </p>
+                                                </div>
+                                                <div className={`w-full flex flex-col ${isYuna ? 'items-start' : 'items-end'}`}>
+                                                    {translationsVisible[line.id] && hasTranslation && (
+                                                        <p className="text-gray-500 text-base mt-2 px-2">{line.eng}</p>
+                                                    )}
+                                                    <div className="flex items-center gap-2 mt-2 px-2 no-print">
+                                                        {line.time && (
+                                                            <button onClick={() => handlePlayClip(line)} className="text-xs px-2 py-1 rounded-md transition text-gray-600 bg-gray-100 hover:bg-gray-200">
+                                                                Play Clip
+                                                            </button>
+                                                        )}
+                                                        {hasTranslation && (
+                                                            <button onClick={() => toggleTranslation(line.id)} className="text-xs text-gray-600 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-md transition">
+                                                                {translationsVisible[line.id] ? 'Hide translation' : 'Translation'}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </main>
+                        <aside className="vocab-sidebar w-full md:w-auto flex-shrink-0 no-print">
+                            <div className="sticky z-30" style={{ top: `${playerHeight + 32}px` }}>
+                                <div className="flex flex-row items-stretch gap-2 mb-2" style={{ maxWidth: '7cm' }}>
+                                    <label htmlFor="sync-toggle" className="flex-1 flex items-center justify-between cursor-pointer bg-white py-1.5 px-3 rounded-lg shadow-md border">
+                                        <span className="text-xs font-medium text-gray-900 whitespace-nowrap">Auto-scroll</span>
+                                        <div className="relative">
+                                            <input type="checkbox" id="sync-toggle" className="sr-only" checked={isSyncEnabled} onChange={() => setIsSyncEnabled(!isSyncEnabled)} />
+                                            <div className={`block w-10 rounded-full transition-colors ${isSyncEnabled ? 'bg-green-500' : 'bg-gray-200'}`} style={{ height: '0.35cm' }}></div>
+                                            <div className={`dot absolute left-1 top-[2.6px] bg-white w-2 h-2 rounded-full transition-transform ${isSyncEnabled ? 'transform translate-x-6' : ''}`}></div>
+                                        </div>
+                                    </label>
+                                    <label htmlFor="vocab-toggle" className="flex-1 flex items-center justify-between cursor-pointer bg-white py-1.5 px-3 rounded-lg shadow-md border">
+                                        <span className="text-xs font-medium text-gray-900 whitespace-nowrap">Vocabulary</span>
+                                        <div className="relative">
+                                            <input type="checkbox" id="vocab-toggle" className="sr-only" checked={isVocabSidebarVisible} onChange={() => setIsVocabSidebarVisible(!isVocabSidebarVisible)} />
+                                            <div className={`block w-10 rounded-full transition-colors ${isVocabSidebarVisible ? 'bg-green-500' : 'bg-gray-200'}`} style={{ height: '0.35cm' }}></div>
+                                            <div className={`dot absolute left-1 top-[2.6px] bg-white w-2 h-2 rounded-full transition-transform ${isVocabSidebarVisible ? 'transform translate-x-6' : ''}`}></div>
+                                        </div>
+                                    </label>
+                                </div>
+                                {isVocabSidebarVisible && (
+                                    <div className="w-full overflow-y-auto" style={{maxWidth: '7cm', maxHeight: `calc(100vh - ${playerHeight + 96}px)`}}>
+                                        <div className="border rounded-lg bg-white p-2 shadow-lg">
+                                            <div className="space-y-1">
+                                            {vocabAndGrammarList.map(item => (
+                                                <VocabItem
+                                                    key={item.term}
+                                                    item={item}
+                                                    ref={el => vocabRefs.current[item.term] = el}
+                                                    isHighlighted={highlightedVocab === item.term}
+                                                />
+                                            ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            )
+        }
+
+        // --- [퀴즈&토론] 탭 관련 컴포넌트 ---
+        const ComprehensionQuiz = ({ sentences }) => {
+            const { useState, useMemo } = React;
+            const [selectedWords, setSelectedWords] = useState({});
+            const [results, setResults] = useState({});
+            const [translationsVisible, setTranslationsVisible] = useState({});
+            const [hintsVisible, setHintsVisible] = useState({});
+
+            const shuffledSentences = useMemo(() => {
+                const shuffleArray = (array) => {
+                    const newArray = [...array];
+                    for (let i = newArray.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+                    }
+                    return newArray;
+                };
+                return sentences.map(sentence => ({ ...sentence, bank: shuffleArray(sentence.bank) }));
+            }, [sentences]);
+
+            const handleWordSelect = (id, word) => {
+                setSelectedWords(prev => ({...prev, [id]: word}));
+                const isCorrect = sentences.find(s => s.id === id).answer === word;
+                setResults(prev => ({...prev, [id]: isCorrect}));
+                setHintsVisible(prev => ({ ...prev, [id]: false }));
+            };
+            const handleToggleTranslation = (id) => { setTranslationsVisible(prev => ({...prev, [id]: !prev[id]})); };
+            const handleToggleHint = (id) => { if (results[id] !== true) setHintsVisible(prev => ({...prev, [id]: !prev[id]})); };
+
+            return (
+                <div className="space-y-8">
+                    {shuffledSentences.map((s, index) => (
+                        <div key={s.id} className="p-6 border rounded-xl bg-white shadow-lg transition-all duration-300">
+                            <p className="text-gray-700 font-bold text-lg mb-4">{index + 1}. 다음 빈칸에 알맞은 말을 고르세요. (Choose the correct word for the blank.)</p>
+                            <div className="p-4 bg-gray-100 rounded-lg text-left mb-3 text-gray-900 text-xl font-bold">
+                                {s.parts[0]}
+                                <span className="inline-block bg-yellow-200 text-green-800 px-3 py-1 rounded-md font-extrabold mx-2">
+                                    {hintsVisible[s.id] ? `[ ${s.eng_hint} ]` : (selectedWords[s.id] || '___')}
+                                </span>
+                                {s.parts[1]}
+                                {results[s.id] === true && <span className="inline-block ml-2 text-green-500">✓</span>}
+                                {results[s.id] === false && <span className="inline-block ml-2 text-red-500">✗</span>}
+                            </div>
+                            {translationsVisible[s.id] && (
+                                <div className="text-gray-600 italic p-3 bg-gray-50 rounded-lg text-left mt-2 text-base">
+                                    {results[s.id] ? (<span>{s.eng_parts[0]}<strong className="text-green-600">{s.eng_answer}</strong>{s.eng_parts[1]}</span>)
+                                    : (<span>{s.eng_parts[0]}<span className="font-bold">___</span>{s.eng_parts[1]}</span>)}
+                                </div>
+                            )}
+                            <div className="text-left mb-4 flex gap-2">
+                                <button onClick={() => handleToggleHint(s.id)} className="text-xs bg-yellow-200 hover:bg-yellow-300 text-yellow-800 font-bold py-1 px-3 rounded-full transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed" disabled={results[s.id] === true}>힌트 (Hint)</button>
+                                <button onClick={() => handleToggleTranslation(s.id)} className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-3 rounded-full transition duration-200">번역 (Translation)</button>
+                            </div>
+                            <div className="flex justify-start flex-wrap gap-3">
+                                {s.bank.map(word => (
+                                    <button
+                                        key={word}
+                                        onClick={() => handleWordSelect(s.id, word)}
+                                        className={`px-4 py-2 rounded-lg text-lg font-bold transition-all transform hover:scale-105 shadow-md ${selectedWords[s.id] === word ? (results[s.id] ? 'bg-green-500 text-white ring-2 ring-opacity-50 ring-green-400' : 'bg-red-500 text-white ring-2 ring-red-300') : 'bg-white text-gray-800 hover:bg-gray-100 border'}`}
+                                    >{word}</button>
+                                ))}
+                            </div>
+                            {results[s.id] !== undefined && (
+                                <div className={`mt-4 p-4 border-l-4 rounded-r-lg ${results[s.id] ? 'bg-green-50 border-green-400' : 'bg-red-50 border-red-400'}`}>
+                                    <p className={`font-bold ${results[s.id] ? 'text-green-800' : 'text-red-800'} flex items-center gap-2 text-lg`}>{results[s.id] ? 'Correct!' : 'Try again.'}</p>
+                                    <p className="mt-2 text-gray-700 text-base italic">{results[s.id] ? s.eng_explanation : s.eng_wrongAnswerExplanations[selectedWords[s.id]]}</p>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            );
+        };
+
+        const SentenceChecker = ({ value, onChange, placeholder, question }) => {
+            const { useState } = React;
+            const [feedback, setFeedback] = useState(null);
+            const [isLoading, setIsLoading] = useState(false);
+            const [error, setError] = useState(null);
+
+            const checkSentence = async () => {
+                if (!value || value.trim() === '') {
+                    setError("문장을 입력해야 피드백을 받을 수 있어요.");
+                    setFeedback(null); return;
+                }
+                setIsLoading(true); setError(null); setFeedback(null);
+                const prompt = `You are an advanced Korean language tutor AI for B1-C2 level learners. Analyze the user's sentence in response to a specific question. The user's answer is in Korean. Your entire response MUST be a JSON object, with all string values in Korean (ending in -요) and English.\n\nQuestion: "${question}"\nUser's Answer: "${value}"\n\nYour response MUST be a JSON object with the specified schema.`;
+                const payload = {
+                    contents: [{ role: "user", parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: { type: "OBJECT", properties: { "is_relevant": { "type": "BOOLEAN" }, "relevance_feedback_kor": { "type": "STRING", "nullable": true }, "relevance_feedback_eng": { "type": "STRING", "nullable": true }, "is_correct": { "type": "BOOLEAN", "nullable": true }, "feedback_message_kor": { "type": "STRING", "nullable": true }, "feedback_message_eng": { "type": "STRING", "nullable": true }, "corrected_sentence": { "type": "STRING", "nullable": true }, "explanation_kor": { "type": "STRING", "nullable": true }, "explanation_eng": { "type": "STRING", "nullable": true }, "alternative_expressions": { "type": "ARRAY", "items": { "type": "OBJECT", "properties": { "expression_kor": { "type": "STRING" }, "expression_eng": { "type": "STRING" } }, "required": ["expression_kor", "expression_eng"] } } }, "required": ["is_relevant"] }
+                    }
+                };
+                const apiKey = ""; // NOTE: The API key is intentionally left blank.
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`API error: ${response.statusText}`);
+                    const result = await response.json();
+
+                    // Enhanced error handling for API response
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0 && result.candidates[0].content.parts[0].text) {
+                        try {
+                            const parsedJson = JSON.parse(result.candidates[0].content.parts[0].text);
+                            setFeedback(parsedJson);
+                        } catch (parseError) {
+                            console.error("Error parsing JSON response:", parseError, result.candidates[0].content.parts[0].text);
+                            setError("AI의 응답 형식이 올바르지 않아 처리할 수 없어요.");
+                        }
+                    } else {
+                        console.error("Invalid API response structure:", result);
+                        setError("AI의 응답을 처리하는 데 문제가 발생했어요.");
+                    }
+                } catch (err) {
+                    console.error("Error checking sentence:", err);
+                    setError("문장 검사에 실패했어요. 네트워크 연결을 확인하거나 잠시 후 다시 시도해 주세요.");
+                }
+                finally { setIsLoading(false); }
+            };
+
+
+            const renderFeedbackSection = (title, content) => (content && content.length > 0 && (
+                <div>
+                    <p className="text-gray-800 font-bold text-[17px]">{title}</p>
+                    {Array.isArray(content) ? (
+                        <ul className="list-disc list-inside space-y-2 mt-1">
+                            {content.map((item, index) => (
+                                <li key={index} className="text-gray-600 text-[16px]">
+                                    <p className="font-medium">{item.expression_kor || item.sentence_kor}</p>
+                                    <p className="text-gray-500 italic text-sm">{item.expression_eng || item.sentence_eng}</p>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (<p className="text-gray-700 font-medium text-[18px]">{content}</p>)}
+                </div>
+            ));
+
+            return (
+                <div>
+                    <textarea className="w-full p-3 border rounded-md focus:ring-2 focus:ring-green-400 transition text-lg" rows="3" placeholder={placeholder} value={value} onChange={onChange} />
+                    <button onClick={checkSentence} disabled={isLoading} className="mt-3 flex items-center justify-center gap-2 bg-green-200 text-gray-900 py-2 px-4 rounded-md transition-colors hover:bg-green-300 disabled:opacity-50 disabled:cursor-wait font-semibold text-[14px]">
+                        {isLoading ? <Spinner className="w-5 h-5" /> : '✨'} {isLoading ? '피드백 생성 중...' : 'AI에게 피드백 받기'}
+                    </button>
+                    {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+                    {feedback && (
+                        <div className="mt-4 p-4 bg-green-50 border-l-4 border-green-100 rounded-r-lg space-y-4">
+                            {!feedback.is_relevant && ( <div><p className="font-bold text-red-800 flex items-center gap-2 text-lg">{feedback.relevance_feedback_kor}</p><p className="text-gray-600 italic">{feedback.relevance_feedback_eng}</p></div> )}
+                            {feedback.is_relevant && feedback.is_correct && ( <div><p className="font-bold text-green-800 flex items-center gap-2 text-lg"><ThumbsUp className="w-5 h-5"/> {feedback.feedback_message_kor}</p><p className="text-gray-600 italic">{feedback.feedback_message_eng}</p></div> )}
+                            {feedback.is_relevant && !feedback.is_correct && (<>
+                                {feedback.corrected_sentence && ( <div><p className="text-gray-800 font-bold text-[17px]">✨ 수정된 문장:</p><p className="text-gray-700 font-medium text-[18px]">{feedback.corrected_sentence}</p></div> )}
+                                {(feedback.explanation_kor || feedback.explanation_eng) && ( <div><p className="text-gray-800 font-bold text-[17px]">설명:</p>{feedback.explanation_kor && <p className="text-gray-600 text-[16px]">{feedback.explanation_kor}</p>}{feedback.explanation_eng && <p className="text-gray-500 italic mt-1 text-[15px]">{feedback.explanation_eng}</p>}</div> )}
+                            </>)}
+                            {feedback.alternative_expressions && feedback.alternative_expressions.length > 0 && renderFeedbackSection('💡 다른 표현:', feedback.alternative_expressions)}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const DiscussionSection = ({ questions }) => {
+            const { useState } = React;
+            const [translationsVisible, setTranslationsVisible] = useState({});
+            const [userQuestionAnswers, setUserQuestionAnswers] = useState({});
+            const toggleTranslation = (id) => { setTranslationsVisible(prev => ({ ...prev, [id]: !prev[id] })); };
+
+            return (
+                <div className="space-y-10">
+                    {questions.map((q) => (
+                        <div key={q.num} className="p-6 border rounded-xl bg-white shadow-lg">
+                            <p className="text-gray-900 text-xl font-bold">{q.num}. {q.kor}</p>
+                            {translationsVisible[`q-${q.num}`] && (<p className="whitespace-pre-wrap text-gray-600 italic mt-1 text-base">{q.eng}</p>)}
+                            <button onClick={() => toggleTranslation(`q-${q.num}`)} className="text-xs text-gray-800 bg-gray-200 hover:bg-gray-300 font-bold py-1 px-3 rounded-full transition duration-200 mt-2 mb-6">번역 (Translation)</button>
+                            {q.vocab && q.vocab.length > 0 && (
+                                <div className="mt-4 space-y-4">
+                                    <h3 className="font-bold text-lg text-gray-800">📍핵심 표현 (Essential phrases)</h3>
+                                    {q.vocab.map((v, i) => (
+                                        <div key={i} className="pl-4 border-l-2 border-gray-200 py-2">
+                                            <p className="font-semibold text-green-700 text-lg">{v.term}: <span className="font-medium text-gray-700 text-base">{v.meaning_eng}</span></p>
+                                            <div className="mt-2">
+                                                <h4 className="flex items-center gap-2 text-sm font-bold text-gray-600"><span>💬</span> 대화 속에서 살펴보기 (See it in Context)</h4>
+                                                <div className="mt-1 p-3 bg-gray-100 rounded-lg">
+                                                    <p className="text-gray-800">"{v.context}"</p>
+                                                    {translationsVisible[`q-${q.num}-context-${i}`] && (<p className="text-gray-600 italic text-sm mt-1">{v.context_eng}</p>)}
+                                                    <button onClick={() => toggleTranslation(`q-${q.num}-context-${i}`)} className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-1 px-2 rounded-full transition duration-200 mt-2">번역 (Translation)</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            <div className="mt-6">
+                                <h3 className="font-bold text-lg text-gray-800 mb-2">핵심 표현을 사용해서 질문에 대답해 보세요.</h3>
+                                <SentenceChecker
+                                    value={userQuestionAnswers[`q-${q.num}`] || ''}
+                                    onChange={(e) => setUserQuestionAnswers(prev => ({...prev, [`q-${q.num}`]: e.target.value}))}
+                                    placeholder="여기에 답변을 입력하세요 (Type your response here)"
+                                    question={q.kor}
+                                />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+        };
+
+        const Tabs = ({ tabs }) => {
+            const { useState } = React;
+            const [activeTab, setActiveTab] = useState(0);
+            return (
+                <div>
+                    <div className="border-b border-gray-200 no-print">
+                        {/* MODIFIED:
+                          Condition 3: Wrap tabs only on < md screens (640px)
+                          Condition 1: Use responsive gaps between tabs
+                        */}
+                        <nav className="
+                            -mb-px flex items-center 
+                            flex-wrap sm:flex-nowrap 
+                            gap-x-2 sm:gap-x-3 md:gap-x-4 lg:gap-x-6
+                        " aria-label="Tabs">
+                            {tabs.map((tab, index) => (
+                                <button
+                                    // MODIFIED: Use name_kor for key
+                                    key={tab.name_kor} onClick={() => setActiveTab(index)}
+                                    className={`${ 
+                                        index === activeTab 
+                                            ? 'border-green-500 text-green-600' 
+                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    } 
+                                    py-4 px-1 border-b-2 font-medium transition-colors 
+                                    flex items-center 
+                                    
+                                    // Condition 1: Responsive gap (icon to text)
+                                    gap-1 md:gap-2 
+                                    
+                                    // Condition 1: Responsive font size
+                                    text-sm md:text-base
+                                    
+                                    // When tabs wrap (< sm), add bottom margin
+                                    mb-2 sm:mb-0
+                                    `}
+                                >
+                                    {/* MODIFIED: Clone icon with responsive classes (Condition 1) */}
+                                    {React.cloneElement(tab.icon, { className: 'w-5 h-5 md:w-6 md:h-6 flex-shrink-0' })}
+                                    
+                                    {/* MODIFIED: Text container for soft break (Condition 2) */}
+                                    <span className="
+                                        flex items-baseline gap-x-1.5 
+                                        
+                                        /* MODIFIED: flex-nowrap을 flex-wrap으로 변경하여 한글/영어 유닛이 줄바꿈되도록 수정 */
+                                        flex-wrap 
+                                        
+                                        /* On lg+ (when text is 1 line), center it */
+                                        /* NOTE: items-baseline is better for alignment when text wraps */
+                                        /* lg:items-center */ /* Removing this for consistent baseline alignment */
+                                    ">
+                                        <span className="kor-text whitespace-nowrap">{tab.name_kor}</span>
+                                        {/* MODIFIED: 영어 글자 크기를 2px 작게 조정 (text-xs/12px, md:text-sm/14px) */ }
+                                        <span className="eng-text text-gray-400 whitespace-nowrap text-xs md:text-sm">{tab.name_eng}</span>
+                                    </span>
+                                </button>
+                            ))}
+                        </nav>
+                    </div>
+                    <div className="pt-10">{tabs[activeTab].content}</div>
+                </div>
+            );
+        };
+
+        // --- 메인 App 컴포넌트 ---
+        const App = () => {
+            const { useState, useEffect, useMemo } = React;
+            const [containerWidth, setContainerWidth] = useState('30cm');
+            const [layoutMode, setLayoutMode] = useState('large');
+
+            useEffect(() => {
+                const handleResize = () => {
+                    const heightInPx = window.innerHeight; const widthInPx = window.innerWidth;
+                    const isMobileDevice = /Mobi|Android/i.test(navigator.userAgent);
+                    const isTabletDevice = /iPad|Android(?!.*Mobi)/i.test(navigator.userAgent);
+                    const isPortrait = window.matchMedia("(orientation: portrait)").matches;
+                    let newMode = 'large'; let newContainerWidth = '30cm';
+
+                    if ((isMobileDevice || isTabletDevice) && isPortrait) { newMode = 'mobile'; newContainerWidth = '100%'; }
+                    else {
+                        if (heightInPx < 832) { newMode = 'split'; newContainerWidth = '100%'; }
+                        else if (heightInPx < 907) { newMode = 'small'; newContainerWidth = '22cm'; }
+                        else if (heightInPx < 983) { newMode = 'medium'; newContainerWidth = '24cm'; }
+                        else { newMode = 'large'; newContainerWidth = '30cm'; }
+                    }
+                    setContainerWidth(newContainerWidth); setLayoutMode(newMode); document.body.dataset.layoutMode = newMode;
+                    
+                    {/* MODIFIED: Increase base width from 30cm to 35cm to make font scale "earlier" */}
+                    const baseWidthPx = 35 * 37.795; let effectiveWidthPx;
+                    
+                    if (newContainerWidth === '100%') { effectiveWidthPx = widthInPx; }
+                    else { const cmValue = parseFloat(newContainerWidth); effectiveWidthPx = cmValue * 37.795; }
+                    if (newMode !== 'large') { const scale = Math.min(1.0, effectiveWidthPx / baseWidthPx); 
+                        
+                        {/* MODIFIED: Lowered minimum scale from 0.8 to 0.7 to make font "more significantly" smaller */}
+                        const finalScale = Math.max(0.7, scale); 
+                        
+                        document.documentElement.style.fontSize = `${16 * finalScale}px`; }
+                    else { document.documentElement.style.fontSize = '16px'; }
+                };
+                window.addEventListener('resize', handleResize); handleResize();
+                return () => window.removeEventListener('resize', handleResize);
+            }, []);
+
+            const { scriptContent, vocabAndGrammarList, sentences, discussionQuestions } = useMemo(() => {
+                // Data structures remain multi-line for readability
+                const scriptContent = [
+                    { id: 's1', speaker: '우디', kor: '안녕하세요! <이 주제로 이야기해 봐요> 팟캐스트예요.', time: [12.500, 16.167] },
+                    { id: 's2', speaker: '우디', kor: '저는 우디예요?', time: [16.229, 17.802] },
+                    { id: 's3', speaker: '유나', kor: '안녕하세요! 저는 유나예요.', time: [17.948, 20.648] },
+                    { id: 's4', speaker: '우디', kor: '유나 씨, 오늘 저는 정말 바빠요!', time: [20.700, 24.267] },
+                    { id: 's5', speaker: '우디', kor: '그런데 문제가 있어요.', time: [24.267, 26.080] },
+                    { id: 's6', speaker: '유나', kor: '무슨 문제요?', time: [26.192, 27.445] },
+                    { id: 's7', speaker: '우디', kor: '할 일이 너무 많아서 오늘 일을 못 끝낼 것 같아요.😢', time: [27.532, 31.841] },
+                    { id: 's8', speaker: '유나', kor: '음... 그럼 늦게 퇴근하면 되겠네요.', time: [31.940, 35.629] },
+                    { id: 's9', speaker: '유나', kor: '먼저 퇴근할게요.', time: [35.703, 37.327] },
+                    { id: 's10', speaker: '유나', kor: '‘퇴근하다’는 ‘일이 끝나고 집에 가다’라는 뜻이에요.', time: [37.426, 42.188], eng: "'To get off work' means 'to finish work and go home'." },
+                    { id: 's11', speaker: '우디', kor: '네?😧 무슨 말이에요?', time: [42.399, 44.760] },
+                    { id: 's12', speaker: '우디', kor: '저도 퇴근할 거예요.', time: [44.896, 46.177] },
+                    { id: 's13', speaker: '우디', kor: '오늘은 늦게까지 일하기 싫어요.', time: [46.425, 48.939] },
+                    { id: 's14', speaker: '유나', kor: '그냥 미루는 거 아니에요?', time: [49.200, 51.166] },
+                    { id: 's15', speaker: '유나', kor: "'미루다'는 '나중에 하다'라는 뜻이에요.", time: [51.290, 54.836], eng: "'To procrastinate' means 'to do later'." },
+                    { id: 's16', speaker: '우디', kor: '아니에요. 효율적인 거예요.', time: [55.059, 57.959] },
+                    { id: 's17', speaker: '우디', kor: '‘효율적이다’는 ’조금 일하고 좋은 결과를 얻어요.', time: [58.133, 62.583], eng: "'To be efficient' means 'to work a little and get good results'." },
+                    { id: 's18', speaker: '우디', kor: '오늘의 우디는 쉬고, 내일의 우디가 열심히 일하는 거예요!', time: [62.901, 68.352] },
+                    { id: 's19', speaker: '유나', kor: '우디 씨... 그건 말이 안 돼요.', time: [68.600, 72.000] },
+                    { id: 's20', speaker: '유나', kor: '오늘의 우디와 내일의 우디는 같은 사람이에요.🤨', time: [72.000, 76.095] },
+                    { id: 's21', speaker: '우디', kor: '아니에요! 완전히 다른 사람이에요!', time: [76.400, 79.558] },
+                    { id: 's22', speaker: '우디', kor: '내일의 우디는 천재예요.', time: [79.694, 82.062] },
+                    { id: 's23', speaker: '우디', kor: '‘천재’는 ‘머리가 좋은 사람’이라는 뜻이에요.', time: [82.236, 86.242], eng: "'Genius' means 'a smart person'." },
+                    { id: 's24', speaker: '유나', kor: '그럼 어제의 우디가 오늘의 우디에게 일을 맡겼는데,', time: [86.316, 91.244] },
+                    { id: 's25', speaker: '유나', kor: '오늘의 우디는 왜 안 했어요?', time: [91.244, 93.695] },
+                    { id: 's26', speaker: '유나', kor: '‘맡기다’는 ‘나의 일을 다른 사람에게 주다’라는 뜻이에요.', time: [93.881, 99.879], eng: "'To entrust' means 'to give my work to another person'." },
+                    { id: 's27', speaker: '우디', kor: '😳 그…그건... 어제의 우디가 바보였어요!🤪', time: [101.080, 107.798] },
+                    { id: 's28', speaker: '우디', kor: "'바보'는 '머리가 나쁜 사람'이라는 뜻이에요.", time: [108.108, 112.683], eng: "'Fool' means 'a person who is not smart'." },
+                    { id: 's29', speaker: '우디', kor: '하지만 내일의 우디는 달라요!', time: [113.067, 116.467] },
+                    { id: 's30', speaker: '유나', kor: '내일의 우디가 "모레의 우디가 할 거야"라고 말할 수도 있어요.', time: [117.000, 122.207] },
+                    { id: 's31', speaker: '유나', kor: '‘모레’는 ‘내일의 다음 날’이라는 뜻이에요.', time: [122.268, 126.397], eng: "'The day after tomorrow' means 'the day after tomorrow'." },
+                    { id: 's32', speaker: '유나', kor: '그럼 어떻게 할 거예요?', time: [126.757, 128.802] },
+                    { id: 's33', speaker: '우디', kor: '아... 그건... 음...🤔 괜찮아요!', time: [129.199, 133.968] },
+                    { id: 's34', speaker: '우디', kor: '언젠가는 똑똑한 우디가 다 할 거예요😎!', time: [134.336, 138.176] },
+                    { id: 's35', speaker: '유나', kor: '우디 씨는 게을러요.', time: [138.400, 140.579] },
+                    { id: 's36', speaker: '유나', kor: "'게으르다'는 '일하기 싫어하다'라는 뜻이에요.", time: [140.652, 144.454], eng: "'To be lazy' means 'to hate working'." },
+                    { id: 's37', speaker: '우디', kor: '유나 씨는 로봇이에요?', time: [144.800, 146.819] },
+                    { id: 's38', speaker: '우디', kor: '어떻게 안 쉬고 일을 해요?', time: [147.000, 148.833] },
+                    { id: 's39', speaker: '우디', kor: '저는 오늘 피곤해서 일을 할 수 없어요.', time: [149.283, 152.730] },
+                    { id: 's40', speaker: '유나', kor: '그래도 오늘 일은 오늘 해야 해요.', time: [153.301, 156.882] },
+                    { id: 's41', speaker: '유나', kor: '그렇지 않으면, 회사에서 잘릴 수 있어요.', time: [156.979, 160.708] },
+                    { id: 's42', speaker: '유나', kor: '‘회사에서 잘리다’는 ‘더 이상 회사에 갈 수 없다’라는 뜻이에요.', time: [161.017, 166.928], eng: "'To get fired from work' means 'to not be able to go to the company anymore'." },
+                    { id: 's43', speaker: '우디', kor: '헐 😱😨. 유나 씨, 저 오늘 야근할게요.😫😭', time: [167.400, 172.349] },
+                    { id: 's44', speaker: '우디', kor: '‘야근하다’는 \'밤 늦게까지 일하다’라는 뜻이에요.', time: [172.659, 177.819], eng: "'To work overtime' means 'to work late into the night'." },
+                    { id: 's45', speaker: '우디', kor: '먼저 집에 가세요.😞😢', time: [178.455, 180.229] },
+                    { id: 's46', speaker: '유나', kor: '네, 그럼 내일 아침에 만나요.', time: [180.501, 183.932] },
+                    { id: 's47', speaker: '우디', kor: '그럼 오늘은 혼자😢 단어를 정리해 볼게요.', time: [184.427, 189.186] },
+                    { id: 's48', speaker: '우디', kor: '• 퇴근하다: 일이 끝나고 집에 가다', time: [189.782, 193.526] },
+                    { id: 's49', speaker: '우디', kor: '• 미루다: 나중에 하다', time: [193.910, 196.657] },
+                    { id: 's50', speaker: '우디', kor: '• 효율적이다: 조금 일하고 좋은 결과를 얻다', time: [197.142, 201.817] },
+                    { id: 's51', speaker: '우디', kor: '• 천재: 머리가 좋은 사람', time: [202.154, 205.160] },
+                    { id: 's52', speaker: '우디', kor: '• 맡기다: 나의 일을 다른 사람에게 주다', time: [205.520, 209.647] },
+                    { id: 's53', speaker: '유나', kor: '• 바보: 머리가 나쁜 사람', time: [210.614, 213.819] },
+                    { id: 's54', speaker: '유나', kor: '• 모레: 내일의 다음 날', time: [214.004, 216.782] },
+                    { id: 's55', speaker: '유나', kor: '• 게으르다: 일하기 싫어하다', time: [216.968, 220.079] },
+                    { id: 's56', speaker: '유나', kor: '• 회사에서 잘리다: 더 이상 회사에 갈 수 없다', time: [220.252, 224.787] },
+                    { id: 's57', speaker: '유나', kor: '• 야근하다: 밤 늦게까지 일하다', time: [225.126, 228.643] },
+                    { id: 's58', speaker: '우디', kor: '😯유나 씨, 아직 집에 안 갔어요?', time: [230.000, 233.500] },
+                    { id: 's59', speaker: '유나', kor: '네, 저는 착한 사람이니까 우디 씨 일을 조금 도와줄게요.', time: [233.698, 239.931] },
+                    { id: 's60', speaker: '우디', kor: '고마워요 유나 씨.🥹', time: [240.439, 242.655] },
+                    { id: 's61', speaker: '우디', kor: '그럼 여러분 오늘은 여기까지 할게요.', time: [243.151, 246.764] },
+                    { id: 's62', speaker: '우디', kor: '저는 일해야 해요.😥', time: [246.764, 248.491] },
+                    { id: 's63', speaker: '유나', kor: '안녕히 계세요! 다음에 또 만나요!', time: [248.827, 252.688] }
+                ];
+                const vocabAndGrammarList = [
+                    { "term": "이 주제로 이야기해 봐요", "mainDef": "Let's Talk About This Topic", "subDefs": [{ "subTerm": "• ▢▢을/를 주제로 이야기하다", "subDef": "to talk about [something] as a topic" }, { "subTerm": "• -아/어 보다", "subDef": "used to make gentle suggestions without sounding pushy" }], "variants": ["이 주제로 이야기해 봐요"] },
+                    { "term": "할 일", "mainDef": "work to do", "subDefs": [{ "subTerm": "• 하다", "subDef": "to do" }, { "subTerm": "• -ㄹ/을", "subDef": "used to turn a future-tense verb into an \"adjective-ish\" phrase that describes the following noun" }, { "subTerm": "• 일", "subDef": "work" }], "variants": ["할 일", "할 일이"] },
+                    { "term": "많아서", "mainDef": "because there is a lot of...", "subDefs": [{ "subTerm": "• 많다", "subDef": "to be many, a lot of" }, { "subTerm": "• -아서/어서", "subDef": "used to connect clauses indicating cause or reason (\"because…\")" }], "variants": ["많아서"] },
+                    { "term": "일을 못 끝낼 것 같아요", "mainDef": "I don't think I can finish the work.", "subDefs": [{ "subTerm": "• 일을 끝내다", "subDef": "to finish work" }, { "subTerm": "• -ㄹ 것 같다", "subDef": "used to express assumption or guess about something that seems likely, often translated as “I think … will … / It looks like … / It seems ….”" }], "variants": ["일을 못 끝낼 것 같아요"] },
+                    { "term": "늦게", "mainDef": "late", "subDefs": [], "variants": ["늦게"] },
+                    { "term": "퇴근하면 되겠네요", "mainDef": "It's fine if you leave work late.", "subDefs": [{ "subTerm": "• 퇴근하다", "subDef": "to leave work" }, { "subTerm": "• -면 되다", "subDef": "used to say that one condition or action is enough, often translated as “all you have to do is …” or “it’s fine if ….”" }, { "subTerm": "• -겠네요", "subDef": "used to show an immediate reaction, realization, or empathy, often translated as “I guess … / That must be … / Sounds …”" }], "variants": ["퇴근하면 되겠네요"] },
+                    { "term": "퇴근하다", "mainDef": "to leave work", "subDefs": [], "variants": ["퇴근할게요", "퇴근하다", "퇴근할 거예요"] },
+                    { "term": "일이 끝나고", "mainDef": "after the work is done", "subDefs": [{ "subTerm": "• 일이 끝나다", "subDef": "for the work to be finished" }, { "subTerm": "• -고", "subDef": "used to connect two verbs, meaning “and then” or simply “and,” to show actions happening in sequence." }], "variants": ["일이 끝나고"] },
+                    { "term": "-라는 뜻이에요", "mainDef": "\"It means that…\"", "subDefs": [{ "subTerm": "• -(이)라는 뜻", "subDef": "used to state the meaning of a word or phrase" }], "variants": ["라는 뜻이에요", "다는 뜻이에요"] },
+                    { "term": "무슨 말이에요?", "mainDef": "What do you mean?", "subDefs": [], "variants": ["무슨 말이에요"] },
+                    { "term": "늦게까지", "mainDef": "until late", "subDefs": [{ "subTerm": "• 늦게", "subDef": "late" }, { "subTerm": "• -까지", "subDef": "until" }], "variants": ["늦게까지"] },
+                    { "term": "일하기 싫어요", "mainDef": "I don't want to work.", "subDefs": [{ "subTerm": "• 일하다", "subDef": "to work" }, { "subTerm": "• -기 싫다", "subDef": "used for your own dislike (“I don’t want to …”)," }], "variants": ["일하기 싫어요"] },
+                    { "term": "미루는 거", "mainDef": "the act of postponing", "subDefs": [{ "subTerm": "• 미루다", "subDef": "to postpone, to put off" }, { "subTerm": "• -는 거", "subDef": "A colloquial form of -는 것, used to nominalize verbs by turning a verb into a noun phrase meaning “the act of …,” “the fact of …,” or “the thing that …”" }], "variants": ["미루는 거"] },
+                    { "term": "미루다", "mainDef": "to postpone, to put off", "subDefs": [], "variants": ["미루다"] },
+                    { "term": "효율적인 거예요", "mainDef": "it is being efficient.", "subDefs": [{ "subTerm": "• 효율적이다", "subDef": "to be efficient" }, { "subTerm": "• -ㄴ 거예요", "subDef": "A colloquial form of -ㄴ 것이다, used to explain, clarify, or emphasize what something really is; “it is that …”, “the fact is that …”, or “what … means is …”" }], "variants": ["효율적인 거예요"] },
+                    { "term": "효율적이다", "mainDef": "to be efficient", "subDefs": [], "variants": ["효율적이다"] },
+                    { "term": "결과", "mainDef": "result", "subDefs": [], "variants": ["결과를", "결과"] },
+                    { "term": "얻다", "mainDef": "to get, to obtain", "subDefs": [], "variants": ["얻어요", "얻다"] },
+                    { "term": "열심히", "mainDef": "hard, diligently", "subDefs": [], "variants": ["열심히"] },
+                    { "term": "일하는 거예요", "mainDef": "it is the act of working.", "subDefs": [{ "subTerm": "• 일하다", "subDef": "to work" }, { "subTerm": "• -는 거예요", "subDef": "A colloquial form of -는 것이다, which is  used to explain, clarify, or emphasize what something really is; “it is that …”, “the fact is that …”, or “what … means is …”" }], "variants": ["일하는 거예요"] },
+                    { "term": "그건 말이 안 돼요", "mainDef": "That doesn't make sense.", "subDefs": [{ "subTerm": "• 말이 되다", "subDef": "to make sense" }], "variants": ["그건 말이 안 돼요"] },
+                    { "term": "같은 사람", "mainDef": "the same person", "subDefs": [{ "subTerm": "• 같다", "subDef": "to be the same, to be like" }, { "subTerm": "• -ㄴ/은", "subDef": "used to turn a descriptive verb, which means an adjective in English, into an “adjective-ish” phrase that describes the following noun" }], "variants": ["같은 사람", "같은 사람이에요"] },
+                    { "term": "완전히", "mainDef": "completely", "subDefs": [], "variants": ["완전히"] },
+                    { "term": "다른 사람", "mainDef": "a different person", "subDefs": [{ "subTerm": "• 다르다", "subDef": "to be different" }, { "subTerm": "• -ㄴ/은", "subDef": "used to turn a descriptive verb, which means an adjective in English, into an “adjective-ish” phrase that describes the following noun" }], "variants": ["다른 사람", "다른 사람이에요", "다른 사람에게"] },
+                    { "term": "천재", "mainDef": "a genius", "subDefs": [], "variants": ["천재예요", "천재", "천재’는"] },
+                    { "term": "맡겼는데", "mainDef": "entrusted, but...", "subDefs": [{ "subTerm": "• 맡기다", "subDef": "to entrust, to assign" }, { "subTerm": "• -는데", "subDef": "used to show contrast, or set up background often softening the tone or inviting the listener to respond." }], "variants": ["맡겼는데"] },
+                    { "term": "맡기다", "mainDef": "to entrust, to assign", "subDefs": [], "variants": ["맡기다’는", "맡기다"] },
+                    { "term": "바보", "mainDef": "a fool, an idiot", "subDefs": [], "variants": ["바보였어요", "바보'는", "바보"] },
+                    { "term": "모레", "mainDef": "the day after tomorrow", "subDefs": [], "variants": ["모레의", "모레’는", "모레"] },
+                    { "term": "언젠가", "mainDef": "someday", "subDefs": [], "variants": ["언젠가", "언젠가는"] },
+                    { "term": "똑똑한", "mainDef": "smart", "subDefs": [{ "subTerm": "• 똑똑하다", "subDef": "to be smart" }], "variants": ["똑똑한"] },
+                    { "term": "게으르다", "mainDef": "to be lazy", "subDefs": [], "variants": ["게을러요", "게으르다'는", "게으르다"] },
+                    { "term": "일하기 싫어하다", "mainDef": "to dislike working", "subDefs": [{ "subTerm": "• 일하다", "subDef": "to work" }, { "subTerm": "• -기 싫어하다", "subDef": "used when talking about someone else’s dislike (“They don’t want to …”)." }], "variants": ["일하기 싫어하다"] },
+                    { "term": "로봇", "mainDef": "a robot", "subDefs": [], "variants": ["로봇", "로봇이에요"] },
+                    { "term": "피곤해서", "mainDef": "because I am tired", "subDefs": [{ "subTerm": "• 피곤하다", "subDef": "to be tired" }, { "subTerm": "• -아서/어서", "subDef": "used to connect clauses indicating cause or reason (\"because…\")" }], "variants": ["피곤해서"] },
+                    { "term": "그렇지 않으면", "mainDef": "if not, otherwise", "subDefs": [], "variants": ["그렇지 않으면"] },
+                    { "term": "회사에서 잘리다", "mainDef": "to get fired", "subDefs": [], "variants": ["회사에서 잘릴 수 있어요", "회사에서 잘리다’는", "회사에서 잘리다"] },
+                    { "term": "더 이상", "mainDef": "any more, no longer", "subDefs": [], "variants": ["더 이상"] },
+                    { "term": "헐", "mainDef": "OMG", "subDefs": [], "variants": ["헐"] },
+                    { "term": "야근하다", "mainDef": "to work overtime", "subDefs": [], "variants": ["야근할게요", "야근하다’는", "야근하다"] },
+                    { "term": "정리해 볼게요", "mainDef": "I will organize", "subDefs": [{ "subTerm": "• 정리하다", "subDef": "to summarize, to organize" }, { "subTerm": "• -아/어 볼게요", "subDef": "used to politely show your intention to attempt something." }], "variants": ["정리해 볼게요"] },
+                    { "term": "착한 사람", "mainDef": "a good person", "subDefs": [{ "subTerm": "• 착하다", "subDef": "to be good, kind" }, { "subTerm": "• -ㄴ/은", "subDef": "used to turn a descriptive verb, which means an adjective in English, into an “adjective-ish” phrase that describes the following noun" }], "variants": ["착한 사람", "착한 사람이니까"] },
+                    { "term": "여기까지 할게요", "mainDef": "I'll stop here.", "subDefs": [{ "subTerm": "• 여기까지 하다", "subDef": "to stop here, wrap something up" }, { "subTerm": "• -게요", "subDef": "used to politely express your decision or intention to do something, especially when it affects the listener." }], "variants": ["여기까지 할게요"] }
+                ];
+                const sentences = [
+                { id: 1, parts: ["우디는 할 일이 너무 ", " 오늘 일을 다 못 끝낼 것 같았어요."], blank: 'because there was a lot', answer: '많아서', bank: ['많아서', '많고', '많으면서', '많은데'], explanation: "The grammar pattern '-아서/어서' is used to show cause or reason.", eng: "Woody had too much work, so he couldn't finish it all today.", wrongAnswerExplanations: { '많고': "'-고' connects two actions sequentially.", '많으면서': "'-으면서' means 'while doing something else.'", '많은데': "'-ㄴ데' is for background information or contrast." } },
+                { id: 2, parts: ["유나는 우디보다 먼저 ", "고 했어요."], blank: 'would leave work', answer: '퇴근하겠다고', bank: ['자겠다고', '회의하겠다고', '출근하겠다고', '퇴근하겠다고'], explanation: "The phrase '퇴근하겠다' means 'I will leave work'. The ending '-고 하다' is used to quote what someone said.", eng: "Yuna said she would leave work before Woody.", wrongAnswerExplanations: { '자겠다고': "'자겠다' means 'I will sleep'.", '회의하겠다고': "'회의하겠다' means 'I will have a meeting'.", '출근하겠다고': "'출근하겠다' means 'I will go to work'." } },
+                { id: 3, parts: ["우디는 오늘 일을 끝내는 대신 내일로 ", " 싶었어요."], blank: 'to postpone', answer: '미루고', bank: ['맡기고', '미루고', '도와주고', '만들고'], explanation: "'미루다' means 'to postpone'. The phrase '미루고 싶다' means 'to want to postpone'.", eng: "Instead of finishing his work today, Woody wanted to postpone it until tomorrow.", wrongAnswerExplanations: { '맡기고': "'맡기다' means 'to entrust/assign'.", '도와주고': "'도와주다' means 'to help'.", '만들고': "'만들다' means 'to make'." } },
+                { id: 4, parts: ["우디는 일을 미루는 자신의 행동이 ", " 방법이라고 주장했어요."], blank: 'efficient', answer: '효율적인', bank: ['바보 같은', '게으른', '천재적인', '효율적인'], explanation: "'효율적이다' means 'to be efficient'. Woody claimed his procrastination was actually efficient.", eng: "Woody claimed that postponing his work was an 'efficient' method.", wrongAnswerExplanations: { '바보 같은': "Means 'like a fool'.", '게으른': "Means 'lazy'.", '천재적인': "Means 'genius-like'." } },
+                { id: 5, parts: ["우디는 내일의 우디가 ", "라서 일을 잘할 것이라고 믿었어요."], blank: 'a genius', answer: '천재', bank: ['바보', '천재', '어른', '로봇'], explanation: "Woody's reason for procrastinating is that his 'future self' will be a genius.", eng: "Woody believed that his future self would be a 'genius' and do the work well.", wrongAnswerExplanations: { '바보': "Means 'fool' or 'idiot'.", '어른': "Means 'adult'.", '로봇': "Means 'robot'." } },
+                { id: 6, parts: ["하지만 어제의 우디는 오늘의 우디에게 일을 ", "."], blank: 'assigned', answer: '맡겼어요', bank: ['맡겼어요', '끝냈어요', '가르쳤어요', '도와줬어요'], explanation: "'맡기다' means 'to entrust' or 'to assign'. This is Yuna's counter-argument.", eng: "However, yesterday's Woody entrusted the work to today's Woody.", wrongAnswerExplanations: { '끝냈어요': "Means 'finished'.", '가르쳤어요': "Means 'taught'.", '도와줬어요': "Means 'helped'." } },
+                { id: 7, parts: ["그래서 유나는 일을 미루는 우디를 보고 ", "고 생각했어요."], blank: 'lazy', answer: '게으르다', bank: ['똑똑하다', '바쁘다', '게으르다', '피곤하다'], explanation: "Yuna's direct opinion of Woody's behavior is that it is lazy.", eng: "So Yuna thought Woody was 'lazy' for postponing his work.", wrongAnswerExplanations: { '똑똑하다': "Means 'smart'.", '바쁘다': "Means 'busy'.", '피곤하다': "Means 'tired'." } },
+                { id: 8, parts: ["유나는 내일의 우디가 ", "의 우디에게 또 미룰 수도 있다고 말했어요."], blank: 'the day after tomorrow', answer: '모레', bank: ['모레', '어제', '오늘', '그제'], explanation: "'모레' means 'the day after tomorrow'. This is a prediction about future procrastination.", eng: "Yuna said that tomorrow's Woody might postpone the work to the day after tomorrow.", wrongAnswerExplanations: { '어제': "Means 'yesterday'.", '오늘': "Means 'today'.", '그제': "Means 'the day before yesterday'." } },
+                { id: 9, parts: ["유나는 일을 계속 미루면 회사에서 ", " 수 있다고 경고했어요."], blank: 'get fired', answer: '잘릴', bank: ['잘릴', '돈을 벌', '승진할', '퇴근할'], explanation: "'회사에서 잘리다' means 'to get fired'. This is the consequence Yuna warns Woody about.", eng: "Yuna warned that if he kept postponing his work, he might get 'fired' from the company.", wrongAnswerExplanations: { '돈을 벌': "Means 'earn money'.", '승진할': "Means 'get promoted'.", '퇴근할': "Means 'leave work'." } },
+                { id: 10, parts: ["유나의 경고를 들은 우디는 결국 ", "로 마음을 바꿨어요."], blank: 'to work overtime', answer: '야근하기로', bank: ['회의하기로', '퇴근하기로', '사직하기로', '야근하기로'], explanation: "'야근하다' means 'to work overtime'. After Yuna's warning, Woody decides to do the work.", eng: "After hearing Yuna's warning, Woody finally changed his mind and decided to work overtime.", wrongAnswerExplanations: { '회의하기로': "Means 'to decide to have a meeting'.", '퇴근하기로': "Means 'to decide to leave work'.", '사직하기로': "Means 'to decide to resign'." } }
+                ];
+                const discussionQuestions = [
+                { num: 1, kor: "여러분은 오늘 할 일을 내일로 미루는 편이에요? 왜요?", eng: "Do you tend to postpone today's work until tomorrow? Why?", vocab: [{ term: "미루다", meaning: "to postpone", context: "유나: 그냥 미루는 거 아니에요?", context_eng: "Yuna: Aren't you just procrastinating?" }] },
+                { num: 2, kor: "일을 미루는 것이 '효율적'이라고 생각해요? 아니면 '게으르다’고 생각해요?", eng: "Do you think postponing work is 'efficient' or 'lazy'?", vocab: [{ term: "효율적이다", meaning: "to be efficient", context: "우디: 아니에요! 효율적인 거예요.", context_eng: "Woody: No! It's being efficient." }, { term: "게으르다", meaning: "to be lazy", context: "유나: 우디 씨는 게을러요.", context_eng: "Yuna: Woody is lazy." }] },
+                { num: 3, kor: "여러분은 일이 안 끝났을 때, 보통 밤 늦게까지 일해요? 아니면 다음 날 해요?", eng: "When your work isn't finished, do you usually work late into the night? Or do you do it the next day?", vocab: [{ term: "늦게까지", meaning: "until late", context: "우디: 오늘은 늦게까지 일하기 싫어요.", context_eng: "Woody: I don't want to work late today." }] },
+                { num: 4, kor: "우디는 '내일의 우디는 천재'라고 말했어요. 여러분도 '내일의 나'를 믿는 편이에요?", eng: "Woody said, 'Tomorrow's Woody is a genius.' Do you also tend to believe in 'future you'?", vocab: [{ term: "천재", meaning: "a genius", context: "우디: 내일의 우디는 천재예요.", context_eng: "Woody: Tomorrow's Woody is a genius." }] },
+                { num: 5, kor: "어제의 내가 맡긴 일을 오늘의 내가 하기 싫을 때 어떻게 해요?", eng: "What do you do when today's you doesn't want to do the work that yesterday's you assigned?", vocab: [{ term: "맡기다", meaning: "to entrust, assign", context: "유나: 어제의 우디가 오늘의 우디에게 일을 맡겼는데…", context_eng: "Yuna: Yesterday's Woody entrusted the work to today's Woody..." }] },
+                { num: 6, kor: "일을 하기 싫을 때 보통 어떤 변명을 해요? (예: 피곤해요, 바빠요)", eng: "What excuses do you usually make when you don't want to work? (e.g., I'm tired, I'm busy)", vocab: [{ term: "피곤하다", meaning: "to be tired", context: "우디: 저는 오늘 피곤해서 일을 할 수 없어요.", context_eng: "Woody: I'm tired today, so I can't work." }] },
+                { num: 7, kor: "우디는 '어떻게 안 쉬고 일을 해요?'라고 물었어요. 여러분에게 일과 휴식 중에 무엇이 더 중요해요?", eng: "Woody asked, 'How can you work without resting?' For you, what is more important, work or rest?", vocab: [{ term: "피곤하다", meaning: "to be tired", context: "우디: 저는 오늘 피곤해서 일을 할 수 없어요.", context_eng: "Woody: I'm tired today, so I can't work." }] },
+                { num: 8, kor: "동료가 야근할 때, 유나처럼 도와줄 거예요? 아니면 먼저 퇴근할 거예요?", eng: "When a colleague works overtime, would you help them like Yuna? Or would you leave work first?", vocab: [{ term: "야근하다", meaning: "to work overtime", context: "유나 씨, 저 오늘 야근할게요.😫😭 ‘야근하다’는 '밤 늦게까지 일하다’라는 뜻이에요.", context_eng: "Yuna, I'll work late today.😫😭 '야근하다' means 'to work until late at night'." }, { term: "퇴근하다", meaning: "to leave work", context: "유나: 먼저 퇴근할게요.", context_eng: "Yuna: I'll leave work first." }] },
+                { num: 9, kor: "회사에서 잘릴까 봐 걱정해 본 적이 있어요? 어떤 상황이었어요?", eng: "Have you ever worried about getting fired from work? What was the situation?", vocab: [{ term: "회사에서 잘리다", meaning: "to get fired", context: "유나: 회사에서 잘릴 수 있어요.", context_eng: "Yuna: You could get fired from the company." }] },
+                { num: 10, kor: "내일이나 모레로 계속 일을 미루게 될 것 같을 때, 어떻게 하면 일을 시작할 수 있을까요?", eng: "When it seems like you'll keep postponing work until tomorrow or the day after, what can you do to get started?", vocab: [{ term: "미루다", meaning: "to postpone", context: "유나: 그냥 미루는 거 아니에요?", context_eng: "Yuna: Aren't you just procrastinating?" }, { term: "모레", meaning: "the day after tomorrow", context: "유나: 내일의 우디가 '모레의 우디가 할 거야'라고 말할 수도 있어요.", context_eng: "Yuna: Tomorrow's Woody might say, 'The day after tomorrow's Woody will do it'." }] }
+                ];
+                return { scriptContent, vocabAndGrammarList, sentences, discussionQuestions };
+            }, []);
+
+            const { vocabMap, highlightData } = useMemo(() => {
+                const vocabMap = new Map(vocabAndGrammarList.map(item => [item.term, item]));
+                const wordMap = new Map();
+                vocabAndGrammarList.forEach(item => wordMap.set(item.term, item));
+                const allWords = Array.from(wordMap.keys()).sort((a, b) => b.length - a.length);
+                const regexParts = [];
+                allWords.forEach(word => {
+                    const item = wordMap.get(word);
+                    if (item.variants) item.variants.forEach(v => regexParts.push(v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+                    let processed = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s*');
+                    if (word.endsWith('다')) {
+                        const parts = word.split(' ');
+                        const lastPart = parts[parts.length - 1];
+                        if (lastPart.endsWith('다')) {
+                            const stem = lastPart.slice(0, -1).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                            const firstParts = parts.slice(0, -1).map(p => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+                            regexParts.push([...firstParts, `${stem}[가-힣]*`].join('\\s*'));
+                        } else { regexParts.push(`${processed.slice(0, -1)}[가-힣]*`); }
+                    } else { regexParts.push(processed); }
+                });
+                const regexString = [...new Set(regexParts)].sort((a,b) => b.length - a.length).join('|');
+                return { vocabMap, highlightData: { regex: new RegExp(`(${regexString})`, 'g'), wordMap, sortedWords: allWords }};
+            }, [vocabAndGrammarList]);
+
+            const tabs = useMemo(() => {
+                const baseTabs = [
+                    // MODIFIED: Split name into name_kor and name_eng for responsive wrapping
+                    { name_kor: '대화 스크립트', name_eng: '(Transcript)', icon: <Video className="w-6 h-6"/>, content: <VideoMaterialsTab scriptContent={scriptContent} vocabAndGrammarList={vocabAndGrammarList} highlightData={highlightData} vocabMap={vocabMap} /> },
+                    { name_kor: '핵심 어휘', name_eng: '(Key Vocabulary)', icon: <List className="w-6 h-6"/>, content: (
+                        <div>
+                            <h2 className="text-3xl font-extrabold text-gray-900 mb-8 flex items-center gap-3"><List className="w-8 h-8 text-green-600"/> 핵심 어휘 (Key Vocabulary)</h2>
+                            <div className="w-full overflow-y-auto" style={{maxHeight: `calc(100vh - 150px)`}}>
+                                <div className="border rounded-lg bg-white p-2 shadow-lg">
+                                    <div className="space-y-1">{vocabAndGrammarList.map(item => <VocabItem key={item.term} item={item} />)}</div>
+                                </div>
+                            </div>
+                        </div>
+                    )},
+                    { name_kor: '내용 확인 퀴즈', name_eng: '(Comprehension Check-Up)', icon: <BookOpen className="w-6 h-6"/>, content: (
+                        <div>
+                            <h2 className="text-3xl font-extrabold text-gray-900 mb-8 flex items-center gap-3"><BookOpen className="w-8 h-8 text-green-600"/> 내용 확인 퀴즈 (Comprehension Check-Up)</h2>
+                            <ComprehensionQuiz sentences={sentences} />
+                        </div>
+                    )},
+                    { name_kor: '생각해 보기', name_eng: '(Food For Thought)', icon: <MessageSquare className="w-6 h-6"/>, content: (
+                        <div>
+                            <h2 className="text-3xl font-extrabold text-gray-900 mb-8 flex items-center gap-3"><MessageSquare className="w-8 h-8 text-green-600"/> 생각해 보기 (Food For Thought)</h2>
+                            <DiscussionSection questions={discussionQuestions} />
+                        </div>
+                    ) }
+                ];
+                return baseTabs;
+            }, [layoutMode, scriptContent, vocabAndGrammarList, sentences, discussionQuestions, highlightData, vocabMap]);
+
+            return (
+                <div className="bg-gray-50 text-gray-800 p-4 sm:p-6 md:p-8">
+                    <div className="mx-auto transition-all duration-300" style={{ maxWidth: containerWidth }}>
+                        <header className="text-center mb-12">
+                            <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-2">오늘 일을 다 못했어요</h1>
+                            <p className="text-xl text-gray-500" style={{fontFamily: "'Nanum Gothic', sans-serif"}}>I couldn't finish all my work today: Should I work late or work tomorrow?</p>
+                        </header>
+                        <Tabs tabs={tabs} />
+                        {layoutMode === 'mobile' && (
+                            <div className="pt-10">
+                                <h2 className="text-3xl font-extrabold text-gray-900 mb-8 flex items-center gap-3"><List className="w-8 h-8 text-green-600"/> 핵심 어휘 (Key Vocabulary)</h2>
+                                <div className="w-full">
+                                    <div className="border rounded-lg bg-white p-2 shadow-lg">
+                                        <div className="space-y-1">{vocabAndGrammarList.map(item => <VocabItem key={item.term} item={item} />)}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+    
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
