@@ -171,7 +171,7 @@
         });
 
         // --- [동영상 자료] 탭 관련 컴포넌트 ---
-        const HighlightedText = React.memo(({ text, highlightData, onWordHover, onWordLeave, lineId, activeWordId }) => {
+        const HighlightedText = React.memo(({ text, highlightData, onWordHover, onWordLeave, onWordClick, lineId, activeWordId }) => {
             if (!text || !highlightData) return text;
             const { regex, wordMap, sortedWords } = highlightData;
             const parts = text.split(regex);
@@ -197,6 +197,7 @@
                     className={classes}
                     onMouseEnter={(e) => onWordHover(e, baseForm, lineId, index)}
                     onMouseLeave={onWordLeave}
+                    onClick={(e) => onWordClick && onWordClick(e, baseForm)}
                 >{part}</span>;
             })}</>);
         });
@@ -207,6 +208,7 @@
                 <div
                     className="hover-tooltip"
                     style={{ left: `${position.x}px`, top: `${position.y}px` }}
+                    onClick={(e) => e.stopPropagation()} 
                 >
                     <p className="font-bold text-lg text-green-700 mb-2">{data.term}</p>
                     <p className="text-gray-700 text-base">{data.mainDef}</p>
@@ -271,8 +273,8 @@
             const [player, setPlayer] = useState(null);
             const [activeScriptLine, setActiveScriptLine] = useState(null);
             const [isSyncEnabled, setIsSyncEnabled] = useState(true);
-            const [repeatingLine, setRepeatingLine] = useState(null);
             const [hoverPopupData, setHoverPopupData] = useState(null);
+            const [pinnedPopupData, setPinnedPopupData] = useState(null); // --- 클릭 고정 팝업 상태 ---
             const [highlightedVocab, setHighlightedVocab] = useState(null);
             const [translationsVisible, setTranslationsVisible] = useState({});
             const [playerHeight, setPlayerHeight] = useState(0);
@@ -323,7 +325,10 @@
                 } else if (!window.YT) {
                     window.onYouTubeIframeAPIReady = setupPlayer;
                 }
-                return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+                return () => { 
+                    if (intervalRef.current) clearInterval(intervalRef.current); 
+                    if (window.playClipTimer) clearTimeout(window.playClipTimer);
+                };
             }, [setupPlayer, player]);
 
             useEffect(() => {
@@ -338,7 +343,7 @@
             }, []);
 
             useEffect(() => {
-                if (player && isSyncEnabled && !repeatingLine) {
+                if (player && isSyncEnabled) {
                     intervalRef.current = setInterval(() => {
                         if (player.getCurrentTime) {
                             const currentTime = player.getCurrentTime();
@@ -353,7 +358,7 @@
                     clearInterval(intervalRef.current);
                 }
                 return () => clearInterval(intervalRef.current);
-            }, [player, isSyncEnabled, repeatingLine, timeIndex]);
+            }, [player, isSyncEnabled, timeIndex]);
 
             useEffect(() => {
                 if (activeScriptLine && isSyncEnabled) {
@@ -371,26 +376,45 @@
                 }
             }, [activeScriptLine, isSyncEnabled]);
 
+            // --- 클릭으로 팝업 고정 해제 ---
             useEffect(() => {
-                if (repeatingLine && player && player.seekTo) {
-                    const [start, end] = repeatingLine.time;
-                    player.seekTo(start);
-                    if(player.playVideo) player.playVideo();
-                    intervalRef.current = setInterval(() => {
-                        if (player.getCurrentTime && player.getCurrentTime() >= end) {
-                            player.seekTo(start);
-                        }
-                    }, 200);
-                }
-                return () => clearInterval(intervalRef.current);
-            }, [repeatingLine, player]);
+                const handleClickAway = () => {
+                    if (pinnedPopupData) {
+                        setPinnedPopupData(null);
+                        setHighlightedVocab(null);
+                    }
+                };
+                window.addEventListener('click', handleClickAway);
+                return () => {
+                    window.removeEventListener('click', handleClickAway);
+                };
+            }, [pinnedPopupData]);
 
-            const handleRepeatClick = (line) => {
-                setRepeatingLine(prev => (prev && prev.id === line.id) ? null : line);
-            };
+            const handlePlayClip = useCallback((line) => {
+                if (player && player.seekTo && line.time) {
+                    const [start, end] = line.time;
+                    // Calculate duration in milliseconds
+                    const duration = (end - start) * 1000;
+                    
+                    player.seekTo(start);
+                    if (player.playVideo) player.playVideo();
+                    
+                    // Clear any existing timer to prevent multiple pauses
+                    if (window.playClipTimer) {
+                        clearTimeout(window.playClipTimer);
+                    }
+                    
+                    // Set a new timer to pause the video after the clip duration
+                    window.playClipTimer = setTimeout(() => {
+                        if (player.pauseVideo) player.pauseVideo();
+                    }, duration > 0 ? duration : 1000); // Ensure duration is positive, default to 1 sec if not
+                }
+            }, [player]); // Depends on the player object
 
             const handleWordHover = useCallback((e, baseForm) => {
                 e.stopPropagation();
+                if (pinnedPopupData) return; // --- 핀 고정 팝업이 있으면 호버 팝업을 띄우지 않음 ---
+
                 if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
 
                 const wordData = vocabMap.get(baseForm);
@@ -408,29 +432,63 @@
                         y = rect.top - tooltipHeight - 5;
                     }
                     setHoverPopupData({ data: wordData, position: { x, y } });
-                    setHighlightedVocab(wordData.term);
-
-                    const vocabElement = vocabRefs.current[wordData.term];
-                    if (vocabElement) {
-                        vocabElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    }
                 }
-            }, [vocabMap]);
+            }, [vocabMap, pinnedPopupData]); // --- pinnedPopupData 의존성 추가 ---
 
             const handleWordLeave = useCallback(() => {
                 hoverTimeoutRef.current = setTimeout(() => {
                     setHoverPopupData(null);
-                    setHighlightedVocab(null);
                 }, 200);
             }, []);
+
+            // --- 단어 클릭 시 팝업 고정 ---
+            const handleWordClick = useCallback((e, baseForm) => {
+                e.stopPropagation(); // --- window의 click 이벤트가 실행되지 않도록 함 ---
+                if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+                setHoverPopupData(null); // --- 호버 팝업은 숨김 ---
+
+                const wordData = vocabMap.get(baseForm);
+                if (wordData) {
+                    const rect = e.target.getBoundingClientRect();
+                    let x = rect.left;
+                    let y = rect.bottom + 5;
+                    const tooltipWidth = 320;
+                    if (x + tooltipWidth > window.innerWidth) {
+                        x = rect.right - tooltipWidth;
+                        if (x < 0) x = 10;
+                    }
+                    const tooltipHeight = 200; // Approximate height
+                    if (y + tooltipHeight > window.innerHeight + window.scrollY) {
+                        y = rect.top - tooltipHeight - 5;
+                    }
+
+                    // --- 이미 같은 단어가 고정되어 있으면 고정 해제 ---
+                    if (pinnedPopupData && pinnedPopupData.data.term === wordData.term) {
+                        setPinnedPopupData(null);
+                        setHighlightedVocab(null);
+                    } else {
+                        // --- 새 단어 고정 ---
+                        setPinnedPopupData({ data: wordData, position: { x, y } });
+                        setHighlightedVocab(wordData.term);
+
+                        // --- 어휘 목록 스크롤 ---
+                        const vocabElement = vocabRefs.current[wordData.term];
+                        if (vocabElement) {
+                            vocabElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+                    }
+                }
+            }, [vocabMap, pinnedPopupData]);
 
             const toggleTranslation = (lineId) => {
                 setTranslationsVisible(prev => ({ ...prev, [lineId]: !prev[lineId] }));
             };
 
+            const activePopupData = pinnedPopupData || hoverPopupData; // --- 고정된 팝업 우선 ---
+
             return (
                 <div className="video-materials-content">
-                    {hoverPopupData && <HoverTooltip data={hoverPopupData.data} position={hoverPopupData.position} />}
+                    {activePopupData && <HoverTooltip data={activePopupData.data} position={activePopupData.position} />}
                     <div ref={playerContainerRef} className="video-wrapper sticky top-0 z-40 bg-gray-50 py-4 no-print">
                         <div className={`w-full rounded-xl shadow-lg border-4 border-white overflow-hidden transition-all duration-300 ease-in-out aspect-video`}>
                             <div id="youtube-player" className="w-full h-full"></div>
@@ -448,7 +506,7 @@
                                             <div key={line.id} ref={el => scriptLineRefs.current[line.id] = el}
                                                 className={`p-3 my-2 rounded-lg transition-colors duration-300 ${isActive ? 'bg-yellow-100' : ''}`}>
                                                 <p className="whitespace-pre-wrap text-lg text-gray-800">
-                                                    <HighlightedText text={line.kor} highlightData={highlightData} onWordHover={handleWordHover} onWordLeave={handleWordLeave} lineId={line.id} activeWordId={activeWordId} />
+                                                    <HighlightedText text={line.kor} highlightData={highlightData} onWordHover={handleWordHover} onWordLeave={handleWordLeave} onWordClick={handleWordClick} lineId={line.id} activeWordId={activeWordId} />
                                                 </p>
                                                 {translationsVisible[line.id] && hasTranslation && (
                                                     <p className="text-gray-600 text-base mt-2">{line.eng}</p>
@@ -481,7 +539,7 @@
                                                 <p className={`${speakerNameClasses} ${isYuna ? 'self-start' : 'self-end'}`}>{line.speaker}</p>
                                                 <div className={bubbleClasses}>
                                                     <p className="whitespace-pre-wrap text-lg text-gray-800">
-                                                        <HighlightedText text={line.kor} highlightData={highlightData} onWordHover={handleWordHover} onWordLeave={handleWordLeave} lineId={line.id} activeWordId={activeWordId} />
+                                                        <HighlightedText text={line.kor} highlightData={highlightData} onWordHover={handleWordHover} onWordLeave={handleWordLeave} onWordClick={handleWordClick} lineId={line.id} activeWordId={activeWordId} />
                                                     </p>
                                                 </div>
                                                 <div className={`w-full flex flex-col ${isYuna ? 'items-start' : 'items-end'}`}>
@@ -490,8 +548,8 @@
                                                     )}
                                                     <div className="flex items-center gap-2 mt-2 px-2 no-print">
                                                         {line.time && (
-                                                            <button onClick={() => handleRepeatClick(line)} className={`text-xs px-2 py-1 rounded-md transition ${repeatingLine?.id === line.id ? 'bg-red-200 hover:bg-red-300 text-red-800' : 'bg-green-100 hover:bg-green-200 text-green-800'}`}>
-                                                                {repeatingLine?.id === line.id ? 'Stop loop' : 'Loop playback'}
+                                                            <button onClick={() => handlePlayClip(line)} className="text-xs px-2 py-1 rounded-md transition bg-green-100 hover:bg-green-200 text-green-800">
+                                                                Play Clip
                                                             </button>
                                                         )}
                                                         {hasTranslation && (
@@ -956,7 +1014,7 @@
                     { term: '부딪치다', mainDef: 'to bump into, to collide', examples: [{ kor: "길에서 사람과 부딪혔어요.", eng: "I bumped into someone on the street." }, { kor: "차가 나무에 부딪혔어요.", eng: "The car bumped into the tree." }], translations: { en: { main: 'to bump into, to collide' } } },
                     { term: '바보', mainDef: 'fool, idiot', examples: [{ kor: "저는 바보가 아니에요.", eng: "I am not a fool." }, { kor: "그렇게 말하지 마세요. 바보 같아요.", eng: "Don't say that. It sounds foolish." }], translations: { en: { main: 'fool, idiot' } } },
                     { term: '자리를 바꿔 앉으면 되죠', mainDef: 'We just need to switch seats / All we have to do is change seats', examples: [{ kor: "피곤하면 조금 쉬면 돼요.", eng: "If you are tired, you just need to rest a bit." }, { kor: "모르면 질문하면 돼요.", eng: "If you don't know, you just have to ask." }], translations: { en: { main: 'We just need to switch seats / All we have to do is change seats' } }, subDefs: [{ subTerm: '자리', subDef: 'seat, place', translations: { en: { def: 'seat, place' } } }, { subTerm: '바꿔 앉다', subDef: 'to switch seats, to change seats', translations: { en: { def: 'to switch seats, to change seats' } } }, { subTerm: '-면/으면 되다', subDef: 'used to say that one condition or action is enough, often translated as "all you have to do is …" or "it\'s fine if …."', translations: { en: { def: '"all you have to do is …" or "it\'s fine if …."' } } }, { subTerm: '-죠', subDef: 'informal sentence ending used for confirmation or emphasis', translations: { en: { def: 'informal sentence ending used for confirmation or emphasis' } } }] },
-                    { term: '오늘은 여기까지 할게요', mainDef: "Let's stop here for today / That's all for today", examples: [{ kor: "수업은 여기까지 할게요.", eng: "Let's stop the class here." }, { kor: "오늘은 이 일만 할게요.", eng: "I will only do this work for today." }], translations: { en: { main: "Let's stop here for today / That's all for today" } }, subDefs: [{ subTerm: '여기까지', subDef: 'up to here, this far', translations: { en: { def: 'up to here, this far' } } }, { subTerm: '-게요', subDef: 'used to politely express your decision or intention to do something, especially when it affects the listener', translations: { en: { def: 'used to politely express your decision or intention to do something, especially when it affects the listener' } } }] },
+                    { term: '오늘은 여기까지 할게요', mainDef: "Let's stop here for today / That's all for today", examples: [{ kor: "수업은 여기까지 할게요.", eng: "Let's stop the class here." }, { kor: "오늘은 이 일만 할게요.", eng: "I will only do this work for today." }], translations: { en: { main: "Let's stop here for today / That's all for today" } }, subDefs: [{ subTerm: '여기까지', subDef: 'up to here, this far', translations: { en: { def: 'up to here, this far' } } }, { subTerm: '-게요', subDef: 'used to politely express your decision or intention to do something, especially when it affects the listener', translations: { en: { def: 'used to politely express your decision or intention to do something, especially when it affects the listener' } } }] }
                 ];
                 const sentences = [
                     { id: 1, parts: ["전 세계에서 약 10%의 사람들이 \"", "\"예요."], answer: "왼손잡이", bank: ["왼손잡이", "오른손잡이", "예술가", "과학자"], eng_parts: ["Approximately 10% of people worldwide are \"", "\"."], eng_answer: "left-handed", eng_hint: "People who use their left hand.", eng_explanation: "The dialogue states that about 10% of the world's population is left-handed.", eng_wrongAnswerExplanations: { "오른손잡이": "'Right-handed people' are mentioned for comparison, but they are not the main topic.", "예술가": "This is a stereotype discussed, not a fact about the population.", "과학자": "This is a stereotype discussed, not a fact about the population." } },
@@ -1051,7 +1109,7 @@
                                 <h2 className="text-3xl font-extrabold text-gray-900 mb-8 flex items-center gap-3"><List className="w-8 h-8 text-green-600"/> 핵심 어휘 (Key Vocabulary)</h2>
                                 <div className="w-full">
                                     <div className="border rounded-lg bg-white p-2 shadow-lg">
-                                        <div className="space-y-1">{vocabAndGrammarList.map(item => <VocabItem key={item.term} item={item} />)}</div>
+                                        <div className="space-y-1">{vocabAndGramgmarList.map(item => <VocabItem key={item.term} item={item} />)}</div>
                                     </div>
                                 </div>
                             </div>
