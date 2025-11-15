@@ -115,12 +115,7 @@
         const MessageSquare = ({ className }) => <Icon className={className}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></Icon>;
         const ThumbsUp = ({ className }) => <Icon className={className}><path d="M7 10v12"></path><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a2 2 0 0 1 3 1.88V5Z"></path></Icon>;
         const List = ({ className }) => <Icon className={className}><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></Icon>;
-        const Spinner = ({ className = 'w-5 h-5' }) => (
-            <svg className={`animate-spin ${className}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-        );
+        const Spinner = ({ className = 'w-5 h-5' }) => (<svg className={`animate-spin ${className}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>);
 
         // --- 공용 컴포넌트: 번역 버튼 ---
         const TranslateButton = React.memo(({ textToTranslate }) => {
@@ -161,13 +156,7 @@
                 finally { if (isMounted.current) setIsLoading(false); }
             }, [show, translation, textToTranslate]);
 
-            return (
-                <div className="mt-1 no-print">
-                    <button onClick={handleTranslate} disabled={isLoading} className="text-xs text-gray-500 hover:text-gray-800 font-semibold py-1 px-2 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors disabled:text-gray-300">{isLoading ? '번역 중...' : (show ? '번역 숨기기' : `번역 (${buttonLang})`)}</button>
-                    {show && translation && <p className="text-gray-600 text-base mt-2 mb-2 whitespace-pre-wrap">{translation}</p>}
-                    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-                </div>
-            );
+            return (<div className="mt-1 no-print"><button onClick={handleTranslate} disabled={isLoading} className="text-xs text-gray-500 hover:text-gray-800 font-semibold py-1 px-2 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors disabled:text-gray-300">{isLoading ? '번역 중...' : (show ? '번역 숨기기' : `번역 (${buttonLang})`)}</button>{show && translation && <p className="text-gray-600 text-base mt-2 mb-2 whitespace-pre-wrap">{translation}</p>}{error && <p className="text-red-500 text-sm mt-1">{error}</p>}</div>);
         });
 
         // --- [동영상 자료] 탭 관련 컴포넌트 ---
@@ -274,7 +263,7 @@
             const [activeScriptLine, setActiveScriptLine] = useState(null);
             const [isSyncEnabled, setIsSyncEnabled] = useState(true);
             const [hoverPopupData, setHoverPopupData] = useState(null);
-            const [pinnedPopupData, setPinnedPopupData] = useState(null); // --- 클릭 고정 팝업 상태 ---
+            const [pinnedPopupData, setPinnedPopupData] = useState(null);
             const [highlightedVocab, setHighlightedVocab] = useState(null);
             const [translationsVisible, setTranslationsVisible] = useState({});
             const [playerHeight, setPlayerHeight] = useState(0);
@@ -290,7 +279,6 @@
             const activeScriptLineRef = useRef(activeScriptLine);
             activeScriptLineRef.current = activeScriptLine;
 
-            // --- Phase 2: Indexing for performance ---
             const timeIndex = useMemo(() => {
                 return scriptContent
                     .filter(line => line.time)
@@ -376,7 +364,6 @@
                 }
             }, [activeScriptLine, isSyncEnabled]);
 
-            // --- 클릭으로 팝업 고정 해제 ---
             useEffect(() => {
                 const handleClickAway = () => {
                     if (pinnedPopupData) {
@@ -393,27 +380,24 @@
             const handlePlayClip = useCallback((line) => {
                 if (player && player.seekTo && line.time) {
                     const [start, end] = line.time;
-                    // Calculate duration in milliseconds
                     const duration = (end - start) * 1000;
                     
                     player.seekTo(start);
                     if (player.playVideo) player.playVideo();
                     
-                    // Clear any existing timer to prevent multiple pauses
                     if (window.playClipTimer) {
                         clearTimeout(window.playClipTimer);
                     }
                     
-                    // Set a new timer to pause the video after the clip duration
                     window.playClipTimer = setTimeout(() => {
                         if (player.pauseVideo) player.pauseVideo();
-                    }, duration > 0 ? duration : 1000); // Ensure duration is positive, default to 1 sec if not
+                    }, duration > 0 ? duration : 1000);
                 }
-            }, [player]); // Depends on the player object
+            }, [player]);
 
             const handleWordHover = useCallback((e, baseForm) => {
                 e.stopPropagation();
-                if (pinnedPopupData) return; // --- 핀 고정 팝업이 있으면 호버 팝업을 띄우지 않음 ---
+                if (pinnedPopupData) return;
 
                 if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
 
@@ -427,13 +411,13 @@
                         x = rect.right - tooltipWidth;
                         if (x < 0) x = 10;
                     }
-                    const tooltipHeight = 200; // Approximate height
+                    const tooltipHeight = 200;
                     if (y + tooltipHeight > window.innerHeight + window.scrollY) {
                         y = rect.top - tooltipHeight - 5;
                     }
                     setHoverPopupData({ data: wordData, position: { x, y } });
                 }
-            }, [vocabMap, pinnedPopupData]); // --- pinnedPopupData 의존성 추가 ---
+            }, [vocabMap, pinnedPopupData]);
 
             const handleWordLeave = useCallback(() => {
                 hoverTimeoutRef.current = setTimeout(() => {
@@ -441,11 +425,10 @@
                 }, 200);
             }, []);
 
-            // --- 단어 클릭 시 팝업 고정 ---
             const handleWordClick = useCallback((e, baseForm) => {
-                e.stopPropagation(); // --- window의 click 이벤트가 실행되지 않도록 함 ---
+                e.stopPropagation();
                 if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-                setHoverPopupData(null); // --- 호버 팝업은 숨김 ---
+                setHoverPopupData(null);
 
                 const wordData = vocabMap.get(baseForm);
                 if (wordData) {
@@ -457,21 +440,18 @@
                         x = rect.right - tooltipWidth;
                         if (x < 0) x = 10;
                     }
-                    const tooltipHeight = 200; // Approximate height
+                    const tooltipHeight = 200;
                     if (y + tooltipHeight > window.innerHeight + window.scrollY) {
                         y = rect.top - tooltipHeight - 5;
                     }
 
-                    // --- 이미 같은 단어가 고정되어 있으면 고정 해제 ---
                     if (pinnedPopupData && pinnedPopupData.data.term === wordData.term) {
                         setPinnedPopupData(null);
                         setHighlightedVocab(null);
                     } else {
-                        // --- 새 단어 고정 ---
                         setPinnedPopupData({ data: wordData, position: { x, y } });
                         setHighlightedVocab(wordData.term);
 
-                        // --- 어휘 목록 스크롤 ---
                         const vocabElement = vocabRefs.current[wordData.term];
                         if (vocabElement) {
                             vocabElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -484,7 +464,7 @@
                 setTranslationsVisible(prev => ({ ...prev, [lineId]: !prev[lineId] }));
             };
 
-            const activePopupData = pinnedPopupData || hoverPopupData; // --- 고정된 팝업 우선 ---
+            const activePopupData = pinnedPopupData || hoverPopupData;
 
             return (
                 <div className="video-materials-content">
@@ -528,7 +508,6 @@
                                     const yunaBubbleColor = 'bg-green-100';
                                     const woodyBubbleColor = 'bg-white';
                                     const activeBubbleColor = 'bg-yellow-100';
-                                    // Determine tailClass based on speaker
                                     const tailClass = isYuna ? 'bubble-tail-left bubble-kkn20' : 'bubble-tail-right bubble-other';
                                     const bubbleClasses = `${bubbleBaseClasses} ${isActive ? activeBubbleColor : (isYuna ? yunaBubbleColor : woodyBubbleColor)} ${tailClass} ${isActive ? 'bubble-active' : ''}`;
                                     const speakerNameClasses = `font-bold mb-1 ${isYuna ? 'text-green-800' : 'text-blue-800'}`;
@@ -702,14 +681,13 @@
                         responseSchema: { type: "OBJECT", properties: { "is_relevant": { "type": "BOOLEAN" }, "relevance_feedback_kor": { "type": "STRING", "nullable": true }, "relevance_feedback_eng": { "type": "STRING", "nullable": true }, "is_correct": { "type": "BOOLEAN", "nullable": true }, "feedback_message_kor": { "type": "STRING", "nullable": true }, "feedback_message_eng": { "type": "STRING", "nullable": true }, "corrected_sentence": { "type": "STRING", "nullable": true }, "explanation_kor": { "type": "STRING", "nullable": true }, "explanation_eng": { "type": "STRING", "nullable": true }, "alternative_expressions": { "type": "ARRAY", "items": { "type": "OBJECT", "properties": { "expression_kor": { "type": "STRING" }, "expression_eng": { "type": "STRING" } }, "required": ["expression_kor", "expression_eng"] } } }, "required": ["is_relevant"] }
                     }
                 };
-                const apiKey = ""; // NOTE: The API key is intentionally left blank.
+                const apiKey = "";
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
                 try {
                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                     if (!response.ok) throw new Error(`API error: ${response.statusText}`);
                     const result = await response.json();
 
-                    // Enhanced error handling for API response
                     if (result.candidates && result.candidates.length > 0 &&
                         result.candidates[0].content && result.candidates[0].content.parts &&
                         result.candidates[0].content.parts.length > 0 && result.candidates[0].content.parts[0].text) {
@@ -789,6 +767,8 @@
                                     {q.vocab.map((v, i) => (
                                         <div key={i} className="pl-4 border-l-2 border-gray-200 py-2">
                                             <p className="font-semibold text-green-700 text-lg">{v.term}: <span className="font-medium text-gray-700 text-base">{v.meaning_eng}</span></p>
+                                            
+                                            {/* "대화 속에서 살펴보기" 섹션 제거됨
                                             <div className="mt-2">
                                                 <h4 className="flex items-center gap-2 text-sm font-bold text-gray-600"><span>💬</span> 대화 속에서 살펴보기 (See it in Context)</h4>
                                                 <div className="mt-1 p-3 bg-gray-100 rounded-lg">
@@ -797,6 +777,7 @@
                                                     <button onClick={() => toggleTranslation(`q-${q.num}-context-${i}`)} className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-1 px-2 rounded-full transition duration-200 mt-2">번역 (Translation)</button>
                                                 </div>
                                             </div>
+                                            */}
                                         </div>
                                     ))}
                                 </div>
@@ -822,10 +803,6 @@
             return (
                 <div>
                     <div className="border-b border-gray-200 no-print">
-                        {/* MODIFIED:
-                          Condition 3: Wrap tabs only on < md screens (640px)
-                          Condition 1: Use responsive gaps between tabs
-                        */}
                         <nav className="
                             -mb-px flex items-center 
                             flex-wrap sm:flex-nowrap 
@@ -833,7 +810,6 @@
                         " aria-label="Tabs">
                             {tabs.map((tab, index) => (
                                 <button
-                                    // MODIFIED: Use name_kor for key
                                     key={tab.name_kor} onClick={() => setActiveTab(index)}
                                     className={`${ 
                                         index === activeTab 
@@ -842,33 +818,18 @@
                                     } 
                                     py-4 px-1 border-b-2 font-medium transition-colors 
                                     flex items-center 
-                                    
-                                    // Condition 1: Responsive gap (icon to text)
                                     gap-1 md:gap-2 
-                                    
-                                    // Condition 1: Responsive font size
                                     text-sm md:text-base
-                                    
-                                    // When tabs wrap (< sm), add bottom margin
                                     mb-2 sm:mb-0
                                     `}
                                 >
-                                    {/* MODIFIED: Clone icon with responsive classes (Condition 1) */}
                                     {React.cloneElement(tab.icon, { className: 'w-5 h-5 md:w-6 md:h-6 flex-shrink-0' })}
                                     
-                                    {/* MODIFIED: Text container for soft break (Condition 2) */}
                                     <span className="
                                         flex items-baseline gap-x-1.5 
-                                        
-                                        /* MODIFIED: flex-nowrap을 flex-wrap으로 변경하여 한글/영어 유닛이 줄바꿈되도록 수정 */
                                         flex-wrap 
-                                        
-                                        /* On lg+ (when text is 1 line), center it */
-                                        /* NOTE: items-baseline is better for alignment when text wraps */
-                                        /* lg:items-center */ /* Removing this for consistent baseline alignment */
                                     ">
                                         <span className="kor-text whitespace-nowrap">{tab.name_kor}</span>
-                                        {/* MODIFIED: 영어 글자 크기를 2px 작게 조정 (text-xs/12px, md:text-sm/14px) */ }
                                         <span className="eng-text text-gray-400 whitespace-nowrap text-xs md:text-sm">{tab.name_eng}</span>
                                     </span>
                                 </button>
@@ -903,16 +864,12 @@
                     }
                     setContainerWidth(newContainerWidth); setLayoutMode(newMode); document.body.dataset.layoutMode = newMode;
                     
-                    {/* MODIFIED: Increase base width from 30cm to 35cm to make font scale "earlier" */}
                     const baseWidthPx = 35 * 37.795; let effectiveWidthPx;
                     
                     if (newContainerWidth === '100%') { effectiveWidthPx = widthInPx; }
                     else { const cmValue = parseFloat(newContainerWidth); effectiveWidthPx = cmValue * 37.795; }
                     if (newMode !== 'large') { const scale = Math.min(1.0, effectiveWidthPx / baseWidthPx); 
-                        
-                        {/* MODIFIED: Lowered minimum scale from 0.8 to 0.7 to make font "more significantly" smaller */}
                         const finalScale = Math.max(0.7, scale); 
-                        
                         document.documentElement.style.fontSize = `${16 * finalScale}px`; }
                     else { document.documentElement.style.fontSize = '16px'; }
                 };
@@ -921,116 +878,115 @@
             }, []);
 
             const { scriptContent, vocabAndGrammarList, sentences, discussionQuestions } = useMemo(() => {
-                // Data structures remain multi-line for readability
                 const scriptContent = [
-                    { id: 's1', speaker: '우디', kor: '안녕하세요! <이 주제로 이야기해 봐요> 팟캐스트예요.', time: [12.500, 16.167] },
-                    { id: 's2', speaker: '우디', kor: '저는 우디예요?', time: [16.229, 17.802] },
-                    { id: 's3', speaker: '유나', kor: '안녕하세요! 저는 유나예요.', time: [17.948, 20.648] },
-                    { id: 's4', speaker: '우디', kor: '유나 씨, 오늘 저는 정말 바빠요!', time: [20.700, 24.267] },
-                    { id: 's5', speaker: '우디', kor: '그런데 문제가 있어요.', time: [24.267, 26.080] },
-                    { id: 's6', speaker: '유나', kor: '무슨 문제요?', time: [26.192, 27.445] },
-                    { id: 's7', speaker: '우디', kor: '할 일이 너무 많아서 오늘 일을 못 끝낼 것 같아요.😢', time: [27.532, 31.841] },
-                    { id: 's8', speaker: '유나', kor: '음... 그럼 늦게 퇴근하면 되겠네요.', time: [31.940, 35.629] },
-                    { id: 's9', speaker: '유나', kor: '먼저 퇴근할게요.', time: [35.703, 37.327] },
-                    { id: 's10', speaker: '유나', kor: '‘퇴근하다’는 ‘일이 끝나고 집에 가다’라는 뜻이에요.', time: [37.426, 42.188], eng: "'To get off work' means 'to finish work and go home'." },
-                    { id: 's11', speaker: '우디', kor: '네?😧 무슨 말이에요?', time: [42.399, 44.760] },
-                    { id: 's12', speaker: '우디', kor: '저도 퇴근할 거예요.', time: [44.896, 46.177] },
-                    { id: 's13', speaker: '우디', kor: '오늘은 늦게까지 일하기 싫어요.', time: [46.425, 48.939] },
-                    { id: 's14', speaker: '유나', kor: '그냥 미루는 거 아니에요?', time: [49.200, 51.166] },
-                    { id: 's15', speaker: '유나', kor: "'미루다'는 '나중에 하다'라는 뜻이에요.", time: [51.290, 54.836], eng: "'To procrastinate' means 'to do later'." },
-                    { id: 's16', speaker: '우디', kor: '아니에요. 효율적인 거예요.', time: [55.059, 57.959] },
-                    { id: 's17', speaker: '우디', kor: '‘효율적이다’는 ’조금 일하고 좋은 결과를 얻어요.', time: [58.133, 62.583], eng: "'To be efficient' means 'to work a little and get good results'." },
-                    { id: 's18', speaker: '우디', kor: '오늘의 우디는 쉬고, 내일의 우디가 열심히 일하는 거예요!', time: [62.901, 68.352] },
-                    { id: 's19', speaker: '유나', kor: '우디 씨... 그건 말이 안 돼요.', time: [68.600, 72.000] },
-                    { id: 's20', speaker: '유나', kor: '오늘의 우디와 내일의 우디는 같은 사람이에요.🤨', time: [72.000, 76.095] },
-                    { id: 's21', speaker: '우디', kor: '아니에요! 완전히 다른 사람이에요!', time: [76.400, 79.558] },
-                    { id: 's22', speaker: '우디', kor: '내일의 우디는 천재예요.', time: [79.694, 82.062] },
-                    { id: 's23', speaker: '우디', kor: '‘천재’는 ‘머리가 좋은 사람’이라는 뜻이에요.', time: [82.236, 86.242], eng: "'Genius' means 'a smart person'." },
-                    { id: 's24', speaker: '유나', kor: '그럼 어제의 우디가 오늘의 우디에게 일을 맡겼는데,', time: [86.316, 91.244] },
-                    { id: 's25', speaker: '유나', kor: '오늘의 우디는 왜 안 했어요?', time: [91.244, 93.695] },
-                    { id: 's26', speaker: '유나', kor: '‘맡기다’는 ‘나의 일을 다른 사람에게 주다’라는 뜻이에요.', time: [93.881, 99.879], eng: "'To entrust' means 'to give my work to another person'." },
-                    { id: 's27', speaker: '우디', kor: '😳 그…그건... 어제의 우디가 바보였어요!🤪', time: [101.080, 107.798] },
-                    { id: 's28', speaker: '우디', kor: "'바보'는 '머리가 나쁜 사람'이라는 뜻이에요.", time: [108.108, 112.683], eng: "'Fool' means 'a person who is not smart'." },
-                    { id: 's29', speaker: '우디', kor: '하지만 내일의 우디는 달라요!', time: [113.067, 116.467] },
-                    { id: 's30', speaker: '유나', kor: '내일의 우디가 "모레의 우디가 할 거야"라고 말할 수도 있어요.', time: [117.000, 122.207] },
-                    { id: 's31', speaker: '유나', kor: '‘모레’는 ‘내일의 다음 날’이라는 뜻이에요.', time: [122.268, 126.397], eng: "'The day after tomorrow' means 'the day after tomorrow'." },
-                    { id: 's32', speaker: '유나', kor: '그럼 어떻게 할 거예요?', time: [126.757, 128.802] },
-                    { id: 's33', speaker: '우디', kor: '아... 그건... 음...🤔 괜찮아요!', time: [129.199, 133.968] },
-                    { id: 's34', speaker: '우디', kor: '언젠가는 똑똑한 우디가 다 할 거예요😎!', time: [134.336, 138.176] },
-                    { id: 's35', speaker: '유나', kor: '우디 씨는 게을러요.', time: [138.400, 140.579] },
-                    { id: 's36', speaker: '유나', kor: "'게으르다'는 '일하기 싫어하다'라는 뜻이에요.", time: [140.652, 144.454], eng: "'To be lazy' means 'to hate working'." },
-                    { id: 's37', speaker: '우디', kor: '유나 씨는 로봇이에요?', time: [144.800, 146.819] },
-                    { id: 's38', speaker: '우디', kor: '어떻게 안 쉬고 일을 해요?', time: [147.000, 148.833] },
-                    { id: 's39', speaker: '우디', kor: '저는 오늘 피곤해서 일을 할 수 없어요.', time: [149.283, 152.730] },
-                    { id: 's40', speaker: '유나', kor: '그래도 오늘 일은 오늘 해야 해요.', time: [153.301, 156.882] },
-                    { id: 's41', speaker: '유나', kor: '그렇지 않으면, 회사에서 잘릴 수 있어요.', time: [156.979, 160.708] },
-                    { id: 's42', speaker: '유나', kor: '‘회사에서 잘리다’는 ‘더 이상 회사에 갈 수 없다’라는 뜻이에요.', time: [161.017, 166.928], eng: "'To get fired from work' means 'to not be able to go to the company anymore'." },
-                    { id: 's43', speaker: '우디', kor: '헐 😱😨. 유나 씨, 저 오늘 야근할게요.😫😭', time: [167.400, 172.349] },
-                    { id: 's44', speaker: '우디', kor: '‘야근하다’는 \'밤 늦게까지 일하다’라는 뜻이에요.', time: [172.659, 177.819], eng: "'To work overtime' means 'to work late into the night'." },
-                    { id: 's45', speaker: '우디', kor: '먼저 집에 가세요.😞😢', time: [178.455, 180.229] },
-                    { id: 's46', speaker: '유나', kor: '네, 그럼 내일 아침에 만나요.', time: [180.501, 183.932] },
-                    { id: 's47', speaker: '우디', kor: '그럼 오늘은 혼자😢 단어를 정리해 볼게요.', time: [184.427, 189.186] },
-                    { id: 's48', speaker: '우디', kor: '• 퇴근하다: 일이 끝나고 집에 가다', time: [189.782, 193.526] },
-                    { id: 's49', speaker: '우디', kor: '• 미루다: 나중에 하다', time: [193.910, 196.657] },
-                    { id: 's50', speaker: '우디', kor: '• 효율적이다: 조금 일하고 좋은 결과를 얻다', time: [197.142, 201.817] },
-                    { id: 's51', speaker: '우디', kor: '• 천재: 머리가 좋은 사람', time: [202.154, 205.160] },
-                    { id: 's52', speaker: '우디', kor: '• 맡기다: 나의 일을 다른 사람에게 주다', time: [205.520, 209.647] },
-                    { id: 's53', speaker: '유나', kor: '• 바보: 머리가 나쁜 사람', time: [210.614, 213.819] },
-                    { id: 's54', speaker: '유나', kor: '• 모레: 내일의 다음 날', time: [214.004, 216.782] },
-                    { id: 's55', speaker: '유나', kor: '• 게으르다: 일하기 싫어하다', time: [216.968, 220.079] },
-                    { id: 's56', speaker: '유나', kor: '• 회사에서 잘리다: 더 이상 회사에 갈 수 없다', time: [220.252, 224.787] },
-                    { id: 's57', speaker: '유나', kor: '• 야근하다: 밤 늦게까지 일하다', time: [225.126, 228.643] },
-                    { id: 's58', speaker: '우디', kor: '😯유나 씨, 아직 집에 안 갔어요?', time: [230.000, 233.500] },
-                    { id: 's59', speaker: '유나', kor: '네, 저는 착한 사람이니까 우디 씨 일을 조금 도와줄게요.', time: [233.698, 239.931] },
-                    { id: 's60', speaker: '우디', kor: '고마워요 유나 씨.🥹', time: [240.439, 242.655] },
-                    { id: 's61', speaker: '우디', kor: '그럼 여러분 오늘은 여기까지 할게요.', time: [243.151, 246.764] },
-                    { id: 's62', speaker: '우디', kor: '저는 일해야 해요.😥', time: [246.764, 248.491] },
-                    { id: 's63', speaker: '유나', kor: '안녕히 계세요! 다음에 또 만나요!', time: [248.827, 252.688] }
+                  { id: 's1', speaker: '우디', kor: '안녕하세요! <이 주제로 이야기해 봐요> 팟캐스트예요.', time: [12.500, 16.167], eng: 'Hello! This is the <Let\'s Talk About This Topic> podcast.' },
+                  { id: 's2', speaker: '우디', kor: '저는 우디예요?', time: [16.229, 17.802], eng: 'I\'m Woody?' },
+                  { id: 's3', speaker: '유나', kor: '안녕하세요! 저는 유나예요.', time: [17.948, 20.648], eng: 'Hello! I\'m Yuna.' },
+                  { id: 's4', speaker: '우디', kor: '유나 씨, 오늘 저는 정말 바빠요!', time: [20.700, 24.267], eng: 'Yuna, I\'m really busy today!' },
+                  { id: 's5', speaker: '우디', kor: '그런데 문제가 있어요.', time: [24.267, 26.080], eng: 'But there\'s a problem.' },
+                  { id: 's6', speaker: '유나', kor: '무슨 문제요?', time: [26.192, 27.445], eng: 'What problem?' },
+                  { id: 's7', speaker: '우디', kor: '할 일이 너무 많아서 오늘 일을 못 끝낼 것 같아요.😢', time: [27.532, 31.841], eng: 'I have so much work, I don\'t think I can finish it today. 😢' },
+                  { id: 's8', speaker: '유나', kor: '음... 그럼 늦게 퇴근하면 되겠네요.', time: [31.940, 35.629], eng: 'Hmm... Then you can just leave work late.' },
+                  { id: 's9', speaker: '유나', kor: '먼저 퇴근할게요.', time: [35.703, 37.327], eng: 'I\'ll be leaving first.' },
+                  { id: 's10', speaker: '유나', kor: '‘퇴근하다’는 ‘일이 끝나고 집에 가다’라는 뜻이에요.', time: [37.426, 42.188], eng: '‘To leave work’ (퇴근하다) means ‘to finish work and go home’.' },
+                  { id: 's11', speaker: '우디', kor: '네?😧 무슨 말이에요?', time: [42.399, 44.760], eng: 'What? 😧 What do you mean?' },
+                  { id: 's12', speaker: '우디', kor: '저도 퇴근할 거예요.', time: [44.896, 46.177], eng: 'I\'m going to leave work too.' },
+                  { id: 's13', speaker: '우디', kor: '오늘은 늦게까지 일하기 싫어요.', time: [46.425, 48.939], eng: 'I don\'t want to work late today.' },
+                  { id: 's14', speaker: '유나', kor: '그냥 미루는 거 아니에요?', time: [49.200, 51.166], eng: 'Aren\'t you just procrastinating?' },
+                  { id: 's15', speaker: '유나', kor: '\'미루다\'는 \'나중에 하다\'라는 뜻이에요.', time: [51.290, 54.836], eng: '‘To procrastinate’ (미루다) means ‘to do later’.' },
+                  { id: 's16', speaker: '우디', kor: '아니에요. 효율적인 거예요.', time: [55.059, 57.959], eng: 'No. It\'s being efficient.' },
+                  { id: 's17', speaker: '우디', kor: '‘효율적이다’은 ’조금 일하고 좋은 결과를 얻어요.\'', time: [58.133, 62.583], eng: '‘To be efficient’ (효율적이다) means ‘you work a little and get good results’.' },
+                  { id: 's18', speaker: '우디', kor: '오늘의 우디는 쉬고, 내일의 우디가 열심히 일하는 거예요!', time: [62.901, 68.352], eng: 'Today\'s Woody rests, and tomorrow\'s Woody works hard!' },
+                  { id: 's19', speaker: '유나', kor: '우디 씨... 그건 말이 안 돼요.', time: [68.600, 72.000], eng: 'Woody... that doesn\'t make sense.' },
+                  { id: 's20', speaker: '유나', kor: '오늘의 우디와 내일의 우디는 같은 사람이에요.🤨', time: [72.000, 76.095], eng: 'Today\'s Woody and tomorrow\'s Woody are the same person. 🤨' },
+                  { id: 's21', speaker: '우디', kor: '아니에요! 완전히 다른 사람이에요!', time: [76.400, 79.558], eng: 'No! They are completely different people!' },
+                  { id: 's22', speaker: '우디', kor: '내일의 우디는 천재예요.', time: [79.694, 82.062], eng: 'Tomorrow\'s Woody is a genius.' },
+                  { id: 's23', speaker: '우디', kor: '‘천재’는 ‘머리가 좋은 사람’이라는 뜻이에요.', time: [82.236, 86.242], eng: '‘Genius’ (천재) means ‘a person who is very smart’.' },
+                  { id: 's24', speaker: '유나', kor: '그럼 어제의 우디가 오늘의 우디에게 일을 맡겼는데,', time: [86.316, 91.244], eng: 'Then yesterday\'s Woody entrusted work to today\'s Woody,' },
+                  { id: 's25', speaker: '유나', kor: '오늘의 우디는 왜 안 했어요?', time: [91.244, 93.695], eng: 'so why didn\'t today\'s Woody do it?' },
+                  { id: 's26', speaker: '유나', kor: '‘맡기다’는 ‘나의 일을 다른 사람에게 주다’라는 뜻이에요.', time: [93.881, 99.879], eng: '‘To entrust’ (맡기다) means ‘to give my work to another person’.' },
+                  { id: 's27', speaker: '우디', kor: '😳 그…그건... 어제의 우디가 바보였어요!🤪', time: [101.080, 107.798], eng: '😳 Th...that\'s... Yesterday\'s Woody was a fool! 🤪' },
+                  { id: 's28', speaker: '우디', kor: '\'바보\'는 \'머리가 나쁜 사람\'이라는 뜻이에요.', time: [108.108, 112.683], eng: '‘Fool’ (바보) means ‘a person who is not smart’.' },
+                  { id: 's29', speaker: '우디', kor: '하지만 내일의 우디는 달라요!', time: [113.067, 116.467], eng: 'But tomorrow\'s Woody is different!' },
+                  { id: 's30', speaker: '유나', kor: '내일의 우디가 "모레의 우디가 할 거야"라고 말할 수도 있어요.', time: [117.000, 122.207], eng: 'Tomorrow\'s Woody might say, "The day after tomorrow\'s Woody will do it".' },
+                  { id: 's31', speaker: '유나', kor: '‘모레’는 ‘내일의 다음 날’이라는 뜻이에요.', time: [122.268, 126.397], eng: '‘The day after tomorrow’ (모레) means ‘the day after tomorrow’.' },
+                  { id: 's32', speaker: '유나', kor: '그럼 어떻게 할 거예요?', time: [126.757, 128.802], eng: 'What will you do then?' },
+                  { id: 's33', speaker: '우디', kor: '아... 그건... 음...🤔 괜찮아요!', time: [129.199, 133.968], eng: 'Ah... that\'s... um... 🤔 It\'s okay!' },
+                  { id: 's34', speaker: '우디', kor: '언젠가는 똑똑한 우디가 다 할 거예요😎!', time: [134.336, 138.176], eng: 'Sometime, a smart Woody will do it all! 😎' },
+                  { id: 's35', speaker: '유나', kor: '우디 씨는 게을러요.', time: [138.400, 140.579], eng: 'Woody, you are lazy.' },
+                  { id: 's36', speaker: '유나', kor: '\'게으르다\'는 \'일하기 싫어하다\'라는 뜻이에요.', time: [140.652, 144.454], eng: '‘To be lazy’ (게으르다) means ‘to hate working’.' },
+                  { id: 's37', speaker: '우디', kor: '유나 씨는 로봇이에요?', time: [144.800, 146.819], eng: 'Yuna, are you a robot?' },
+                  { id: 's38', speaker: '우디', kor: '어떻게 안 쉬고 일을 해요?', time: [147.000, 148.833], eng: 'How do you work without resting?' },
+                  { id: 's39', speaker: '우디', kor: '저는 오늘 피곤해서 일을 할 수 없어요.', time: [149.283, 152.730], eng: 'I\'m tired today, so I can\'t work.' },
+                  { id: 's40', speaker: '유나', kor: '그래도 오늘 일은 오늘 해야 해요.', time: [153.301, 156.882], eng: 'Still, today\'s work must be done today.' },
+                  { id: 's41', speaker: '유나', kor: '그렇지 않으면, 회사에서 잘릴 수 있어요.', time: [156.979, 160.708], eng: 'Otherwise, you could get fired from the company.' },
+                  { id: 's42', speaker: '유나', kor: '회사에서 잘리다’는 ‘더 이상 회사에 갈 수 없다’라는 뜻이에요.', time: [161.017, 166.928], eng: '‘To get fired’ (회사에서 잘리다) means ‘you cannot go to the company anymore’.' },
+                  { id: 's43', speaker: '우디', kor: '헐 😱😨. 유나 씨, 저 오늘 야근할게요.😫😭', time: [167.400, 172.349], eng: 'Whoa 😱😨. Yuna, I\'ll work overtime tonight. 😫😭' },
+                  { id: 's44', speaker: '우디', kor: '‘야근하다’는 \'밤 늦게까지 일하다’라는 뜻이에요.', time: [172.659, 177.819], eng: '‘To work overtime’ (야근하다) means ‘to work late into the night’.' },
+                  { id: 's45', speaker: '우디', kor: '먼저 집에 가세요.😞😢', time: [178.455, 180.229], eng: 'You can go home first. 😞😢' },
+                  { id: 's46', speaker: '유나', kor: '네, 그럼 내일 아침에 만나요.', time: [180.501, 183.932], eng: 'Okay, then I\'ll see you tomorrow morning.' },
+                  { id: 's47', speaker: '우디', kor: '그럼 오늘은 혼자😢 단어를 정리해 볼게요.', time: [184.427, 189.186], eng: 'Then I\'ll review the vocabulary by myself😢 today.' },
+                  { id: 's48', speaker: '우디', kor: '• 퇴근하다: 일이 끝나고 집에 가다', time: [189.782, 193.526], eng: '• To leave work (퇴근하다): to finish work and go home' },
+                  { id: 's49', speaker: '우디', kor: '• 미루다: 나중에 하다', time: [193.910, 196.657], eng: '• To procrastinate (미루다): to do later' },
+                  { id: 's50', speaker: '우디', kor: '• 효율적이다: 조금 일하고 좋은 결과를 얻다', time: [197.142, 201.817], eng: '• To be efficient (효율적이다): to work a little and get good results' },
+                  { id: 's51', speaker: '우디', kor: '• 천재: 머리가 좋은 사람', time: [202.154, 205.160], eng: '• Genius (천재): a person who is very smart' },
+                  { id: 's52', speaker: '우디', kor: '• 맡기다: 나의 일을 다른 사람에게 주다', time: [205.520, 209.647], eng: '• To entrust (맡기다): to give my work to another person' },
+                  { id: 's53', speaker: '유나', kor: '• 바보: 머리가 나쁜 사람', time: [210.614, 213.819], eng: '• Fool (바보): a person who is not smart' },
+                  { id: 's54', speaker: '유나', kor: '• 모레: 내일의 다음 날', time: [214.004, 216.782], eng: '• The day after tomorrow (모레): the day after tomorrow' },
+                  { id: 's55', speaker: '유나', kor: '• 게으르다: 일하기 싫어하다', time: [216.968, 220.079], eng: '• To be lazy (게으르다): to hate working' },
+                  { id: 's56', speaker: '유나', kor: '• 회사에서 잘리다: 더 이상 회사에 갈 수 없다', time: [220.252, 224.787], eng: '• To get fired (회사에서 잘리다): to not be able to go to the company anymore' },
+                  { id: 's57', speaker: '유나', kor: '• 야근하다: 밤 늦게까지 일하다', time: [225.126, 228.643], eng: '• To work overtime (야근하다): to work late into the night' },
+                  { id: 's58', speaker: '우디', kor: '😯유나 씨, 아직 집에 안 갔어요?', time: [230.000, 233.500], eng: '😯 Yuna, you haven\'t gone home yet?' },
+                  { id: 's59', speaker: '유나', kor: '네, 저는 착한 사람이니까 우디 씨 일을 조금 도와줄게요.', time: [233.698, 239.931], eng: 'No, I\'m a nice person, so I\'ll help you with your work a little.' },
+                  { id: 's60', speaker: '우디', kor: '고마워요 유나 씨.🥹', time: [240.439, 242.655], eng: 'Thank you, Yuna. 🥹' },
+                  { id: 's61', speaker: '우디', kor: '그럼 여러분 오늘은 여기까지 할게요.', time: [243.151, 246.764], eng: 'Well everyone, that\'s all for today.' },
+                  { id: 's62', speaker: '우디', kor: '저는 일해야 해요.😥', time: [246.764, 248.491], eng: 'I have to work. 😥' },
+                  { id: 's63', speaker: '유나', kor: '안녕히 계세요! 다음에 또 만나요!', time: [248.827, 252.688], eng: 'Goodbye! See you next time!' }
                 ];
                 const vocabAndGrammarList = [
-                    { "term": "이 주제로 이야기해 봐요", "mainDef": "Let's Talk About This Topic", "subDefs": [{ "subTerm": "• ▢▢을/를 주제로 이야기하다", "subDef": "to talk about [something] as a topic" }, { "subTerm": "• -아/어 보다", "subDef": "used to make gentle suggestions without sounding pushy" }], "variants": ["이 주제로 이야기해 봐요"] },
-                    { "term": "할 일", "mainDef": "work to do", "subDefs": [{ "subTerm": "• 하다", "subDef": "to do" }, { "subTerm": "• -ㄹ/을", "subDef": "used to turn a future-tense verb into an \"adjective-ish\" phrase that describes the following noun" }, { "subTerm": "• 일", "subDef": "work" }], "variants": ["할 일", "할 일이"] },
-                    { "term": "많아서", "mainDef": "because there is a lot of...", "subDefs": [{ "subTerm": "• 많다", "subDef": "to be many, a lot of" }, { "subTerm": "• -아서/어서", "subDef": "used to connect clauses indicating cause or reason (\"because…\")" }], "variants": ["많아서"] },
-                    { "term": "일을 못 끝낼 것 같아요", "mainDef": "I don't think I can finish the work.", "subDefs": [{ "subTerm": "• 일을 끝내다", "subDef": "to finish work" }, { "subTerm": "• -ㄹ 것 같다", "subDef": "used to express assumption or guess about something that seems likely, often translated as “I think … will … / It looks like … / It seems ….”" }], "variants": ["일을 못 끝낼 것 같아요"] },
-                    { "term": "늦게", "mainDef": "late", "subDefs": [], "variants": ["늦게"] },
-                    { "term": "퇴근하면 되겠네요", "mainDef": "It's fine if you leave work late.", "subDefs": [{ "subTerm": "• 퇴근하다", "subDef": "to leave work" }, { "subTerm": "• -면 되다", "subDef": "used to say that one condition or action is enough, often translated as “all you have to do is …” or “it’s fine if ….”" }, { "subTerm": "• -겠네요", "subDef": "used to show an immediate reaction, realization, or empathy, often translated as “I guess … / That must be … / Sounds …”" }], "variants": ["퇴근하면 되겠네요"] },
-                    { "term": "퇴근하다", "mainDef": "to leave work", "subDefs": [], "variants": ["퇴근할게요", "퇴근하다", "퇴근할 거예요"] },
-                    { "term": "일이 끝나고", "mainDef": "after the work is done", "subDefs": [{ "subTerm": "• 일이 끝나다", "subDef": "for the work to be finished" }, { "subTerm": "• -고", "subDef": "used to connect two verbs, meaning “and then” or simply “and,” to show actions happening in sequence." }], "variants": ["일이 끝나고"] },
-                    { "term": "-라는 뜻이에요", "mainDef": "\"It means that…\"", "subDefs": [{ "subTerm": "• -(이)라는 뜻", "subDef": "used to state the meaning of a word or phrase" }], "variants": ["라는 뜻이에요", "다는 뜻이에요"] },
-                    { "term": "무슨 말이에요?", "mainDef": "What do you mean?", "subDefs": [], "variants": ["무슨 말이에요"] },
-                    { "term": "늦게까지", "mainDef": "until late", "subDefs": [{ "subTerm": "• 늦게", "subDef": "late" }, { "subTerm": "• -까지", "subDef": "until" }], "variants": ["늦게까지"] },
-                    { "term": "일하기 싫어요", "mainDef": "I don't want to work.", "subDefs": [{ "subTerm": "• 일하다", "subDef": "to work" }, { "subTerm": "• -기 싫다", "subDef": "used for your own dislike (“I don’t want to …”)," }], "variants": ["일하기 싫어요"] },
-                    { "term": "미루는 거", "mainDef": "the act of postponing", "subDefs": [{ "subTerm": "• 미루다", "subDef": "to postpone, to put off" }, { "subTerm": "• -는 거", "subDef": "A colloquial form of -는 것, used to nominalize verbs by turning a verb into a noun phrase meaning “the act of …,” “the fact of …,” or “the thing that …”" }], "variants": ["미루는 거"] },
-                    { "term": "미루다", "mainDef": "to postpone, to put off", "subDefs": [], "variants": ["미루다"] },
-                    { "term": "효율적인 거예요", "mainDef": "it is being efficient.", "subDefs": [{ "subTerm": "• 효율적이다", "subDef": "to be efficient" }, { "subTerm": "• -ㄴ 거예요", "subDef": "A colloquial form of -ㄴ 것이다, used to explain, clarify, or emphasize what something really is; “it is that …”, “the fact is that …”, or “what … means is …”" }], "variants": ["효율적인 거예요"] },
-                    { "term": "효율적이다", "mainDef": "to be efficient", "subDefs": [], "variants": ["효율적이다"] },
-                    { "term": "결과", "mainDef": "result", "subDefs": [], "variants": ["결과를", "결과"] },
-                    { "term": "얻다", "mainDef": "to get, to obtain", "subDefs": [], "variants": ["얻어요", "얻다"] },
-                    { "term": "열심히", "mainDef": "hard, diligently", "subDefs": [], "variants": ["열심히"] },
-                    { "term": "일하는 거예요", "mainDef": "it is the act of working.", "subDefs": [{ "subTerm": "• 일하다", "subDef": "to work" }, { "subTerm": "• -는 거예요", "subDef": "A colloquial form of -는 것이다, which is  used to explain, clarify, or emphasize what something really is; “it is that …”, “the fact is that …”, or “what … means is …”" }], "variants": ["일하는 거예요"] },
-                    { "term": "그건 말이 안 돼요", "mainDef": "That doesn't make sense.", "subDefs": [{ "subTerm": "• 말이 되다", "subDef": "to make sense" }], "variants": ["그건 말이 안 돼요"] },
-                    { "term": "같은 사람", "mainDef": "the same person", "subDefs": [{ "subTerm": "• 같다", "subDef": "to be the same, to be like" }, { "subTerm": "• -ㄴ/은", "subDef": "used to turn a descriptive verb, which means an adjective in English, into an “adjective-ish” phrase that describes the following noun" }], "variants": ["같은 사람", "같은 사람이에요"] },
-                    { "term": "완전히", "mainDef": "completely", "subDefs": [], "variants": ["완전히"] },
-                    { "term": "다른 사람", "mainDef": "a different person", "subDefs": [{ "subTerm": "• 다르다", "subDef": "to be different" }, { "subTerm": "• -ㄴ/은", "subDef": "used to turn a descriptive verb, which means an adjective in English, into an “adjective-ish” phrase that describes the following noun" }], "variants": ["다른 사람", "다른 사람이에요", "다른 사람에게"] },
-                    { "term": "천재", "mainDef": "a genius", "subDefs": [], "variants": ["천재예요", "천재", "천재’는"] },
-                    { "term": "맡겼는데", "mainDef": "entrusted, but...", "subDefs": [{ "subTerm": "• 맡기다", "subDef": "to entrust, to assign" }, { "subTerm": "• -는데", "subDef": "used to show contrast, or set up background often softening the tone or inviting the listener to respond." }], "variants": ["맡겼는데"] },
-                    { "term": "맡기다", "mainDef": "to entrust, to assign", "subDefs": [], "variants": ["맡기다’는", "맡기다"] },
-                    { "term": "바보", "mainDef": "a fool, an idiot", "subDefs": [], "variants": ["바보였어요", "바보'는", "바보"] },
-                    { "term": "모레", "mainDef": "the day after tomorrow", "subDefs": [], "variants": ["모레의", "모레’는", "모레"] },
-                    { "term": "언젠가", "mainDef": "someday", "subDefs": [], "variants": ["언젠가", "언젠가는"] },
-                    { "term": "똑똑한", "mainDef": "smart", "subDefs": [{ "subTerm": "• 똑똑하다", "subDef": "to be smart" }], "variants": ["똑똑한"] },
-                    { "term": "게으르다", "mainDef": "to be lazy", "subDefs": [], "variants": ["게을러요", "게으르다'는", "게으르다"] },
-                    { "term": "일하기 싫어하다", "mainDef": "to dislike working", "subDefs": [{ "subTerm": "• 일하다", "subDef": "to work" }, { "subTerm": "• -기 싫어하다", "subDef": "used when talking about someone else’s dislike (“They don’t want to …”)." }], "variants": ["일하기 싫어하다"] },
-                    { "term": "로봇", "mainDef": "a robot", "subDefs": [], "variants": ["로봇", "로봇이에요"] },
-                    { "term": "피곤해서", "mainDef": "because I am tired", "subDefs": [{ "subTerm": "• 피곤하다", "subDef": "to be tired" }, { "subTerm": "• -아서/어서", "subDef": "used to connect clauses indicating cause or reason (\"because…\")" }], "variants": ["피곤해서"] },
-                    { "term": "그렇지 않으면", "mainDef": "if not, otherwise", "subDefs": [], "variants": ["그렇지 않으면"] },
-                    { "term": "회사에서 잘리다", "mainDef": "to get fired", "subDefs": [], "variants": ["회사에서 잘릴 수 있어요", "회사에서 잘리다’는", "회사에서 잘리다"] },
-                    { "term": "더 이상", "mainDef": "any more, no longer", "subDefs": [], "variants": ["더 이상"] },
-                    { "term": "헐", "mainDef": "OMG", "subDefs": [], "variants": ["헐"] },
-                    { "term": "야근하다", "mainDef": "to work overtime", "subDefs": [], "variants": ["야근할게요", "야근하다’는", "야근하다"] },
-                    { "term": "정리해 볼게요", "mainDef": "I will organize", "subDefs": [{ "subTerm": "• 정리하다", "subDef": "to summarize, to organize" }, { "subTerm": "• -아/어 볼게요", "subDef": "used to politely show your intention to attempt something." }], "variants": ["정리해 볼게요"] },
-                    { "term": "착한 사람", "mainDef": "a good person", "subDefs": [{ "subTerm": "• 착하다", "subDef": "to be good, kind" }, { "subTerm": "• -ㄴ/은", "subDef": "used to turn a descriptive verb, which means an adjective in English, into an “adjective-ish” phrase that describes the following noun" }], "variants": ["착한 사람", "착한 사람이니까"] },
-                    { "term": "여기까지 할게요", "mainDef": "I'll stop here.", "subDefs": [{ "subTerm": "• 여기까지 하다", "subDef": "to stop here, wrap something up" }, { "subTerm": "• -게요", "subDef": "used to politely express your decision or intention to do something, especially when it affects the listener." }], "variants": ["여기까지 할게요"] }
+                    { term: '이 주제로 이야기해 봐요', mainDef: 'Let\'s Talk About This Topic', examples: [], translations: { en: { main: 'Let\'s Talk About This Topic' } }, subDefs: [{ subTerm: '• ▢▢을/를 주제로 이야기하다', subDef: 'to talk about [something] as a topic', translations: { en: { def: 'to talk about [something] as a topic' } } }, { subTerm: '• -아/어 보다', subDef: 'used to make gentle suggestions without sounding pushy', translations: { en: { def: 'used to make gentle suggestions without sounding pushy' } } }] },
+                    { term: '할 일', mainDef: 'work to do', examples: [], translations: { en: { main: 'work to do' } }, subDefs: [{ subTerm: '• 하다', subDef: 'to do', translations: { en: { def: 'to do' } } }, { subTerm: '• -ㄹ/을', subDef: 'used to turn a future-tense verb into an "adjective-ish" phrase that describes the following noun', translations: { en: { def: 'used to turn a future-tense verb into an "adjective-ish" phrase that describes the following noun' } } }, { subTerm: '• 일', subDef: 'work', translations: { en: { def: 'work' } } }] },
+                    { term: '많아서', mainDef: 'because there is a lot of...', examples: [], translations: { en: { main: 'because there is a lot of...' } }, subDefs: [{ subTerm: '• 많다', subDef: 'to be many, a lot of', translations: { en: { def: 'to be many, a lot of' } } }, { subTerm: '• -아서/어서', subDef: 'used to connect clauses indicating cause or reason ("because…")', translations: { en: { def: 'used to connect clauses indicating cause or reason ("because…")' } } }] },
+                    { term: '일을 못 끝낼 것 같아요', mainDef: 'I don\'t think I can finish the work.', examples: [], translations: { en: { main: 'I don\'t think I can finish the work.' } }, subDefs: [{ subTerm: '• 일을 끝내다', subDef: 'to finish work', translations: { en: { def: 'to finish work' } } }, { subTerm: '• -ㄹ 것 같다', subDef: 'used to express assumption or guess about something that seems likely, often translated as “I think … will … / It looks like … / It seems ….”', translations: { en: { def: 'used to express assumption or guess about something that seems likely, often translated as “I think … will … / It looks like … / It seems ….”' } } }] },
+                    { term: '늦게', mainDef: 'late', examples: [], translations: { en: { main: 'late' } }, subDefs: [] },
+                    { term: '퇴근하면 되겠네요', mainDef: 'It\'s fine if you leave work late.', examples: [], translations: { en: { main: 'It\'s fine if you leave work late.' } }, subDefs: [{ subTerm: '• 퇴근하다', subDef: 'to leave work', translations: { en: { def: 'to leave work' } } }, { subTerm: '• -면 되다', subDef: 'used to say that one condition or action is enough, often translated as “all you have to do is …” or “it’s fine if ….”', translations: { en: { def: 'used to say that one condition or action is enough, often translated as “all you have to do is …” or “it’s fine if ….”' } } }, { subTerm: '• -겠네요', subDef: 'used to show an immediate reaction, realization, or empathy, often translated as “I guess … / That must be … / Sounds …”', translations: { en: { def: 'used to show an immediate reaction, realization, or empathy, often translated as “I guess … / That must be … / Sounds …”' } } }] },
+                    { term: '퇴근하다', mainDef: 'to leave work', examples: [], translations: { en: { main: 'to leave work' } }, subDefs: [] },
+                    { term: '일이 끝나고', mainDef: 'after the work is done', examples: [], translations: { en: { main: 'after the work is done' } }, subDefs: [{ subTerm: '• 일이 끝나다', subDef: 'for the work to be finished', translations: { en: { def: 'for the work to be finished' } } }, { subTerm: '• -고', subDef: 'used to connect two verbs, meaning “and then” or simply “and,” to show actions happening in sequence.', translations: { en: { def: 'used to connect two verbs, meaning “and then” or simply “and,” to show actions happening in sequence.' } } }] },
+                    { term: '-라는 뜻이에요', mainDef: '"It means that…"', examples: [], translations: { en: { main: '"It means that…"' } }, subDefs: [{ subTerm: '• -(이)라는 뜻', subDef: 'used to state the meaning of a word or phrase', translations: { en: { def: 'used to state the meaning of a word or phrase' } } }] },
+                    { term: '무슨 말이에요?', mainDef: 'What do you mean?', examples: [], translations: { en: { main: 'What do you mean?' } }, subDefs: [] },
+                    { term: '늦게까지', mainDef: 'until late', examples: [], translations: { en: { main: 'until late' } }, subDefs: [{ subTerm: '• 늦게', subDef: 'late', translations: { en: { def: 'late' } } }, { subTerm: '• -까지', subDef: 'until', translations: { en: { def: 'until' } } }] },
+                    { term: '일하기 싫어요', mainDef: 'I don\'t want to work.', examples: [], translations: { en: { main: 'I don\'t want to work.' } }, subDefs: [{ subTerm: '• 일하다', subDef: 'to work', translations: { en: { def: 'to work' } } }, { subTerm: '• -기 싫다', subDef: 'used for your own dislike (“I don\’t want to …”),', translations: { en: { def: 'used for your own dislike (“I don\’t want to …”),' } } }] },
+                    { term: '미루는 거', mainDef: 'the act of postponing', examples: [], translations: { en: { main: 'the act of postponing' } }, subDefs: [{ subTerm: '• 미루다', subDef: 'to postpone, to put off', translations: { en: { def: 'to postpone, to put off' } } }, { subTerm: '• -는 거', subDef: 'A colloquial form of -는 것, used to nominalize verbs by turning a verb into a noun phrase meaning “the act of …,” “the fact of …,” or “the thing that …”', translations: { en: { def: 'A colloquial form of -는 것, used to nominalize verbs by turning a verb into a noun phrase meaning “the act of …,” “the fact of …,” or “the thing that …”' } } }] },
+                    { term: '미루다', mainDef: 'to postpone, to put off', examples: [], translations: { en: { main: 'to postpone, to put off' } }, subDefs: [] },
+                    { term: '효율적인 거예요', mainDef: 'it is being efficient.', examples: [], translations: { en: { main: 'it is being efficient.' } }, subDefs: [{ subTerm: '• 효율적이다', subDef: 'to be efficient', translations: { en: { def: 'to be efficient' } } }, { subTerm: '• -ㄴ 거예요', subDef: 'A colloquial form of -ㄴ 것이다, used to explain, clarify, or emphasize what something really is; “it is that …”, “the fact is that …”, or “what … means is …”', translations: { en: { def: 'A colloquial form of -ㄴ 것이다, used to explain, clarify, or emphasize what something really is; “it is that …”, “the fact is that …”, or “what … means is …”' } } }] },
+                    { term: '효율적이다', mainDef: 'to be efficient', examples: [], translations: { en: { main: 'to be efficient' } }, subDefs: [] },
+                    { term: '결과', mainDef: 'result', examples: [], translations: { en: { main: 'result' } }, subDefs: [] },
+                    { term: '얻다', mainDef: 'to get, to obtain', examples: [], translations: { en: { main: 'to get, to obtain' } }, subDefs: [] },
+                    { term: '열심히', mainDef: 'hard, diligently', examples: [], translations: { en: { main: 'hard, diligently' } }, subDefs: [] },
+                    { term: '일하는 거예요', mainDef: 'it is the act of working.', examples: [], translations: { en: { main: 'it is the act of working.' } }, subDefs: [{ subTerm: '• 일하다', subDef: 'to work', translations: { en: { def: 'to work' } } }, { subTerm: '• -는 거예요', subDef: 'A colloquial form of -는 것이다, which is  used to explain, clarify, or emphasize what something really is; “it is that …”, “the fact is that …”, or “what … means is …”', translations: { en: { def: 'A colloquial form of -는 것이다, which is  used to explain, clarify, or emphasize what something really is; “it is that …”, “the fact is that …”, or “what … means is …”' } } }] },
+                    { term: '그건 말이 안 돼요', mainDef: 'That doesn\'t make sense.', examples: [], translations: { en: { main: 'That doesn\'t make sense.' } }, subDefs: [{ subTerm: '• 말이 되다', subDef: 'to make sense', translations: { en: { def: 'to make sense' } } }] },
+                    { term: '같은 사람', mainDef: 'the same person', examples: [], translations: { en: { main: 'the same person' } }, subDefs: [{ subTerm: '• 같다', subDef: 'to be the same, to be like', translations: { en: { def: 'to be the same, to be like' } } }, { subTerm: '• -ㄴ/은', subDef: 'used to turn a descriptive verb, which means an adjective in English, into an “adjective-ish” phrase that describes the following noun', translations: { en: { def: 'used to turn a descriptive verb, which means an adjective in English, into an “adjective-ish” phrase that describes the following noun' } } }] },
+                    { term: '완전히', mainDef: 'completely', examples: [], translations: { en: { main: 'completely' } }, subDefs: [] },
+                    { term: '다른 사람', mainDef: 'a different person', examples: [], translations: { en: { main: 'a different person' } }, subDefs: [{ subTerm: '• 다르다', subDef: 'to be different', translations: { en: { def: 'to be different' } } }, { subTerm: '• -ㄴ/은', subDef: 'used to turn a descriptive verb, which means an adjective in English, into an “adjective-ish” phrase that describes the following noun', translations: { en: { def: 'used to turn a descriptive verb, which means an adjective in English, into an “adjective-ish” phrase that describes the following noun' } } }] },
+                    { term: '천재', mainDef: 'a genius', examples: [], translations: { en: { main: 'a genius' } }, subDefs: [] },
+                    { term: '맡겼는데', mainDef: 'entrusted, but...', examples: [], translations: { en: { main: 'entrusted, but...' } }, subDefs: [{ subTerm: '• 맡기다', subDef: 'to entrust, to assign', translations: { en: { def: 'to entrust, to assign' } } }, { subTerm: '• -는데', subDef: 'used to show contrast, or set up background often softening the tone or inviting the listener to respond.', translations: { en: { def: 'used to show contrast, or set up background often softening the tone or inviting the listener to respond.' } } }] },
+                    { term: '맡기다', mainDef: 'to entrust, to assign', examples: [], translations: { en: { main: 'to entrust, to assign' } }, subDefs: [] },
+                    { term: '바보', mainDef: 'a fool, an idiot', examples: [], translations: { en: { main: 'a fool, an idiot' } }, subDefs: [] },
+                    { term: '모레', mainDef: 'the day after tomorrow', examples: [], translations: { en: { main: 'the day after tomorrow' } }, subDefs: [] },
+                    { term: '언젠가', mainDef: 'someday', examples: [], translations: { en: { main: 'someday' } }, subDefs: [] },
+                    { term: '똑똑한', mainDef: 'smart', examples: [], translations: { en: { main: 'smart' } }, subDefs: [{ subTerm: '• 똑똑하다', subDef: 'to be smart', translations: { en: { def: 'to be smart' } } }] },
+                    { term: '게으르다', mainDef: 'to be lazy', examples: [], translations: { en: { main: 'to be lazy' } }, subDefs: [] },
+                    { term: '일하기 싫어하다', mainDef: 'to dislike working', examples: [], translations: { en: { main: 'to dislike working' } }, subDefs: [{ subTerm: '• 일하다', subDef: 'to work', translations: { en: { def: 'to work' } } }, { subTerm: '• -기 싫어하다', subDef: 'used when talking about someone else’s dislike (“They don’t want to …”).', translations: { en: { def: 'used when talking about someone else’s dislike (“They don’t want to …”).' } } }] },
+                    { term: '로봇', mainDef: 'a robot', examples: [], translations: { en: { main: 'a robot' } }, subDefs: [] },
+                    { term: '피곤해서', mainDef: 'because I am tired', examples: [], translations: { en: { main: 'because I am tired' } }, subDefs: [{ subTerm: '• 피곤하다', subDef: 'to be tired', translations: { en: { def: 'to be tired' } } }, { subTerm: '• -아서/어서', subDef: 'used to connect clauses indicating cause or reason ("because…")', translations: { en: { def: 'used to connect clauses indicating cause or reason ("because…")' } } }] },
+                    { term: '그렇지 않으면', mainDef: 'if not, otherwise', examples: [], translations: { en: { main: 'if not, otherwise' } }, subDefs: [] },
+                    { term: '회사에서 잘리다', mainDef: 'to get fired', examples: [], translations: { en: { main: 'to get fired' } }, subDefs: [] },
+                    { term: '더 이상', mainDef: 'any more, no longer', examples: [], translations: { en: { main: 'any more, no longer' } }, subDefs: [] },
+                    { term: '헐', mainDef: 'OMG', examples: [], translations: { en: { main: 'OMG' } }, subDefs: [] },
+                    { term: '야근하다', mainDef: 'to work overtime', examples: [], translations: { en: { main: 'to work overtime' } }, subDefs: [] },
+                    { term: '정리해 볼게요', mainDef: 'I will organize', examples: [], translations: { en: { main: 'I will organize' } }, subDefs: [{ subTerm: '• 정리하다', subDef: 'to summarize, to organize', translations: { en: { def: 'to summarize, to organize' } } }, { subTerm: '• -아/어 볼게요', subDef: 'used to politely show your intention to attempt something.', translations: { en: { def: 'used to politely show your intention to attempt something.' } } }] },
+                    { term: '착한 사람', mainDef: 'a good person', examples: [], translations: { en: { main: 'a good person' } }, subDefs: [{ subTerm: '• 착하다', subDef: 'to be good, kind', translations: { en: { def: 'to be good, kind' } } }, { subTerm: '• -ㄴ/은', subDef: 'used to turn a descriptive verb, which means an adjective in English, into an “adjective-ish” phrase that describes the following noun', translations: { en: { def: 'used to turn a descriptive verb, which means an adjective in English, into an “adjective-ish” phrase that describes the following noun' } } }] },
+                    { term: '여기까지 할게요', mainDef: 'I\'ll stop here.', examples: [], translations: { en: { main: 'I\'ll stop here.' } }, subDefs: [{ subTerm: '• 여기까지 하다', subDef: 'to stop here, wrap something up', translations: { en: { def: 'to stop here, wrap something up' } } }, { subTerm: '• -게요', subDef: 'used to politely express your decision or intention to do something, especially when it affects the listener.', translations: { en: { def: 'used to politely express your decision or intention to do something, especially when it affects the listener.' } } }] }
                 ];
                 const sentences = [
                 { id: 1, parts: ["우디는 할 일이 너무 ", " 오늘 일을 다 못 끝낼 것 같았어요."], blank: 'because there was a lot', answer: '많아서', bank: ['많아서', '많고', '많으면서', '많은데'], explanation: "The grammar pattern '-아서/어서' is used to show cause or reason.", eng: "Woody had too much work, so he couldn't finish it all today.", wrongAnswerExplanations: { '많고': "'-고' connects two actions sequentially.", '많으면서': "'-으면서' means 'while doing something else.'", '많은데': "'-ㄴ데' is for background information or contrast." } },
@@ -1045,16 +1001,16 @@
                 { id: 10, parts: ["유나의 경고를 들은 우디는 결국 ", "로 마음을 바꿨어요."], blank: 'to work overtime', answer: '야근하기로', bank: ['회의하기로', '퇴근하기로', '사직하기로', '야근하기로'], explanation: "'야근하다' means 'to work overtime'. After Yuna's warning, Woody decides to do the work.", eng: "After hearing Yuna's warning, Woody finally changed his mind and decided to work overtime.", wrongAnswerExplanations: { '회의하기로': "Means 'to decide to have a meeting'.", '퇴근하기로': "Means 'to decide to leave work'.", '사직하기로': "Means 'to decide to resign'." } }
                 ];
                 const discussionQuestions = [
-                { num: 1, kor: "여러분은 오늘 할 일을 내일로 미루는 편이에요? 왜요?", eng: "Do you tend to postpone today's work until tomorrow? Why?", vocab: [{ term: "미루다", meaning: "to postpone", context: "유나: 그냥 미루는 거 아니에요?", context_eng: "Yuna: Aren't you just procrastinating?" }] },
-                { num: 2, kor: "일을 미루는 것이 '효율적'이라고 생각해요? 아니면 '게으르다’고 생각해요?", eng: "Do you think postponing work is 'efficient' or 'lazy'?", vocab: [{ term: "효율적이다", meaning: "to be efficient", context: "우디: 아니에요! 효율적인 거예요.", context_eng: "Woody: No! It's being efficient." }, { term: "게으르다", meaning: "to be lazy", context: "유나: 우디 씨는 게을러요.", context_eng: "Yuna: Woody is lazy." }] },
-                { num: 3, kor: "여러분은 일이 안 끝났을 때, 보통 밤 늦게까지 일해요? 아니면 다음 날 해요?", eng: "When your work isn't finished, do you usually work late into the night? Or do you do it the next day?", vocab: [{ term: "늦게까지", meaning: "until late", context: "우디: 오늘은 늦게까지 일하기 싫어요.", context_eng: "Woody: I don't want to work late today." }] },
-                { num: 4, kor: "우디는 '내일의 우디는 천재'라고 말했어요. 여러분도 '내일의 나'를 믿는 편이에요?", eng: "Woody said, 'Tomorrow's Woody is a genius.' Do you also tend to believe in 'future you'?", vocab: [{ term: "천재", meaning: "a genius", context: "우디: 내일의 우디는 천재예요.", context_eng: "Woody: Tomorrow's Woody is a genius." }] },
-                { num: 5, kor: "어제의 내가 맡긴 일을 오늘의 내가 하기 싫을 때 어떻게 해요?", eng: "What do you do when today's you doesn't want to do the work that yesterday's you assigned?", vocab: [{ term: "맡기다", meaning: "to entrust, assign", context: "유나: 어제의 우디가 오늘의 우디에게 일을 맡겼는데…", context_eng: "Yuna: Yesterday's Woody entrusted the work to today's Woody..." }] },
-                { num: 6, kor: "일을 하기 싫을 때 보통 어떤 변명을 해요? (예: 피곤해요, 바빠요)", eng: "What excuses do you usually make when you don't want to work? (e.g., I'm tired, I'm busy)", vocab: [{ term: "피곤하다", meaning: "to be tired", context: "우디: 저는 오늘 피곤해서 일을 할 수 없어요.", context_eng: "Woody: I'm tired today, so I can't work." }] },
-                { num: 7, kor: "우디는 '어떻게 안 쉬고 일을 해요?'라고 물었어요. 여러분에게 일과 휴식 중에 무엇이 더 중요해요?", eng: "Woody asked, 'How can you work without resting?' For you, what is more important, work or rest?", vocab: [{ term: "피곤하다", meaning: "to be tired", context: "우디: 저는 오늘 피곤해서 일을 할 수 없어요.", context_eng: "Woody: I'm tired today, so I can't work." }] },
-                { num: 8, kor: "동료가 야근할 때, 유나처럼 도와줄 거예요? 아니면 먼저 퇴근할 거예요?", eng: "When a colleague works overtime, would you help them like Yuna? Or would you leave work first?", vocab: [{ term: "야근하다", meaning: "to work overtime", context: "유나 씨, 저 오늘 야근할게요.😫😭 ‘야근하다’는 '밤 늦게까지 일하다’라는 뜻이에요.", context_eng: "Yuna, I'll work late today.😫😭 '야근하다' means 'to work until late at night'." }, { term: "퇴근하다", meaning: "to leave work", context: "유나: 먼저 퇴근할게요.", context_eng: "Yuna: I'll leave work first." }] },
-                { num: 9, kor: "회사에서 잘릴까 봐 걱정해 본 적이 있어요? 어떤 상황이었어요?", eng: "Have you ever worried about getting fired from work? What was the situation?", vocab: [{ term: "회사에서 잘리다", meaning: "to get fired", context: "유나: 회사에서 잘릴 수 있어요.", context_eng: "Yuna: You could get fired from the company." }] },
-                { num: 10, kor: "내일이나 모레로 계속 일을 미루게 될 것 같을 때, 어떻게 하면 일을 시작할 수 있을까요?", eng: "When it seems like you'll keep postponing work until tomorrow or the day after, what can you do to get started?", vocab: [{ term: "미루다", meaning: "to postpone", context: "유나: 그냥 미루는 거 아니에요?", context_eng: "Yuna: Aren't you just procrastinating?" }, { term: "모레", meaning: "the day after tomorrow", context: "유나: 내일의 우디가 '모레의 우디가 할 거야'라고 말할 수도 있어요.", context_eng: "Yuna: Tomorrow's Woody might say, 'The day after tomorrow's Woody will do it'." }] }
+                { num: 1, kor: "여러분은 오늘 할 일을 내일로 미루는 편이에요? 왜요?", eng: "Are you the type of person who procrastinates on today's tasks until tomorrow? Why?", vocab: [ { term: "일을 미루다", meaning_eng: "To procrastinate on work" }, { term: "-는 편이다", meaning_eng: "To be the type/tend to..." } ] },
+                { num: 2, kor: "일을 미루는 것이 '효율적'이라고 생각해요? 아니면 '게으르다’고 생각해요?", eng: "Do you think procrastinating is 'efficient'? Or do you think it's 'lazy'?", vocab: [ { term: "일을 미루는 것", meaning_eng: "To procrastinate (noun form)" }, { term: "효율적이다", meaning_eng: "To be efficient" }, { term: "게으르다", meaning_eng: "To be lazy" } ] },
+                { num: 3, kor: "여러분은 일이 안 끝났을 때, 보통 밤 늦게까지 일해요? 아니면 다음 날 해요?", eng: "When you haven't finished your work, do you usually work late into the night? Or do you do it the next day?", vocab: [ { term: "밤 늦게까지", meaning_eng: "Late into the night" }, { term: "다음 날", meaning_eng: "The next day" } ] },
+                { num: 4, kor: "우디는 '내일의 우디는 천재'라고 말했어요. 여러분도 '내일의 나'를 믿는 편이에요?", eng: "Woody said, 'Tomorrow's Woody is a genius.' Are you also the type to believe in 'Tomorrow's Me'?", vocab: [ { term: "천재", meaning_eng: "Genius" }, { term: "믿다", meaning_eng: "To believe" }, { term: "-는 편이다", meaning_eng: "To be the type/tend to..." } ] },
+                { num: 5, kor: "어제의 내가 오늘의 나에게 일을 맡겼어요. 그런데 오늘의 내가 그 일을 하기 싫어요. 그럼 어떻게 해요?", eng: "Yesterday's Me left a task for Today's Me. But Today's Me doesn't want to do it. What do you do?", vocab: [ { term: "어제의 나", meaning_eng: "Yesterday's Me" }, { term: "오늘의 나", meaning_eng: "Today's Me" }, { term: "일을 맡기다", meaning_eng: "To entrust a task" }, { term: "하기 싫다", meaning_eng: "To not want to do" } ] },
+                { num: 6, kor: "일을 하기 싫을 때 보통 어떤 변명을 해요? (예: 피곤해요, 바빠요)", eng: "When you don't want to work, what excuses do you usually make? (e.g., I'm tired, I'm busy)", vocab: [ { term: "변명(을 하다)", meaning_eng: "To make an excuse" }, { term: "피곤하다", meaning_eng: "To be tired" }, { term: "바쁘다", meaning_eng: "To be busy" } ] },
+                { num: 7, kor: "우디는 '어떻게 안 쉬고 일을 해요?'라고 물었어요. 여러분에게 일과 휴식 중에 무엇이 더 중요해요?", eng: "Woody asked, 'How can you work without resting?' What is more important to you: work or rest?", vocab: [ { term: "쉬다", meaning_eng: "To rest" }, { term: "휴식", meaning_eng: "Rest; break" }, { term: "중요하다", meaning_eng: "To be important" } ] },
+                { num: 8, kor: "동료가 야근할 때, 유나처럼 도와줄 거예요? 아니면 먼저 퇴근할 거예요?", eng: "When your colleague works overtime, will you help them like Yuna? Or will you leave work first?", vocab: [ { term: "동료", meaning_eng: "Colleague" }, { term: "야근하다", meaning_eng: "To work overtime" }, { term: "도와주다", meaning_eng: "To help" }, { term: "먼저 퇴근하다", meaning_eng: "To leave work first" } ] },
+                { num: 9, kor: "회사에서 잘릴까 봐 걱정해 본 적이 있어요? 어떤 상황이었어요?", eng: "Have you ever worried about being fired from work? What was the situation?", vocab: [ { term: "잘리다", meaning_eng: "To be fired" }, { term: "-ㄹ까 봐 걱정하다", meaning_eng: "To worry that... might happen" }, { term: "상황", meaning_eng: "Situation" } ] },
+                { num: 10, kor: "내일이나 모레로 계속 일을 미루게 될 것 같을 때, 어떻게 하면 일을 시작할 수 있을까요?", eng: "When you feel like you'll keep procrastinating until tomorrow or the day after, how do you get yourself to start?", vocab: [ { term: "모레", meaning_eng: "The day after tomorrow" }, { term: "계속", meaning_eng: "Continuously" }, { term: "미루다", meaning_eng: "To procrastinate" }, { term: "시작하다", meaning_eng: "To start" }, { term: "-게 되다", meaning_eng: "to end up (doing); to get to (do)" }, { term: "어떻게 하면", meaning_eng: "How can I...; What should I do to..." } ] }
                 ];
                 return { scriptContent, vocabAndGrammarList, sentences, discussionQuestions };
             }, []);
@@ -1085,7 +1041,6 @@
 
             const tabs = useMemo(() => {
                 const baseTabs = [
-                    // MODIFIED: Split name into name_kor and name_eng for responsive wrapping
                     { name_kor: '대화 스크립트', name_eng: '(Transcript)', icon: <Video className="w-6 h-6"/>, content: <VideoMaterialsTab scriptContent={scriptContent} vocabAndGrammarList={vocabAndGrammarList} highlightData={highlightData} vocabMap={vocabMap} /> },
                     { name_kor: '핵심 어휘', name_eng: '(Key Vocabulary)', icon: <List className="w-6 h-6"/>, content: (
                         <div>
