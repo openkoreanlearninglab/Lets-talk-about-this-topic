@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>여름 에어컨 고장 VS 겨울 보일러 고장</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel 스크립트 제거됨 -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* 기본 폰트 설정 */
+        body { font-family: 'Nanum Gothic', sans-serif; }
+        /* 어휘 목록 사이드바 폰트 */
+        .vocab-sidebar { font-family: 'IBM Plex Sans KR', sans-serif; }
+        /* 어휘 팝업 스타일 */
+        .vocab-popup { font-family: 'Nanum Gothic', sans-serif; z-index: 50; max-width: 320px; white-space: normal; }
+        /* 호버 툴팁 스타일 */
+        .hover-tooltip { position: fixed; z-index: 9999; background: white; border: 2px solid #22c55e; border-radius: 8px; padding: 12px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); max-width: 320px; font-family: 'Nanum Gothic', sans-serif; animation: fadeIn 0.15s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        /* 일반 어휘 강조 스타일 */
+        .highlight-general { font-weight: 600; color: #374151; cursor: pointer; position: relative; transition: background-color 0.2s; }
+        /* 마우스 호버 또는 활성화 시 스타일 */
+        .highlight-general:hover, .active-highlight { background-color: #dcfce7; border-radius: 3px; }
+        .script-highlight { background-color: #e0f2fe; border-radius: 8px; }
+        .vocab-highlight { background-color: #dcfce7; border: 2px solid #22c55e; border-radius: 8px; }
+
+        /* --- 말풍선 스타일 --- */
+        .bubble-tail-left.bubble-kkn20::after { /* Yuna Style 1 */
+            content: "";
+            position: absolute;
+            bottom: 6px;
+            left: -8px;
+            width: 0px;
+            height: 0px;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 8px solid #dcfce7; /* green-100 */
+            transition: border-color 0.3s;
+        }
+        .bubble-tail-right.bubble-other::after { /* Woody Style */
+            content: "";
+            position: absolute;
+            bottom: 6px;
+            right: -8px;
+            width: 0px;
+            height: 0px;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-left: 8px solid white;
+            transition: border-color 0.3s;
+        }
+        .bubble-active.bubble-tail-left.bubble-kkn20::after,
+        .bubble-active.bubble-tail-right.bubble-other::after {
+            border-right-color: #fef9c3; /* yellow-100 */
+            border-left-color: #fef9c3; /* yellow-100 */
+        }
+
+        /* --- 디바이스별 레이아웃 스타일 --- */
+        [data-layout-mode="split"] .video-materials-content { display: flex; flex-direction: row; gap: 1.5rem; }
+        [data-layout-mode="split"] .video-wrapper { width: 60%; position: sticky; top: 1rem; align-self: flex-start; }
+        [data-layout-mode="split"] .script-wrapper { width: 40%; max-height: calc(100vh - 4rem); overflow-y: auto; }
+        [data-layout-mode="split"] .vocab-sidebar, [data-layout-mode="mobile"] .vocab-sidebar { display: none; }
+        [data-layout-mode="mobile"] .video-materials-content, [data-layout-mode="mobile"] .video-materials-content > div { display: flex; flex-direction: column; }
+        
+        /* --- 커스텀 슬라이더 스타일 (스크린샷 기반) --- */
+        .custom-slider {
+            -webkit-appearance: none; /* 기본 스타일 오버라이드 */
+            appearance: none;
+            width: 100%;
+            height: 8px; /* 트랙 높이 */
+            background: #E5E7EB; /* bg-gray-200 */
+            border-radius: 9999px; /* rounded-full */
+            outline: none;
+            opacity: 0.9;
+            transition: opacity .2s;
+            cursor: pointer;
+        }
+        .custom-slider:hover {
+            opacity: 1;
+        }
+        /* Chrome, Safari, Opera 핸들 (Thumb) */
+        .custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px; /* 핸들 너비 16px -> 12px */
+            height: 12px; /* 핸들 높이 16px -> 12px */
+            background: #22C55E; /* green-500 */
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            margin-top: -2px; /* 트랙 중앙 정렬 ( (12px - 8px) / 2 = 2px ) */
+        }
+        /* Firefox 핸들 (Thumb) - 수정됨 */
+        .custom-slider::-moz-range-thumb {
+            width: 12px; /* 핸들 너비 16px -> 12px */
+            height: 12px; /* 핸들 높이 16px -> 12px */
+            background: #22C55E; /* green-500 */
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+        
+        /* Firefox 트랙 */
+        .custom-slider::-moz-range-track {
+            width: 100%;
+            height: 8px;
+            background: #E5E7EB;
+            border-radius: 9999px;
+            cursor: pointer;
+        }
+
+        /* --- 반응형 탭 스타일 --- */
+        .responsive-tabs-nav {
+            display: flex;
+            margin-bottom: -1px; /* -mb-px */
+            flex-wrap: nowrap; /* 기본: 줄바꿈 없음 */
+            gap: 1.5rem; /* space-x-6 */
+        }
+        
+        .responsive-tab-btn {
+            /* Tailwind 기본 스타일 */
+            white-space: nowrap;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+            padding-left: 0.25rem;
+            padding-right: 0.25rem;
+            border-bottom-width: 2px;
+            font-weight: 500; /* medium */
+            transition: all 0.15s ease-in-out;
+            display: flex;
+            align-items: center;
+            
+            /* 기본 크기 (sm:text-base) */
+            font-size: 0.875rem; /* text-sm */
+            gap: 0.5rem; /* gap-2 */
+        }
+        
+        .responsive-tab-btn .tab-icon {
+            width: 1.5rem; /* w-6 */
+            height: 1.5rem; /* h-6 */
+            transition: all 0.15s ease-in-out;
+        }
+
+        .responsive-tab-btn .tab-eng-name {
+            margin-left: 0.25rem;
+            display: inline;
+        }
+        
+        /* --- 조건 1: 글꼴/간격/아이콘 축소 --- */
+        @media (max-width: 900px) {
+            .responsive-tab-btn {
+                font-size: 0.75rem; /* text-xs */
+                padding-left: 0.125rem;
+                padding-right: 0.125rem;
+                gap: 0.25rem; /* gap-1 */
+            }
+            .responsive-tabs-nav {
+                gap: 1rem; /* space-x-4 */
+            }
+            .responsive-tab-btn .tab-icon {
+                width: 1.25rem; /* w-5 */
+                height: 1.25rem; /* h-5 */
+            }
+            .responsive-tab-btn .tab-eng-name {
+                margin-left: 0.125rem;
+            }
+        }
+        
+        /* --- 조건 2: 영어 텍스트 줄바꿈 --- */
+        @media (max-width: 800px) {
+            .responsive-tab-btn {
+                white-space: normal; /* 줄바꿈 허용 */
+                text-align: center;
+                justify-content: center;
+                flex-direction: column; /* 아이콘과 텍스트 수직 정렬 */
+                gap: 0.125rem; /* gap-0.5 */
+                line-height: 1.1;
+                font-size: 0.7rem; /* ~11px */
+            }
+            .responsive-tab-btn .tab-icon {
+                width: 1.125rem; /* ~w-4.5 */
+                height: 1.125rem; /* ~h-4.5 */
+            }
+            .responsive-tab-btn .tab-kor-name {
+                display: block; /* 한국어 한 줄 차지 */
+            }
+            .responsive-tab-btn .tab-eng-name {
+                display: block; /* 영어 한 줄 차지 */
+                margin-left: 0;
+                font-size: 0.65rem; /* ~10px */
+                opacity: 0.8;
+            }
+            .responsive-tabs-nav {
+                gap: 0.75rem; /* space-x-3 */
+                align-items: flex-end; /* 하단 경계선에 정렬 */
+            }
+        }
+
+        /* --- 조건 3: 탭 줄바꿈 --- */
+        @media (max-width: 600px) {
+            .responsive-tabs-nav {
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                gap: 0.5rem; /* space-x-2 */
+            }
+            .responsive-tab-btn {
+                flex-grow: 1; /* 탭이 공간 채우도록 */
+                min-width: 150px; 
+                font-size: 0.75rem; /* text-xs로 복귀 */
+                flex-direction: row; /* 다시 수평 정렬 */
+                justify-content: center;
+                padding-top: 0.75rem;
+                padding-bottom: 0.75rem;
+            }
+            .responsive-tab-btn .tab-icon {
+                width: 1.25rem; /* w-5 */
+                height: 1.25rem; /* h-5 */
+            }
+            .responsive-tab-btn .tab-kor-name {
+                display: inline;
+            }
+            .responsive-tab-btn .tab-eng-name {
+                display: inline;
+                margin-left: 0.25rem;
+                font-size: 0.75rem;
+                opacity: 1;
+            }
+        }
+        
+        /* 모바일 세로 레이아웃 (더 좁은 화면) */
+        @media (max-width: 400px) {
+            .responsive-tabs-nav {
+                flex-direction: column;
+                gap: 0;
+                align-items: stretch;
+            }
+            .responsive-tab-btn {
+                min-width: 0;
+                flex-grow: 0;
+                width: 100%;
+                justify-content: flex-start;
+                border-bottom-width: 1px;
+                border-left-width: 4px; 
+                border-left-color: transparent;
+                border-bottom-color: #e5e7eb; /* gray-200 */
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            .responsive-tab-btn.active-tab {
+                border-bottom-color: #e5e7eb; /* gray-200 */
+                border-left-color: #22c55e; /* green-500 */
+                background-color: white;
+            }
+            .responsive-tab-btn:not(.active-tab) {
+                border-bottom-color: #e5e7eb; /* gray-200 */
+            }
+        }
+
+        /* 인쇄 전용 스타일 */
+        .print-only { display: none; }
+        @media print {
+            @page { size: A4; margin: 0.75cm 1cm; }
+            .no-print { display: none !important; }
+            .print-only { display: inline-block !important; }
+            body, html { background: white !important; font-size: 9pt; }
+            .mx-auto { max-width: none !important; padding: 0 !important; margin: 0 !important; border: none !important; box-shadow: none !important; }
+            body > #root > div { padding: 0 !important; }
+            * { box-shadow: none !important; border-color: transparent !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            p, h1, h2, h3, h4, span, li { color: black !important; }
+            p, li { line-height: 1.5; }
+            header.text-center { margin-bottom: 1rem !important; }
+            .pt-10 { padding-top: 1rem !important; }
+            .mb-8 { margin-bottom: 0.4pt !important; }
+            h1, h2 { font-size: 12pt !important; margin-bottom: 15px; }
+            h3 { font-size: 12pt !important; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="root"></div>
+    <script type="text/javascript">
+        // --- 아이콘 컴포넌트 ---
+        const Icon = React.memo(({ children, className = 'w-6 h-6' }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", className: className }, children));
+        const Video = ({ className }) => React.createElement(Icon, { className: className }, 
+            React.createElement('path', { d: "m22 8-6 4 6 4V8Z" }),
+            React.createElement('rect', { width: "14", height: "12", x: "2", y: "6", rx: "2", ry: "2" })
+        );
+        const BookOpen = ({ className }) => React.createElement(Icon, { className: className }, 
+            React.createElement('path', { d: "M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" }),
+            React.createElement('path', { d: "M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" })
+        );
+        const MessageSquare = ({ className }) => React.createElement(Icon, { className: className }, 
+            React.createElement('path', { d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" })
+        );
+        const ThumbsUp = ({ className }) => React.createElement(Icon, { className: className }, 
+            React.createElement('path', { d: "M7 10v12" }),
+            React.createElement('path', { d: "M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a2 2 0 0 1 3 1.88V5Z" })
+        );
+        const List = ({ className }) => React.createElement(Icon, { className: className }, 
+            React.createElement('line', { x1: "8", y1: "6", x2: "21", y2: "6" }),
+            React.createElement('line', { x1: "8", y1: "12", x2: "21", y2: "12" }),
+            React.createElement('line', { x1: "8", y1: "18", x2: "21", y2: "18" }),
+            React.createElement('line', { x1: "3", y1: "6", x2: "3.01", y2: "6" }),
+            React.createElement('line', { x1: "3", y1: "12", x2: "3.01", y2: "12" }),
+            React.createElement('line', { x1: "3", y1: "18", x2: "3.01", y2: "18" })
+        );
+        const Spinner = ({ className = 'w-5 h-5' }) => (
+            React.createElement('svg', { className: `animate-spin ${className}`, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24" },
+                React.createElement('circle', { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4" }),
+                React.createElement('path', { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
+            )
+        );
+
+        // --- [동영상 자료] 탭 관련 컴포넌트 ---
+        const HighlightedText = React.memo(({ text, highlightData, onWordHover, onWordLeave, onWordClick, lineId, activeWordId }) => {
+            if (!text || !highlightData) return text;
+            const { regex, wordMap, sortedWords } = highlightData;
+            const parts = text.split(regex);
+            return React.createElement(React.Fragment, null, parts.map((part, index) => {
+                if (!part) return null;
+                if (index % 2 === 0) return part;
+                const trimmedPart = part.trim();
+                const baseForm = sortedWords.find(word => {
+                    const vocabItem = wordMap.get(word);
+                    if (vocabItem.variants && vocabItem.variants.includes(trimmedPart)) return true;
+                    const cleanPart = trimmedPart.replace(/\s/g, '');
+                    const cleanWord = word.replace(/\s/g, '');
+                    if (word.endsWith('다')) return cleanPart.startsWith(cleanWord.slice(0, -1));
+                    return cleanPart.startsWith(cleanWord);
+                });
+                if (!baseForm) return part;
+                const info = wordMap.get(baseForm);
+                if (!info) return part;
+                const uniqueWordId = `${lineId}-${index}-${baseForm}`;
+                const classes = ['highlight-general', 'font-bold', activeWordId === uniqueWordId ? 'active-highlight' : ''].join(' ');
+                return React.createElement('span', {
+                    key: index,
+                    className: classes,
+                    onMouseEnter: (e) => onWordHover(e, baseForm, lineId, index),
+                    onMouseLeave: onWordLeave,
+                    onClick: (e) => onWordClick && onWordClick(e, baseForm)
+                }, part);
+            }));
+        });
+
+        const HoverTooltip = React.memo(({ data, position }) => {
+            if (!data || !position) return null;
+            return (
+                React.createElement('div', {
+                    className: "hover-tooltip",
+                    style: { left: `${position.x}px`, top: `${position.y}px` },
+                    onClick: (e) => e.stopPropagation()
+                },
+                    React.createElement('p', { className: "font-bold text-lg text-green-700 mb-2" }, data.term),
+                    React.createElement('p', { className: "text-gray-700 text-base" }, data.mainDef),
+                    data.subDefs && data.subDefs.length > 0 && (
+                        React.createElement('div', { className: "mt-3 pt-3 border-t border-gray-200" },
+                            React.createElement('ul', { className: "space-y-1" },
+                                data.subDefs.map((sub, i) => (
+                                    React.createElement('li', { key: i, className: "text-sm" },
+                                        React.createElement('span', { className: "font-semibold text-gray-600" }, `${sub.subTerm}:`),
+                                        ' ',
+                                        React.createElement('span', { className: "text-gray-600" }, sub.subDef)
+                                    )
+                                ))
+                            )
+                        )
+                    )
+                )
+            );
+        });
+
+        const VocabItem = React.memo(React.forwardRef(({ item, isHighlighted }, ref) => {
+            const [showExamples, setShowExamples] = React.useState(false);
+
+            return (
+                React.createElement('div', { ref: ref, className: `p-4 rounded-lg border-b ${isHighlighted ? 'vocab-highlight' : 'bg-white'}` },
+                    React.createElement('p', { className: "font-bold text-lg text-green-700" }, item.term),
+                    React.createElement('div', { className: "pl-4 mt-2 border-l-2" },
+                        React.createElement('p', { className: "text-gray-700" }, item.mainDef),
+                        item.subDefs && item.subDefs.length > 0 && (
+                            React.createElement('div', { className: "mt-3 pt-3 border-t" }, item.subDefs.map((sub, index) => (
+                                React.createElement('div', { key: index, className: "text-sm mt-2" },
+                                    React.createElement('p', { className: "font-semibold" }, sub.subTerm),
+                                    React.createElement('p', { className: "text-gray-600 pl-2" }, sub.subDef)
+                                )
+                            )))
+                        )
+                    ),
+                    item.examples && item.examples.length > 0 && (
+                        React.createElement('div', { className: "mt-3 no-print" },
+                            React.createElement('button', { onClick: () => setShowExamples(!showExamples), className: "text-xs bg-green-200 hover:bg-green-300 text-gray-600 py-1 px-2 rounded-md" },
+                                showExamples ? 'Close Examples' : 'Sentence Examples'
+                            ),
+                            showExamples && (
+                                React.createElement('div', { className: "mt-3 p-3 bg-green-50 rounded-lg space-y-3 text-sm" },
+                                    item.examples.map((ex, index) => (
+                                        React.createElement('div', { key: index },
+                                            React.createElement('p', { className: "font-medium text-gray-800" }, ex.kor),
+                                            React.createElement('p', { className: "text-gray-400 hover:text-gray-700 transition-colors" }, ex.eng)
+                                        )
+                                    ))
+                                )
+                            )
+                        )
+                    )
+                )
+            );
+        }));
+
+        const VideoMaterialsTab = ({scriptContent, vocabAndGrammarList, highlightData, vocabMap}) => {
+            const [activeWordId, setActiveWordId] = React.useState(null);
+            const [player, setPlayer] = React.useState(null);
+            const [activeScriptLine, setActiveScriptLine] = React.useState(null);
+            const [isSyncEnabled, setIsSyncEnabled] = React.useState(true);
+            const [isPlayingClip, setIsPlayingClip] = React.useState(false);
+            const [hoverPopupData, setHoverPopupData] = React.useState(null);
+            const [pinnedPopupData, setPinnedPopupData] = React.useState(null);
+            const [highlightedVocab, setHighlightedVocab] = React.useState(null);
+            const [translationsVisible, setTranslationsVisible] = React.useState({});
+            const [playerHeight, setPlayerHeight] = React.useState(0);
+            const [isVocabSidebarVisible, setIsVocabSidebarVisible] = React.useState(true);
+            const [isPortrait, setIsPortrait] = React.useState(window.matchMedia("(orientation: portrait)").matches);
+            const [playbackRate, setPlaybackRate] = React.useState(1);
+
+            const scriptLineRefs = React.useRef({});
+            const vocabRefs = React.useRef({});
+            const intervalRef = React.useRef();
+            const playerContainerRef = React.useRef(null);
+            const hoverTimeoutRef = React.useRef(null);
+            const clipTimeoutRef = React.useRef(null);
+
+            const activeScriptLineRef = React.useRef(activeScriptLine);
+            activeScriptLineRef.current = activeScriptLine;
+
+            const timeIndex = React.useMemo(() => {
+                return scriptContent
+                    .filter(line => line.time)
+                    .map(line => ({ start: line.time[0], end: line.time[1], id: line.id }))
+                    .sort((a, b) => a.start - b.start);
+            }, [scriptContent]);
+
+            const onPlayerReady = React.useCallback((event) => {
+                setPlayer(event.target);
+                event.target.setPlaybackRate(1);
+            }, []);
+
+            const setupPlayer = React.useCallback(() => {
+                if (window.YT && window.YT.Player) {
+                    const newPlayer = new window.YT.Player('youtube-player', {
+                        height: '100%',
+                        width: '100%',
+                        videoId: 'YTVDuOi6L1c',
+                        events: { 'onReady': onPlayerReady }
+                    });
+                    setPlayer(newPlayer);
+                }
+            }, [onPlayerReady]);
+
+            React.useEffect(() => {
+                const mediaQuery = window.matchMedia("(orientation: portrait)");
+                const handleOrientationChange = (e) => setIsPortrait(e.matches);
+                mediaQuery.addEventListener('change', handleOrientationChange);
+                return () => mediaQuery.removeEventListener('change', handleOrientationChange);
+            }, []);
+
+            React.useEffect(() => {
+                if (window.YT && document.getElementById('youtube-player')) {
+                    if (!player) setupPlayer();
+                } else if (!window.YT) {
+                    window.onYouTubeIframeAPIReady = setupPlayer;
+                }
+                return () => { 
+                    if (intervalRef.current) clearInterval(intervalRef.current); 
+                    if (clipTimeoutRef.current) clearTimeout(clipTimeoutRef.current);
+                };
+            }, [setupPlayer, player]);
+
+            React.useEffect(() => {
+                let ro;
+                if (playerContainerRef.current) {
+                    const updateHeight = () => { if (playerContainerRef.current) setPlayerHeight(playerContainerRef.current.offsetHeight); };
+                    ro = new ResizeObserver(updateHeight);
+                    ro.observe(playerContainerRef.current);
+                    updateHeight();
+                }
+                return () => ro?.disconnect();
+            }, []);
+
+            React.useEffect(() => {
+                if (player && isSyncEnabled && !isPlayingClip) {
+                    intervalRef.current = setInterval(() => {
+                        if (player.getCurrentTime) {
+                            const currentTime = player.getCurrentTime();
+                            const currentLine = timeIndex.find(line => currentTime >= line.start && currentTime < line.end);
+                            const currentLineId = currentLine ? currentLine.id : null;
+                            if (activeScriptLineRef.current !== currentLineId) {
+                                setActiveScriptLine(currentLineId);
+                            }
+                        }
+                    }, 250);
+                } else {
+                    clearInterval(intervalRef.current);
+                }
+                return () => clearInterval(intervalRef.current);
+            }, [player, isSyncEnabled, isPlayingClip, timeIndex]);
+
+            React.useEffect(() => {
+                if (activeScriptLine && isSyncEnabled) {
+                    const lineElement = scriptLineRefs.current[activeScriptLine];
+                    if (lineElement && playerContainerRef.current) {
+                        const playerBottom = playerContainerRef.current.getBoundingClientRect().bottom;
+                        const gap = 19;
+                        const targetTop = playerBottom + gap;
+                        const elementTop = lineElement.getBoundingClientRect().top;
+                        const scrollByAmount = elementTop - targetTop;
+                        if (Math.abs(scrollByAmount) > 5) {
+                            window.scrollBy({ top: scrollByAmount, behavior: 'smooth' });
+                        }
+                    }
+                }
+            }, [activeScriptLine, isSyncEnabled]);
+
+            React.useEffect(() => {
+                const handleClickAway = () => {
+                    if (pinnedPopupData) {
+                        setPinnedPopupData(null);
+                        setHighlightedVocab(null);
+                    }
+                };
+                window.addEventListener('click', handleClickAway);
+                return () => {
+                    window.removeEventListener('click', handleClickAway);
+                };
+            }, [pinnedPopupData]);
+
+            const handlePlayClip = React.useCallback((line) => {
+                if (!player || !line.time) return;
+
+                if (clipTimeoutRef.current) {
+                    clearTimeout(clipTimeoutRef.current);
+                }
+
+                const [start, end] = line.time;
+                const duration = (end - start) * 1000;
+
+                if (duration <= 0) return;
+
+                setIsPlayingClip(true);
+                player.seekTo(start);
+                player.playVideo();
+
+                clipTimeoutRef.current = setTimeout(() => {
+                    if (player && player.pauseVideo) {
+                        player.pauseVideo();
+                    }
+                    setIsPlayingClip(false);
+                }, duration);
+            }, [player]);
+
+            const handlePlaybackRateChange = React.useCallback((e) => {
+                const newRate = parseFloat(e.target.value);
+                setPlaybackRate(newRate);
+                if (player) {
+                    player.setPlaybackRate(newRate);
+                }
+            }, [player]);
+
+            const handleWordHover = React.useCallback((e, baseForm) => {
+                e.stopPropagation();
+                if (pinnedPopupData) return;
+
+                if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+
+                const wordData = vocabMap.get(baseForm);
+                if (wordData) {
+                    const rect = e.target.getBoundingClientRect();
+                    let x = rect.left;
+                    let y = rect.bottom + 5;
+                    const tooltipWidth = 320;
+                    if (x + tooltipWidth > window.innerWidth) {
+                        x = rect.right - tooltipWidth;
+                        if (x < 0) x = 10;
+                    }
+                    const tooltipHeight = 200; 
+                    if (y + tooltipHeight > window.innerHeight + window.scrollY) {
+                        y = rect.top - tooltipHeight - 5;
+                    }
+                    setHoverPopupData({ data: wordData, position: { x, y } });
+                    setHighlightedVocab(wordData.term);
+
+                    const vocabElement = vocabRefs.current[wordData.term];
+                    if (vocabElement) {
+                        vocabElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }
+            }, [vocabMap, pinnedPopupData]);
+
+            const handleWordLeave = React.useCallback(() => {
+                hoverTimeoutRef.current = setTimeout(() => {
+                    setHoverPopupData(null);
+                    if (!pinnedPopupData) {
+                        setHighlightedVocab(null);
+                    } else {
+                        setHighlightedVocab(pinnedPopupData.data.term);
+                    }
+                }, 200);
+            }, [pinnedPopupData]);
+
+            const handleWordClick = React.useCallback((e, baseForm) => {
+                e.stopPropagation();
+                if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+                setHoverPopupData(null);
+
+                const wordData = vocabMap.get(baseForm);
+                if (wordData) {
+                    if (pinnedPopupData && pinnedPopupData.data.term === wordData.term) {
+                        setPinnedPopupData(null);
+                        setHighlightedVocab(null);
+                    } else {
+                        const rect = e.target.getBoundingClientRect();
+                        let x = rect.left;
+                        let y = rect.bottom + 5;
+                        const tooltipWidth = 320;
+                        if (x + tooltipWidth > window.innerWidth) {
+                            x = rect.right - tooltipWidth;
+                            if (x < 0) x = 10;
+                        }
+                        const tooltipHeight = 200; 
+                        if (y + tooltipHeight > window.innerHeight + window.scrollY) {
+                            y = rect.top - tooltipHeight - 5;
+                        }
+
+                        setPinnedPopupData({ data: wordData, position: { x, y } });
+                        setHighlightedVocab(wordData.term);
+
+                        const vocabElement = vocabRefs.current[wordData.term];
+                        if (vocabElement) {
+                            vocabElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+                    }
+                }
+            }, [vocabMap, pinnedPopupData]);
+
+            React.useEffect(() => {
+                const handleGlobalClick = (e) => {
+                    if (e.target.closest('.hover-tooltip')) {
+                        return;
+                    }
+                    setPinnedPopupData(null);
+                    if (!hoverPopupData) {
+                         setHighlightedVocab(null);
+                    }
+                };
+
+                if (pinnedPopupData) {
+                    document.addEventListener('click', handleGlobalClick);
+                }
+
+                return () => {
+                    document.removeEventListener('click', handleGlobalClick);
+                };
+            }, [pinnedPopupData, hoverPopupData]);
+
+            const toggleTranslation = (lineId) => {
+                setTranslationsVisible(prev => ({ ...prev, [lineId]: !prev[lineId] }));
+            };
+
+            const activePopupData = pinnedPopupData || hoverPopupData;
+
+            return (
+                React.createElement('div', { className: "video-materials-content" },
+                    activePopupData && React.createElement(HoverTooltip, { data: activePopupData.data, position: activePopupData.position }),
+                    React.createElement('div', { ref: playerContainerRef, className: "video-wrapper sticky top-0 z-40 bg-gray-50 py-4 no-print" },
+                        React.createElement('div', { className: `w-full rounded-xl shadow-lg border-4 border-white overflow-hidden transition-all duration-300 ease-in-out aspect-video` },
+                            React.createElement('div', { id: "youtube-player", className: "w-full h-full" })
+                        )
+                    ),
+                    React.createElement('div', { className: "script-wrapper flex flex-col md:flex-row gap-6" },
+                        React.createElement('main', { className: "flex-grow" },
+                             React.createElement('div', { className: "space-y-6" },
+                                scriptContent.map(line => {
+                                    const hasTranslation = !!line.eng;
+                                    const isActive = activeScriptLine === line.id;
+
+                                    if (line.kor.startsWith('•')) {
+                                        return (
+                                            React.createElement('div', { key: line.id, ref: el => scriptLineRefs.current[line.id] = el, className: `p-3 my-2 rounded-lg transition-colors duration-300 ${isActive ? 'bg-yellow-100' : ''}` },
+                                                React.createElement('p', { className: "whitespace-pre-wrap text-lg text-gray-800" },
+                                                    React.createElement(HighlightedText, { text: line.kor, highlightData: highlightData, onWordHover: handleWordHover, onWordLeave: handleWordLeave, onWordClick: handleWordClick, lineId: line.id, activeWordId: activeWordId })
+                                                ),
+                                                translationsVisible[line.id] && hasTranslation && (
+                                                    React.createElement('p', { className: "text-gray-600 text-base mt-2" }, line.eng)
+                                                ),
+                                                React.createElement('div', { className: "flex items-center gap-2 mt-2 no-print" },
+                                                    hasTranslation && (
+                                                        React.createElement('button', { onClick: () => toggleTranslation(line.id), className: "text-xs text-gray-600 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-md transition" },
+                                                            translationsVisible[line.id] ? 'Hide translation' : 'Translation'
+                                                        )
+                                                    )
+                                                )
+                                            )
+                                        );
+                                    }
+
+                                    const isYuna = line.speaker === '유나';
+                                    const bubbleWrapperClasses = `flex flex-col max-w-[100%] sm:max-w-[100%] ${isYuna ? 'items-start' : 'items-end self-end'}`;
+                                    const bubbleBaseClasses = 'relative px-5 py-3 rounded-2xl shadow-md transition-colors duration-300';
+                                    const yunaBubbleColor = 'bg-green-100';
+                                    const woodyBubbleColor = 'bg-white';
+                                    const activeBubbleColor = 'bg-yellow-100';
+                                    const tailClass = isYuna ? 'bubble-tail-left bubble-kkn20' : 'bubble-tail-right bubble-other';
+                                    const bubbleClasses = `${bubbleBaseClasses} ${isActive ? activeBubbleColor : (isYuna ? yunaBubbleColor : woodyBubbleColor)} ${tailClass} ${isActive ? 'bubble-active' : ''}`;
+                                    const speakerNameClasses = `font-bold mb-1 ${isYuna ? 'text-green-800' : 'text-blue-800'}`;
+
+                                    return (
+                                        React.createElement('div', { key: line.id, ref: el => scriptLineRefs.current[line.id] = el, className: "flex flex-col w-full" },
+                                            React.createElement('div', { className: bubbleWrapperClasses },
+                                                React.createElement('p', { className: `${speakerNameClasses} ${isYuna ? 'self-start' : 'self-end'}` }, line.speaker),
+                                                React.createElement('div', { className: bubbleClasses },
+                                                    React.createElement('p', { className: "whitespace-pre-wrap text-lg text-gray-800" },
+                                                        React.createElement(HighlightedText, { text: line.kor, highlightData: highlightData, onWordHover: handleWordHover, onWordLeave: handleWordLeave, onClick: handleWordClick, lineId: line.id, activeWordId: activeWordId })
+                                                    )
+                                                ),
+                                                React.createElement('div', { className: `w-full flex flex-col ${isYuna ? 'items-start' : 'items-end'}` },
+                                                    translationsVisible[line.id] && hasTranslation && (
+                                                        React.createElement('p', { className: "text-gray-500 text-base mt-2 px-2" }, line.eng)
+                                                    ),
+                                                    React.createElement('div', { className: "flex items-center gap-2 mt-2 px-2 no-print" },
+                                                        line.time && (
+                                                            React.createElement('button', { onClick: () => handlePlayClip(line), className: "text-xs px-2 py-1 rounded-md transition bg-gray-100 hover:bg-gray-200 text-gray-600" },
+                                                                "Play Clip"
+                                                            )
+                                                        ),
+                                                        hasTranslation && (
+                                                            React.createElement('button', { onClick: () => toggleTranslation(line.id), className: "text-xs text-gray-600 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-md transition" },
+                                                                translationsVisible[line.id] ? 'Hide translation' : 'Translation'
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                            )
+                                        )
+                                    );
+                                })
+                            )
+                        ),
+                        React.createElement('aside', { className: "vocab-sidebar w-full md:w-auto flex-shrink-0 no-print" },
+                            React.createElement('div', { className: "sticky z-30", style: { top: `${playerHeight + 32}px` } },
+                                React.createElement('div', { className: "p-3 rounded-lg shadow-md border bg-white mb-2", style: { maxWidth: '7cm' } },
+                                    React.createElement('div', { className: "flex items-center gap-2" },
+                                        React.createElement('label', { htmlFor: "speed-slider", className: "text-sm font-medium text-gray-900 whitespace-nowrap" }, "Speed"),
+                                        React.createElement('input', {
+                                            type: "range",
+                                            id: "speed-slider",
+                                            min: "0.6",
+                                            max: "1.2",
+                                            step: "0.01",
+                                            value: playbackRate,
+                                            onChange: handlePlaybackRateChange,
+                                            className: "w-full h-2 rounded-lg appearance-none cursor-pointer custom-slider flex-1"
+                                        }),
+                                        React.createElement('span', { className: "text-sm font-bold text-green-600 w-12 text-right" }, `${playbackRate.toFixed(2)}x`)
+                                    )
+                                ),
+                                React.createElement('div', { className: "flex flex-row items-stretch gap-2 mb-2", style: { maxWidth: '7cm' } },
+                                    React.createElement('label', { htmlFor: "sync-toggle", className: "flex-1 flex items-center justify-between cursor-pointer bg-white py-1.5 px-3 rounded-lg shadow-md border" },
+                                        React.createElement('span', { className: "text-xs font-medium text-gray-900 whitespace-nowrap" }, "Auto-scroll"),
+                                        React.createElement('div', { className: "relative" },
+                                            React.createElement('input', { type: "checkbox", id: "sync-toggle", className: "sr-only", checked: isSyncEnabled, onChange: () => setIsSyncEnabled(!isSyncEnabled) }),
+                                            React.createElement('div', { className: `block w-10 rounded-full transition-colors ${isSyncEnabled ? 'bg-green-500' : 'bg-gray-200'}`, style: { height: '0.35cm' } }),
+                                            React.createElement('div', { className: `dot absolute left-1 top-[2.6px] bg-white w-2 h-2 rounded-full transition-transform ${isSyncEnabled ? 'transform translate-x-6' : ''}` })
+                                        )
+                                    ),
+                                    React.createElement('label', { htmlFor: "vocab-toggle", className: "flex-1 flex items-center justify-between cursor-pointer bg-white py-1.5 px-3 rounded-lg shadow-md border" },
+                                        React.createElement('span', { className: "text-xs font-medium text-gray-900 whitespace-nowrap" }, "Vocabulary"),
+                                        React.createElement('div', { className: "relative" },
+                                            React.createElement('input', { type: "checkbox", id: "vocab-toggle", className: "sr-only", checked: isVocabSidebarVisible, onChange: () => setIsVocabSidebarVisible(!isVocabSidebarVisible) }),
+                                            React.createElement('div', { className: `block w-10 rounded-full transition-colors ${isVocabSidebarVisible ? 'bg-green-500' : 'bg-gray-200'}`, style: { height: '0.35cm' } }),
+                                            React.createElement('div', { className: `dot absolute left-1 top-[2.6px] bg-white w-2 h-2 rounded-full transition-transform ${isVocabSidebarVisible ? 'transform translate-x-6' : ''}` })
+                                        )
+                                    )
+                                ),
+                                isVocabSidebarVisible && (
+                                    React.createElement('div', { className: "w-full overflow-y-auto", style: { maxWidth: '7cm', maxHeight: `calc(100vh - ${playerHeight + 96}px)` } },
+                                        React.createElement('div', { className: "border rounded-lg bg-white p-2 shadow-lg" },
+                                            React.createElement('div', { className: "space-y-1" },
+                                                vocabAndGrammarList.map(item => (
+                                                    React.createElement(VocabItem, {
+                                                        key: item.term,
+                                                        item: item,
+                                                        ref: el => vocabRefs.current[item.term] = el,
+                                                        isHighlighted: highlightedVocab === item.term
+                                                    })
+                                                ))
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            );
+        };
+
+        // --- [퀴즈&토론] 탭 관련 컴포넌트 ---
+        const ComprehensionQuiz = ({ sentences }) => {
+            const [selectedWords, setSelectedWords] = React.useState({});
+            const [results, setResults] = React.useState({});
+            const [translationsVisible, setTranslationsVisible] = React.useState({});
+            const [hintsVisible, setHintsVisible] = React.useState({});
+
+            const shuffledSentences = React.useMemo(() => {
+                const shuffleArray = (array) => {
+                    const newArray = [...array];
+                    for (let i = newArray.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+                    }
+                    return newArray;
+                };
+                return sentences.map(sentence => ({ ...sentence, bank: shuffleArray(sentence.bank) }));
+            }, [sentences]);
+
+            const handleWordSelect = (id, word) => {
+                setSelectedWords(prev => ({ ...prev, [id]: word }));
+                const isCorrect = sentences.find(s => s.id === id).answer === word;
+                setResults(prev => ({ ...prev, [id]: isCorrect }));
+                setHintsVisible(prev => ({ ...prev, [id]: false }));
+            };
+            const handleToggleTranslation = (id) => { setTranslationsVisible(prev => ({ ...prev, [id]: !prev[id] })); };
+            const handleToggleHint = (id) => { if (results[id] !== true) setHintsVisible(prev => ({ ...prev, [id]: !prev[id] })); };
+
+            return (
+                React.createElement('div', { className: "space-y-8" },
+                    shuffledSentences.map((s, index) => (
+                        React.createElement('div', { key: s.id, className: "p-6 border rounded-xl bg-white shadow-lg transition-all duration-300" },
+                            React.createElement('p', { className: "text-gray-700 font-bold text-lg mb-4" }, `${index + 1}. 다음 빈칸에 알맞은 말을 고르세요. (Choose the correct word for the blank.)`),
+                            React.createElement('div', { className: "p-4 bg-gray-100 rounded-lg text-left mb-3 text-gray-900 text-xl font-bold" },
+                                s.parts[0],
+                                React.createElement('span', { className: "inline-block bg-yellow-200 text-green-800 px-3 py-1 rounded-md font-extrabold mx-2" },
+                                    hintsVisible[s.id] ? `[ ${s.eng_hint} ]` : (selectedWords[s.id] || '___')
+                                ),
+                                s.parts[1],
+                                results[s.id] === true && React.createElement('span', { className: "inline-block ml-2 text-green-500" }, '✓'),
+                                results[s.id] === false && React.createElement('span', { className: "inline-block ml-2 text-red-500" }, '✗')
+                            ),
+                            translationsVisible[s.id] && (
+                                React.createElement('div', { className: "text-gray-600 italic p-3 bg-gray-50 rounded-lg text-left mt-2 text-base" },
+                                    results[s.id] ? React.createElement('span', null, s.eng_parts[0], React.createElement('strong', { className: "text-green-600" }, s.eng_answer), s.eng_parts[1])
+                                        : React.createElement('span', null, s.eng_parts[0], React.createElement('span', { className: "font-bold" }, '___'), s.eng_parts[1])
+                                )
+                            ),
+                            React.createElement('div', { className: "text-left mb-4 flex gap-2" },
+                                React.createElement('button', { onClick: () => handleToggleHint(s.id), className: "text-xs bg-yellow-200 hover:bg-yellow-300 text-yellow-800 font-bold py-1 px-3 rounded-full transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed", disabled: results[s.id] === true }, "힌트 (Hint)"),
+                                React.createElement('button', { onClick: () => handleToggleTranslation(s.id), className: "text-xs bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-3 rounded-full transition duration-200" }, "번역 (Translation)")
+                            ),
+                            React.createElement('div', { className: "flex justify-start flex-wrap gap-3" },
+                                s.bank.map(word => (
+                                    React.createElement('button', {
+                                        key: word,
+                                        onClick: () => handleWordSelect(s.id, word),
+                                        className: `px-4 py-2 rounded-lg text-lg font-bold transition-all transform hover:scale-105 shadow-md ${selectedWords[s.id] === word ? (results[s.id] ? 'bg-green-500 text-white ring-2 ring-opacity-50 ring-green-400' : 'bg-red-500 text-white ring-2 ring-red-300') : 'bg-white text-gray-800 hover:bg-gray-100 border'}`
+                                    }, word)
+                                ))
+                            ),
+                            results[s.id] !== undefined && (
+                                React.createElement('div', { className: `mt-4 p-4 border-l-4 rounded-r-lg ${results[s.id] ? 'bg-green-50 border-green-400' : 'bg-red-50 border-red-400'}` },
+                                    React.createElement('p', { className: `font-bold ${results[s.id] ? 'text-green-800' : 'text-red-800'} flex items-center gap-2 text-lg` }, results[s.id] ? 'Correct!' : 'Try again.'),
+                                    React.createElement('p', { className: "mt-2 text-gray-700 text-base italic" }, results[s.id] ? s.eng_explanation : s.eng_wrongAnswerExplanations[selectedWords[s.id]])
+                                )
+                            )
+                        )
+                    ))
+                )
+            );
+        };
+
+        const SentenceChecker = ({ value, onChange, placeholder, question }) => {
+            const [feedback, setFeedback] = React.useState(null);
+            const [isLoading, setIsLoading] = React.useState(false);
+            const [error, setError] = React.useState(null);
+
+            const checkSentence = async () => {
+                if (!value || value.trim() === '') {
+                    setError("문장을 입력해야 피드백을 받을 수 있어요.");
+                    setFeedback(null); return;
+                }
+                setIsLoading(true); setError(null); setFeedback(null);
+                const prompt = `You are an advanced Korean language tutor AI for B1-C2 level learners. Analyze the user's sentence in response to a specific question. The user's answer is in Korean. Your entire response MUST be a JSON object, with all string values in Korean (ending in -요) and English.\n\nQuestion: "${question}"\nUser's Answer: "${value}"\n\nYour response MUST be a JSON object with the specified schema.`;
+                const payload = {
+                    contents: [{ role: "user", parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: { type: "OBJECT", properties: { "is_relevant": { "type": "BOOLEAN" }, "relevance_feedback_kor": { "type": "STRING", "nullable": true }, "relevance_feedback_eng": { "type": "STRING", "nullable": true }, "is_correct": { "type": "BOOLEAN", "nullable": true }, "feedback_message_kor": { "type": "STRING", "nullable": true }, "feedback_message_eng": { "type": "STRING", "nullable": true }, "corrected_sentence": { "type": "STRING", "nullable": true }, "explanation_kor": { "type": "STRING", "nullable": true }, "explanation_eng": { "type": "STRING", "nullable": true }, "alternative_expressions": { "type": "ARRAY", "items": { "type": "OBJECT", "properties": { "expression_kor": { "type": "STRING" }, "expression_eng": { "type": "STRING" } }, "required": ["expression_kor", "expression_eng"] } } }, "required": ["is_relevant"] }
+                    }
+                };
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`API error: ${response.statusText}`);
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0 && result.candidates[0].content.parts[0].text) {
+                       try {
+                           const parsedJson = JSON.parse(result.candidates[0].content.parts[0].text);
+                           setFeedback(parsedJson);
+                       } catch (parseError) {
+                           console.error("Error parsing JSON response:", parseError, result.candidates[0].content.parts[0].text);
+                           setError("AI의 응답 형식이 올바르지 않아 처리할 수 없어요.");
+                       }
+                    } else {
+                        console.error("Invalid API response structure:", result);
+                        setError("AI의 응답을 처리하는 데 문제가 발생했어요.");
+                    }
+                } catch (err) {
+                     console.error("Error checking sentence:", err);
+                     setError("문장 검사에 실패했어요. 네트워크 연결을 확인하거나 잠시 후 다시 시도해 주세요.");
+                }
+                finally { setIsLoading(false); }
+            };
+
+
+            const renderFeedbackSection = (title, content) => (content && content.length > 0 && (
+                React.createElement('div', null,
+                    React.createElement('p', { className: "text-gray-800 font-bold text-[17px]" }, title),
+                    Array.isArray(content) ? (
+                        React.createElement('ul', { className: "list-disc list-inside space-y-2 mt-1" },
+                            content.map((item, index) => (
+                                React.createElement('li', { key: index, className: "text-gray-600 text-[16px]" },
+                                    React.createElement('p', { className: "font-medium" }, item.expression_kor || item.sentence_kor),
+                                    React.createElement('p', { className: "text-gray-500 italic text-sm" }, item.expression_eng || item.sentence_eng)
+                                )
+                            ))
+                        )
+                    ) : (React.createElement('p', { className: "text-gray-700 font-medium text-[18px]" }, content))
+                )
+            ));
+
+            return (
+                React.createElement('div', null,
+                    React.createElement('textarea', { className: "w-full p-3 border rounded-md focus:ring-2 focus:ring-green-400 transition text-lg", rows: "3", placeholder: placeholder, value: value, onChange: onChange }),
+                    React.createElement('button', { onClick: checkSentence, disabled: isLoading, className: "mt-3 flex items-center justify-center gap-2 bg-green-200 text-gray-900 py-2 px-4 rounded-md transition-colors hover:bg-green-300 disabled:opacity-50 disabled:cursor-wait font-semibold text-[14px]" },
+                        isLoading ? React.createElement(Spinner, { className: "w-5 h-5" }) : '✨',
+                        isLoading ? '피드백 생성 중...' : 'AI에게 피드백 받기'
+                    ),
+                    error && React.createElement('p', { className: "mt-2 text-sm text-red-600" }, error),
+                    feedback && (
+                        React.createElement('div', { className: "mt-4 p-4 bg-green-50 border-l-4 border-green-100 rounded-r-lg space-y-4" },
+                            !feedback.is_relevant && (React.createElement('div', null, React.createElement('p', { className: "font-bold text-red-800 flex items-center gap-2 text-lg" }, feedback.relevance_feedback_kor), React.createElement('p', { className: "text-gray-600 italic" }, feedback.relevance_feedback_eng))),
+                            feedback.is_relevant && feedback.is_correct && (React.createElement('div', null, React.createElement('p', { className: "font-bold text-green-800 flex items-center gap-2 text-lg" }, React.createElement(ThumbsUp, { className: "w-5 h-5" }), ' ', feedback.feedback_message_kor), React.createElement('p', { className: "text-gray-600 italic" }, feedback.feedback_message_eng))),
+                            feedback.is_relevant && !feedback.is_correct && (React.createElement(React.Fragment, null,
+                                feedback.corrected_sentence && (React.createElement('div', null, React.createElement('p', { className: "text-gray-800 font-bold text-[17px]" }, '✨ 수정된 문장:'), React.createElement('p', { className: "text-gray-700 font-medium text-[18px]" }, feedback.corrected_sentence))),
+                                (feedback.explanation_kor || feedback.explanation_eng) && (React.createElement('div', null, React.createElement('p', { className: "text-gray-800 font-bold text-[17px]" }, '설명:'), feedback.explanation_kor && React.createElement('p', { className: "text-gray-600 text-[16px]" }, feedback.explanation_kor), feedback.explanation_eng && React.createElement('p', { className: "text-gray-500 italic mt-1 text-[15px]" }, feedback.explanation_eng)))
+                            )),
+                            feedback.alternative_expressions && feedback.alternative_expressions.length > 0 && renderFeedbackSection('💡 다른 표현:', feedback.alternative_expressions)
+                        )
+                    )
+                )
+            );
+        };
+
+        const DiscussionSection = ({ questions }) => {
+            const [translationsVisible, setTranslationsVisible] = React.useState({});
+            const [userQuestionAnswers, setUserQuestionAnswers] = React.useState({});
+            const toggleTranslation = (id) => { setTranslationsVisible(prev => ({ ...prev, [id]: !prev[id] })); };
+
+            return (
+                React.createElement('div', { className: "space-y-10" },
+                    questions.map((q) => (
+                        React.createElement('div', { key: q.num, className: "p-6 border rounded-xl bg-white shadow-lg" },
+                            React.createElement('p', { className: "text-gray-900 text-xl font-bold" }, `${q.num}. ${q.kor}`),
+                            translationsVisible[`q-${q.num}`] && (React.createElement('p', { className: "whitespace-pre-wrap text-gray-600 italic mt-1 text-base" }, q.eng)),
+                            React.createElement('button', { onClick: () => toggleTranslation(`q-${q.num}`), className: "text-xs text-gray-800 bg-gray-200 hover:bg-gray-300 font-bold py-1 px-3 rounded-full transition duration-200 mt-2 mb-6" }, "번역 (Translation)"),
+                            q.vocab && q.vocab.length > 0 && (
+                                React.createElement('div', { className: "mt-4 space-y-4" },
+                                    React.createElement('h3', { className: "font-bold text-lg text-gray-800" }, '📍핵심 표현 (Essential phrases)'),
+                                    q.vocab.map((v, i) => (
+                                        React.createElement('div', { key: i, className: "pl-4 border-l-2 border-gray-200 py-2" },
+                                            React.createElement('p', { className: "font-semibold text-green-700 text-lg" }, `${v.term}: `, React.createElement('span', { className: "font-medium text-gray-700 text-base" }, v.meaning_eng))
+                                        )
+                                    ))
+                                )
+                            ),
+                            React.createElement('div', { className: "mt-6" },
+                                React.createElement('h3', { className: "font-bold text-lg text-gray-800 mb-2" }, "핵심 표현을 사용해서 질문에 대답해 보세요."),
+                                React.createElement(SentenceChecker, {
+                                    value: userQuestionAnswers[`q-${q.num}`] || '',
+                                    onChange: (e) => setUserQuestionAnswers(prev => ({ ...prev, [`q-${q.num}`]: e.target.value })),
+                                    placeholder: "여기에 답변을 입력하세요 (Type your response here)",
+                                    question: q.kor
+                                })
+                            )
+                        )
+                    ))
+                )
+            );
+        };
+
+        const Tabs = ({ tabs }) => {
+            const [activeTab, setActiveTab] = React.useState(0);
+            
+            // 탭 이름을 한국어와 영어로 분리하는 헬퍼 함수
+            const renderTabName = (name) => {
+                const parts = name.split(' (');
+                if (parts.length === 2) {
+                    return (
+                        React.createElement(React.Fragment, null,
+                            React.createElement('span', { className: "tab-kor-name" }, parts[0]),
+                            React.createElement('span', { className: "tab-eng-name" }, `(${parts[1]}`)
+                        )
+                    );
+                }
+                return React.createElement('span', { className: "tab-kor-name" }, name);
+            };
+            
+            return (
+                React.createElement('div', null,
+                    React.createElement('div', { className: "border-b border-gray-200 no-print" },
+                        React.createElement('nav', { className: "responsive-tabs-nav", "aria-label": "Tabs" },
+                            tabs.map((tab, index) => {
+                                const isActive = index === activeTab;
+                                const activeClasses = isActive ? 'border-green-500 text-green-600 active-tab' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300';
+                                
+                                return (
+                                    React.createElement('button', {
+                                        key: tab.name_kor,
+                                        onClick: () => setActiveTab(index),
+                                        className: `responsive-tab-btn ${activeClasses}`
+                                    },
+                                        React.cloneElement(tab.icon, { className: 'tab-icon' }),
+                                        React.createElement('span', { className: "tab-text-wrapper" },
+                                            React.createElement(React.Fragment, null,
+                                                React.createElement('span', { className: "tab-kor-name" }, tab.name_kor),
+                                                React.createElement('span', { className: "tab-eng-name" }, tab.name_eng)
+                                            )
+                                        )
+                                    )
+                                );
+                            })
+                        )
+                    ),
+                    React.createElement('div', { className: "pt-10" }, tabs[activeTab].content)
+                )
+            );
+        };
+
+        // --- 메인 App 컴포넌트 ---
+        const App = () => {
+            const [containerWidth, setContainerWidth] = React.useState('30cm');
+            const [layoutMode, setLayoutMode] = React.useState('large');
+
+            React.useEffect(() => {
+                const handleResize = () => {
+                    const heightInPx = window.innerHeight; const widthInPx = window.innerWidth;
+                    const isMobileDevice = /Mobi|Android/i.test(navigator.userAgent);
+                    const isTabletDevice = /iPad|Android(?!.*Mobi)/i.test(navigator.userAgent);
+                    const isPortrait = window.matchMedia("(orientation: portrait)").matches;
+                    let newMode = 'large'; let newContainerWidth = '30cm';
+
+                    if ((isMobileDevice || isTabletDevice) && isPortrait) { newMode = 'mobile'; newContainerWidth = '100%'; }
+                    else {
+                        if (heightInPx < 832) { newMode = 'split'; newContainerWidth = '100%'; }
+                        else if (heightInPx < 907) { newMode = 'small'; newContainerWidth = '22cm'; }
+                        else if (heightInPx < 983) { newMode = 'medium'; newContainerWidth = '24cm'; }
+                        else { newMode = 'large'; newContainerWidth = '30cm'; }
+                    }
+                    setContainerWidth(newContainerWidth); setLayoutMode(newMode); document.body.dataset.layoutMode = newMode;
+                    
+                    // MODIFIED: Increase base width from 30cm to 35cm to make font scale "earlier"
+                    const baseWidthPx = 35 * 37.795; let effectiveWidthPx;
+                    
+                    if (newContainerWidth === '100%') { effectiveWidthPx = widthInPx; }
+                    else { const cmValue = parseFloat(newContainerWidth); effectiveWidthPx = cmValue * 37.795; }
+                    if (newMode !== 'large') { 
+                        const scale = Math.min(1.0, effectiveWidthPx / baseWidthPx); 
+                        
+                        // MODIFIED: Lowered minimum scale from 0.8 to 0.7 to make font "more significantly" smaller
+                        const finalScale = Math.max(0.7, scale); 
+                        
+                        document.documentElement.style.fontSize = `${16 * finalScale}px`; 
+                    } else { 
+                        document.documentElement.style.fontSize = '16px'; 
+                    }
+                };
+                window.addEventListener('resize', handleResize); handleResize();
+                return () => window.removeEventListener('resize', handleResize);
+            }, []);
+
+            const { scriptContent, vocabAndGrammarList, sentences, discussionQuestions } = React.useMemo(() => {
+                const scriptContent = [
+                    { id: 's1', speaker: '우디', kor: '안녕하세요! <이 주제로 이야기해 봐요> 팟캐스트예요.', time: [4.679, 8.906], eng: "Hello! This is the <Let's Talk About This Topic> podcast." },
+                    { id: 's2', speaker: '우디', kor: '저는 우디예요.', time: [8.906, 10.190], eng: "I'm Woody." },
+                    { id: 's3', speaker: '유나', kor: '안녕하세요! 저는 유나예요.', time: [10.284, 12.834], eng: "Hello! I'm Yuna." },
+                    { id: 's4', speaker: '우디', kor: '유나 씨, 오늘은 정말 중요한 이야기를 해야 해요.', time: [13.042, 16.699], eng: "Yuna, I have to talk about something really important today." },
+                    { id: 's5', speaker: '유나', kor: '뭐가 중요해요?', time: [16.763, 18.192], eng: "What is important?" },
+                    { id: 's6', speaker: '우디', kor: '들어보세요.', time: [18.640, 19.849], eng: "Listen." },
+                    { id: 's7', speaker: '우디', kor: '어제 우리 집 에어컨이 고장났어요!', time: [19.939, 22.379], eng: "My air conditioner broke down yesterday!" },
+                    { id: 's8', speaker: '우디', kor: '‘고장나다’는 ‘쓸 수 없다’라는 뜻이에요.', time: [22.500, 25.627], eng: "'Go-jang-na-da' means 'cannot be used'." },
+                    { id: 's9', speaker: '유나', kor: '그래서요?', time: [25.724, 26.628], eng: "So?" },
+                    { id: 's10', speaker: '우디', kor: '그래서요????!', time: [27.000, 28.303], eng: "So????!" },
+                    { id: 's11', speaker: '우디', kor: '유나 씨, 저 어제 죽을 뻔했어요!', time: [28.600, 31.709], eng: "Yuna, I almost died yesterday!" },
+                    { id: 's12', speaker: '유나', kor: '🤣 우디 씨는 항상 죽을 뻔해요.', time: [31.774, 35.697], eng: "🤣 Woody, you almost die all the time." },
+                    { id: 's13', speaker: '유나', kor: '하지만 한번도 진짜 죽지 않았어요.', time: [35.894, 39.101], eng: "But you never actually died." },
+                    { id: 's14', speaker: '우디', kor: '이번엔 진짜예요!', time: [39.300, 41.007], eng: "This time it's real!" },
+                    { id: 's15', speaker: '우디', kor: '집이 너무 습해서 물고기가 될 뻔했어요!', time: [41.180, 45.177], eng: "It was so humid in the house, I almost became a fish!" },
+                    { id: 's16', speaker: '우디', kor: '‘습하다’는 ‘젖은 것 같다’는 뜻이에요.', time: [45.302, 48.718], eng: "'Seup-ha-da' means 'it feels wet'." },
+                    { id: 's17', speaker: '유나', kor: '물고기요? 우디 씨는 항상 과장해서 말해요.', time: [48.815, 53.106], eng: "A fish? You always exaggerate, Woody." },
+                    { id: 's18', speaker: '유나', kor: '과장하다는 ‘사실을 말하지만 조금 거짓말을 하다’라는 뜻이에요.', time: [53.241, 58.901], eng: "'Gwa-jang-ha-da' means 'telling the truth but lying a little'." },
+                    { id: 's19', speaker: '우디', kor: '유나 씨, 에어컨이 고장난 적 없죠?', time: [59.100, 61.954], eng: "Yuna, your air conditioner has never broken down, has it?" },
+                    { id: 's20', speaker: '유나', kor: '저도 경험해 봤어요.', time: [62.051, 63.886], eng: "I've experienced it too." },
+                    { id: 's21', speaker: '유나', kor: '작년 여름에 에어컨이 고장났고, 심지어 겨울에 보일러도 고장났어요.', time: [63.972, 69.668], eng: "Last summer, the air conditioner broke, and even the boiler broke in the winter." },
+                    { id: 's22', speaker: '우디', kor: '어떤 상황이 더 끔찍했어요?', time: [69.718, 72.223], eng: "Which situation was more terrible?" },
+                    { id: 's23', speaker: '우디', kor: '여름에 에어컨이 고장났을 때예요?', time: [72.591, 74.784], eng: "Was it when the air conditioner broke in the summer?" },
+                    { id: 's24', speaker: '우디', kor: '겨울에 보일러가 고장났을 때예요?', time: [74.929, 77.445], eng: "Was it when the boiler broke in the winter?" },
+                    { id: 's25', speaker: '유나', kor: '끔찍하다는 \'매우 나쁘고 무섭다\'라는 뜻이죠?', time: [77.566, 82.650], eng: "'Kkeum-jjik-ha-da' means 'very bad and scary', right?" },
+                    { id: 's26', speaker: '유나', kor: '당연히 겨울에 보일러가 고장났을 때 더 힘들었어요.', time: [82.878, 87.034], eng: "Of course, it was harder when the boiler broke in the winter." },
+                    { id: 's27', speaker: '우디', kor: '에이, 말도 안 돼요!', time: [87.300, 89.245], eng: "Hey, that makes no sense!" },
+                    { id: 's28', speaker: '우디', kor: '여름에 에어컨 고장이 100배 더 힘들어요.', time: [89.330, 92.001], eng: "A broken air conditioner in summer is 100 times harder." },
+                    { id: 's29', speaker: '유나', kor: '또 과장해서 말하네요.', time: [92.074, 93.888], eng: "You're exaggerating again." },
+                    { id: 's30', speaker: '유나', kor: '겨울에 보일러가 없으면 정말 얼어 죽을 수도 있어요.', time: [93.949, 97.895], eng: "Without a boiler in winter, you could really freeze to death." },
+                    { id: 's31', speaker: '유나', kor: '‘얼어 죽다’는 ‘너무 추워서 죽는다’는 뜻이에요.', time: [98.157, 103.062], eng: "'Eol-eo-juk-da' means 'dying because it's too cold'." },
+                    { id: 's32', speaker: '유나', kor: '정말 위험해요.', time: [103.135, 104.668], eng: "It's really dangerous." },
+                    { id: 's33', speaker: '우디', kor: '아니에요. 여름에 에어컨이 없으면, 녹아요.', time: [104.854, 108.454], eng: "No. If there's no air conditioner in the summer, you melt." },
+                    { id: 's34', speaker: '유나', kor: '우디 씨는 아이스크림이에요? 어떻게 사람이 녹아요?', time: [108.515, 112.621], eng: "Are you an ice cream, Woody? How can a person melt?" },
+                    { id: 's35', speaker: '우디', kor: '진짜예요! 너무 더워서 집에서 옷도 다 벗었어요!', time: [112.879, 118.275], eng: "It's true! It was so hot I took off all my clothes at home!" },
+                    { id: 's36', speaker: '유나', kor: '우디 씨! 그건 TMI예요.', time: [118.500, 121.499], eng: "Woody! That's TMI." },
+                    { id: 's37', speaker: '우디', kor: '아무튼 겨울에는 옷을 껴입을 수 있어요.', time: [121.900, 124.969], eng: "Anyway, you can layer clothes in the winter." },
+                    { id: 's38', speaker: '우디', kor: '그러면 얼어 죽지 않아요.', time: [125.042, 126.891], eng: "Then you won't freeze to death." },
+                    { id: 's39', speaker: '유나', kor: '‘껴입다’는 옷을 여러 개 입는 거예요.', time: [127.000, 131.079], eng: "'Kkyeo-ip-da' means wearing multiple layers of clothes." },
+                    { id: 's40', speaker: '유나', kor: '그런데 우디 씨는 겨울에 안 씻어요?', time: [131.322, 134.382], eng: "But don't you wash in the winter, Woody?" },
+                    { id: 's41', speaker: '유나', kor: '보일러가 없으면 물이 얼어서 안 나올 수도 있어요.', time: [134.800, 139.134], eng: "If there is no boiler, the water might freeze and not come out." },
+                    { id: 's42', speaker: '우디', kor: '물이 얼어요?', time: [139.566, 141.041], eng: "The water freezes?" },
+                    { id: 's43', speaker: '우디', kor: '그럼 집에서 아이스 아메리카노를 만들 수 있어요.', time: [141.138, 144.397], eng: "Then you can make iced americano at home." },
+                    { id: 's44', speaker: '유나', kor: '우디 씨, 말하기 전에 생각을 해요!', time: [144.458, 148.734], eng: "Woody, think before you speak!" },
+                    { id: 's45', speaker: '우디', kor: '유나 씨는 겨울에 아이스 아메리카노 마시잖아요. 맞죠?', time: [149.000, 152.595], eng: "You drink iced americano in winter, Yuna. Right?" },
+                    { id: 's46', speaker: '우디', kor: '저도 겨울에 얼어 죽어도 아이스 아메리카노를 마셔요.', time: [152.705, 156.231], eng: "I also drink iced americano even if I freeze to death in winter." },
+                    { id: 's47', speaker: '유나', kor: '😆알겠어요.', time: [156.300, 158.681], eng: "😆 Okay." },
+                    { id: 's48', speaker: '유나', kor: '그런데 우디 씨, 에어컨 고쳤어요?', time: [158.887, 162.445], eng: "By the way, Woody, did you fix the air conditioner?" },
+                    { id: 's49', speaker: '유나', kor: '‘고치다’는 ‘다시 쓸 수 있게 만들다’라는 뜻이에요.', time: [162.773, 167.254], eng: "'Go-chi-da' means 'to make it usable again'." },
+                    { id: 's50', speaker: '우디', kor: '아직 못 했어요.', time: [167.400, 169.365], eng: "I haven't done it yet." },
+                    { id: 's51', speaker: '우디', kor: '일주일 기다려야 해요.', time: [169.450, 171.085], eng: "I have to wait a week." },
+                    { id: 's52', speaker: '유나', kor: '일주일이요? 안 됐네요.', time: [171.149, 173.604], eng: "A week? That's too bad." },
+                    { id: 's53', speaker: '유나', kor: '그런데 보일러가 고장나면, 그 다음 날 고치러 와요.', time: [173.927, 178.334], eng: "But if the boiler breaks, they come to fix it the next day." },
+                    { id: 's54', speaker: '우디', kor: '정말요?😭', time: [178.500, 179.568], eng: "Really?😭" },
+                    { id: 's55', speaker: '유나', kor: '네, 보일러가 더 중요하니까요.😁', time: [179.725, 183.415], eng: "Yes, because the boiler is more important.😁" },
+                    { id: 's56', speaker: '유나', kor: '그럼 오늘 배운 단어 정리해 볼까요?', time: [183.768, 186.512], eng: "Then shall we review the words we learned today?" },
+                    { id: 's57', speaker: '우디', kor: '네😭', time: [186.584, 187.813], eng: "Yes😭" },
+                    { id: 's58', speaker: '유나', kor: '∙고장나다 = 쓸 수 없다', time: [188.700, 192.144], eng: "∙Go-jang-na-da = Cannot be used" },
+                    { id: 's59', speaker: '유나', kor: '∙죽을 뻔했어요 = 죽을 수 있지만, 진짜 죽지 않다', time: [192.699, 199.216], eng: "∙Juk-eul ppeon-haess-eo-yo = Could have died, but didn't really die" },
+                    { id: 's60', speaker: '유나', kor: '∙습하다 = 젖은 것 같다', time: [199.653, 203.196], eng: "∙Seup-ha-da = Feels wet" },
+                    { id: 's61', speaker: '유나', kor: '∙과장하다 = 사실을 말하지만 조금 거짓말을 하다', time: [203.524, 208.755], eng: "∙Gwa-jang-ha-da = Telling the truth but lying a little" },
+                    { id: 's62', speaker: '우디', kor: '∙끔찍하다 = 매우 나쁘고 무섭다', time: [209.566, 213.940], eng: "∙Kkeum-jjik-ha-da = Very bad and scary" },
+                    { id: 's63', speaker: '우디', kor: '∙얼어 죽다 = 너무 추워서 죽다', time: [214.110, 217.741], eng: "∙Eol-eo juk-da = Dying because it's too cold" },
+                    { id: 's64', speaker: '우디', kor: '∙껴입다 = 옷을 여러 개 입다', time: [218.045, 221.915], eng: "∙Kkyeo-ip-da = Wearing multiple layers of clothes" },
+                    { id: 's65', speaker: '우디', kor: '∙고치다 = 다시 쓸 수 있게 만들다', time: [222.540, 226.468], eng: "∙Go-chi-da = Making it usable again" },
+                    { id: 's66', speaker: '유나', kor: '여러분은 어떻게 생각해요?', time: [226.614, 228.432], eng: "What do you think?" },
+                    { id: 's67', speaker: '우디', kor: '\'팀 우디\'인지 \'팀 유나\'인지 알려주세요!', time: [228.541, 231.440], eng: "Let us know if you are 'Team Woody' or 'Team Yuna'!" },
+                    { id: 's68', speaker: '우디', kor: '물론 팀 우디가 많을 거예요.', time: [231.501, 234.610], eng: "Of course, there will be many Team Woody." },
+                    { id: 's69', speaker: '유나', kor: ' 그건 우디 씨 바람이죠.', time: [234.903, 237.503], eng: "That's Woody's wish." },
+                    { id: 's70', speaker: '유나', kor: '그럼 오늘 여기까지예요. 안녕히 계세요.', time: [237.600, 240.152], eng: "That's it for today. Goodbye." },
+                    { id: 's71', speaker: '우디', kor: '그럼 오늘은 여기까지예요. 안녕히 계세요!', time: [240.283, 242.916], eng: "That's it for today. Goodbye!" }
+                ];
+                const vocabAndGrammarList = [
+                    { term: '고장나다', mainDef: 'to break down, to be out of order', examples: [{ kor: "컴퓨터가 고장났어요.", eng: "The computer broke down." }], translations: { en: { main: 'to break down, to be out of order' } } },
+                    { term: '이 주제로 이야기해 봐요', mainDef: 'Let\'s Talk About This Topic', examples: [], translations: { en: { main: 'Let\'s Talk About This Topic' } }, subDefs: [{ subTerm: '• ▢▢을/를 주제로 이야기하다', subDef: 'to talk about [something] as a topic', translations: { en: { def: 'to talk about [something] as a topic' } } }, { subTerm: '• -아/어 보다', subDef: 'used to make gentle suggestions without sounding pushy', translations: { en: { def: 'used to make gentle suggestions without sounding pushy' } } }], variants: ["이 주제로 이야기해 봐요"] },
+                    { term: '할 일', mainDef: 'work to do', examples: [], translations: { en: { main: 'work to do' } }, subDefs: [{ subTerm: '• 하다', subDef: 'to do', translations: { en: { def: 'to do' } } }, { subTerm: '• -ㄹ/을', subDef: 'used to turn a future-tense verb into an "adjective-ish" phrase that describes the following noun', translations: { en: { def: 'used to turn a future-tense verb into an "adjective-ish" phrase that describes the following noun' } } }, { subTerm: '• 일', subDef: 'work', translations: { en: { def: 'work' } } }], variants: ["할 일", "할 일이"] },
+                    { term: '많아서', mainDef: 'because there is a lot of...', examples: [], translations: { en: { main: 'because there is a lot of...' } }, subDefs: [{ subTerm: '• 많다', subDef: 'to be many, a lot of', translations: { en: { def: 'to be many, a lot of' } } }, { subTerm: '• -아서/어서', subDef: 'used to connect clauses indicating cause or reason ("because…")', translations: { en: { def: 'used to connect clauses indicating cause or reason ("because…")' } } }], variants: ["많아서"] },
+                    { term: '일을 못 끝낼 것 같아요', mainDef: 'I don\'t think I can finish the work.', examples: [], translations: { en: { main: 'I don\'t think I can finish the work.' } }, subDefs: [{ subTerm: '• 일을 끝내다', subDef: 'to finish work', translations: { en: { def: 'to finish work' } } }, { subTerm: '• -ㄹ 것 같다', subDef: 'used to express assumption or guess about something that seems likely, often translated as “I think … will … / It looks like … / It seems ….”', translations: { en: { def: 'used to express assumption or guess about something that seems likely, often translated as “I think … will … / It looks like … / It seems ….”' } } }], variants: ["일을 못 끝낼 것 같아요"] },
+                    { term: '늦게', mainDef: 'late', examples: [], translations: { en: { main: 'late' } }, subDefs: [], variants: ["늦게"] },
+                    { term: '퇴근하면 되겠네요', mainDef: 'It\'s fine if you leave work late.', examples: [], translations: { en: { main: 'It\'s fine if you leave work late.' } }, subDefs: [{ subTerm: '• 퇴근하다', subDef: 'to leave work', translations: { en: { def: 'to leave work' } } }, { subTerm: '• -면 되다', subDef: 'used to say that one condition or action is enough, often translated as “all you have to do is …” or “it’s fine if ….”', translations: { en: { def: 'used to say that one condition or action is enough, often translated as “all you have to do is …” or “it’s fine if ….”' } } }, { subTerm: '• -겠네요', subDef: 'used to show an immediate reaction, realization, or empathy, often translated as “I guess … / That must be … / Sounds …”', translations: { en: { def: 'used to show an immediate reaction, realization, or empathy, often translated as “I guess … / That must be … / Sounds …”' } } }], variants: ["퇴근하면 되겠네요"] },
+                    { term: '퇴근하다', mainDef: 'to leave work', examples: [], translations: { en: { main: 'to leave work' } }, subDefs: [], variants: ["퇴근할게요", "퇴근하다", "퇴근할 거예요"] },
+                    { term: '일이 끝나고', mainDef: 'after the work is done', examples: [], translations: { en: { main: 'after the work is done' } }, subDefs: [{ subTerm: '• 일이 끝나다', subDef: 'for the work to be finished', translations: { en: { def: 'for the work to be finished' } } }, { subTerm: '• -고', subDef: 'used to connect two verbs, meaning “and then” or simply “and,” to show actions happening in sequence.', translations: { en: { def: 'used to connect two verbs, meaning “and then” or simply “and,” to show actions happening in sequence.' } } }], variants: ["일이 끝나고"] },
+                    { term: '-라는 뜻이에요', mainDef: '"It means that…"', examples: [], translations: { en: { main: '"It means that…"' } }, subDefs: [{ subTerm: '• -(이)라는 뜻', subDef: 'used to state the meaning of a word or phrase', translations: { en: { def: 'used to state the meaning of a word or phrase' } } }], variants: ["라는 뜻이에요", "다는 뜻이에요"] },
+                    { term: '무슨 말이에요?', mainDef: 'What do you mean?', examples: [], translations: { en: { main: 'What do you mean?' } }, subDefs: [], variants: ["무슨 말이에요"] },
+                    { term: '늦게까지', mainDef: 'until late', examples: [], translations: { en: { main: 'until late' } }, subDefs: [{ subTerm: '• 늦게', subDef: 'late', translations: { en: { def: 'late' } } }, { subTerm: '• -까지', subDef: 'until', translations: { en: { def: 'until' } } }], variants: ["늦게까지"] },
+                    { term: '일하기 싫어요', mainDef: 'I don\'t want to work.', examples: [], translations: { en: { main: 'I don\'t want to work.' } }, subDefs: [{ subTerm: '• 일하다', subDef: 'to work', translations: { en: { def: 'to work' } } }, { subTerm: '• -기 싫다', subDef: 'used for your own dislike (“I don’t want to …”),', translations: { en: { def: 'used for your own dislike (“I don’t want to …”),' } } }], variants: ["일하기 싫어요"] },
+                    { term: '미루는 거', mainDef: 'the act of postponing', examples: [], translations: { en: { main: 'the act of postponing' } }, subDefs: [{ subTerm: '• 미루다', subDef: 'to postpone, to put off', translations: { en: { def: 'to postpone, to put off' } } }, { subTerm: '• -는 거', subDef: 'A colloquial form of -는 것, used to nominalize verbs by turning a verb into a noun phrase meaning “the act of …,” “the fact of …,” or “the thing that …”', translations: { en: { def: 'A colloquial form of -는 것, used to nominalize verbs by turning a verb into a noun phrase meaning “the act of …,” “the fact of …,” or “the thing that …”' } } }], variants: ["미루는 거"] },
+                    { term: '미루다', mainDef: 'to postpone, to put off', examples: [], translations: { en: { main: 'to postpone, to put off' } }, subDefs: [], variants: ["미루다"] },
+                    { term: '효율적인 거예요', mainDef: 'it is being efficient.', examples: [], translations: { en: { main: 'it is being efficient.' } }, subDefs: [{ subTerm: '• 효율적이다', subDef: 'to be efficient', translations: { en: { def: 'to be efficient' } } }, { subTerm: '• -ㄴ 거예요', subDef: 'A colloquial form of -ㄴ 것이다, used to explain, clarify, or emphasize what something really is; “it is that …”, “the fact is that …”, or “what … means is …”', translations: { en: { def: 'A colloquial form of -ㄴ 것이다, used to explain, clarify, or emphasize what something really is; “it is that …”, “the fact is that …”, or “what … means is …”' } } }], variants: ["효율적인 거예요"] },
+                    { term: '효율적이다', mainDef: 'to be efficient', examples: [], translations: { en: { main: 'to be efficient' } }, subDefs: [], variants: ["효율적이다"] },
+                    { term: '결과', mainDef: 'result', examples: [], translations: { en: { main: 'result' } }, subDefs: [], variants: ["결과를", "결과"] },
+                    { term: '얻다', mainDef: 'to get, to obtain', examples: [], translations: { en: { main: 'to get, to obtain' } }, subDefs: [], variants: ["얻어요", "얻다"] },
+                    { term: '열심히', mainDef: 'hard, diligently', examples: [], translations: { en: { main: 'hard, diligently' } }, subDefs: [], variants: ["열심히"] },
+                    { term: '일하는 거예요', mainDef: 'it is the act of working.', examples: [], translations: { en: { main: 'it is the act of working.' } }, subDefs: [{ subTerm: '• 일하다', subDef: 'to work', translations: { en: { def: 'to work' } } }, { subTerm: '• -는 거예요', subDef: 'A colloquial form of -는 것이다, which is  used to explain, clarify, or emphasize what something really is; “it is that …”, “the fact is that …”, or “what … means is …”', translations: { en: { def: 'A colloquial form of -는 것이다, which is  used to explain, clarify, or emphasize what something really is; “it is that …”, “the fact is that …”, or “what … means is …”' } } }], variants: ["일하는 거예요"] },
+                    { term: '그건 말이 안 돼요', mainDef: 'That doesn\'t make sense.', examples: [], translations: { en: { main: 'That doesn\'t make sense.' } }, subDefs: [{ subTerm: '• 말이 되다', subDef: 'to make sense', translations: { en: { def: 'to make sense' } } }], variants: ["그건 말이 안 돼요"] },
+                    { term: '같은 사람', mainDef: 'the same person', examples: [], translations: { en: { main: 'the same person' } }, subDefs: [{ subTerm: '• 같다', subDef: 'to be the same, to be like', translations: { en: { def: 'to be the same, to be like' } } }, { subTerm: '• -ㄴ/은', subDef: 'used to turn a descriptive verb, which means an adjective in English, into an “adjective-ish” phrase that describes the following noun', translations: { en: { def: 'used to turn a descriptive verb, which means an adjective in English, into an “adjective-ish” phrase that describes the following noun' } } }], variants: ["같은 사람", "같은 사람이에요"] },
+                    { term: '완전히', mainDef: 'completely', examples: [], translations: { en: { main: 'completely' } }, subDefs: [], variants: ["완전히"] },
+                    { term: '다른 사람', mainDef: 'a different person', examples: [], translations: { en: { main: 'a different person' } }, subDefs: [{ subTerm: '• 다르다', subDef: 'to be different', translations: { en: { def: 'to be different' } } }, { subTerm: '• -ㄴ/은', subDef: 'used to turn a descriptive verb, which means an adjective in English, into an “adjective-ish” phrase that describes the following noun', translations: { en: { def: 'used to turn a descriptive verb, which means an adjective in English, into an “adjective-ish” phrase that describes the following noun' } } }], variants: ["다른 사람", "다른 사람이에요", "다른 사람에게"] },
+                    { term: '천재', mainDef: 'a genius', examples: [], translations: { en: { main: 'a genius' } }, subDefs: [], variants: ["천재예요", "천재", "천재’는"] },
+                    { term: '맡겼는데', mainDef: 'entrusted, but...', examples: [], translations: { en: { main: 'entrusted, but...' } }, subDefs: [{ subTerm: '• 맡기다', subDef: 'to entrust, to assign', translations: { en: { def: 'to entrust, to assign' } } }, { subTerm: '• -는데', subDef: 'used to show contrast, or set up background often softening the tone or inviting the listener to respond.', translations: { en: { def: 'used to show contrast, or set up background often softening the tone or inviting the listener to respond.' } } }], variants: ["맡겼는데"] },
+                    { term: '맡기다', mainDef: 'to entrust, to assign', examples: [], translations: { en: { main: 'to entrust, to assign' } }, subDefs: [], variants: ["맡기다’는", "맡기다"] },
+                    { term: '바보', mainDef: 'a fool, an idiot', examples: [], translations: { en: { main: 'a fool, an idiot' } }, subDefs: [], variants: ["바보였어요", "바보'는", "바보"] },
+                    { term: '모레', mainDef: 'the day after tomorrow', examples: [], translations: { en: { main: 'the day after tomorrow' } }, subDefs: [], variants: ["모레의", "모레’는", "모레"] },
+                    { term: '언젠가', mainDef: 'someday', examples: [], translations: { en: { main: 'someday' } }, subDefs: [], variants: ["언젠가", "언젠가는"] },
+                    { term: '똑똑한', mainDef: 'smart', examples: [], translations: { en: { main: 'smart' } }, subDefs: [{ subTerm: '• 똑똑하다', subDef: 'to be smart', translations: { en: { def: 'to be smart' } } }], variants: ["똑똑한"] },
+                    { term: '게으르다', mainDef: 'to be lazy', examples: [], translations: { en: { main: 'to be lazy' } }, subDefs: [], variants: ["게을러요", "게으르다'는", "게으르다"] },
+                    { term: '일하기 싫어하다', mainDef: 'to dislike working', examples: [], translations: { en: { main: 'to dislike working' } }, subDefs: [{ subTerm: '• 일하다', subDef: 'to work', translations: { en: { def: 'to work' } } }, { subTerm: '• -기 싫어하다', subDef: 'used when talking about someone else’s dislike (“They don’t want to …”).', translations: { en: { def: 'used when talking about someone else’s dislike (“They don’t want to …”).' } } }], variants: ["일하기 싫어하다"] },
+                    { term: '로봇', mainDef: 'a robot', examples: [], translations: { en: { main: 'a robot' } }, subDefs: [], variants: ["로봇", "로봇이에요"] },
+                    { term: '피곤해서', mainDef: 'because I am tired', examples: [], translations: { en: { main: 'because I am tired' } }, subDefs: [{ subTerm: '• 피곤하다', subDef: 'to be tired', translations: { en: { def: 'to be tired' } } }, { subTerm: '• -아서/어서', subDef: 'used to connect clauses indicating cause or reason ("because…")', translations: { en: { def: 'used to connect clauses indicating cause or reason ("because…")' } } }], variants: ["피곤해서"] },
+                    { term: '그렇지 않으면', mainDef: 'if not, otherwise', examples: [], translations: { en: { main: 'if not, otherwise' } }, subDefs: [], variants: ["그렇지 않으면"] },
+                    { term: '회사에서 잘리다', mainDef: 'to get fired', examples: [], translations: { en: { main: 'to get fired' } }, subDefs: [], variants: ["회사에서 잘릴 수 있어요", "회사에서 잘리다’는", "회사에서 잘리다"] },
+                    { term: '더 이상', mainDef: 'any more, no longer', examples: [], translations: { en: { main: 'any more, no longer' } }, subDefs: [], variants: ["더 이상"] },
+                    { term: '헐', mainDef: 'OMG', examples: [], translations: { en: { main: 'OMG' } }, subDefs: [], variants: ["헐"] },
+                    { term: '야근하다', mainDef: 'to work overtime', examples: [], translations: { en: { main: 'to work overtime' } }, subDefs: [], variants: ["야근할게요", "야근하다’는", "야근하다"] },
+                    { term: '정리해 볼게요', mainDef: 'I will organize', examples: [], translations: { en: { main: 'I will organize' } }, subDefs: [{ subTerm: '• 정리하다', subDef: 'to summarize, to organize', translations: { en: { def: 'to summarize, to organize' } } }, { subTerm: '• -아/어 볼게요', subDef: 'used to politely show your intention to attempt something.', translations: { en: { def: 'used to politely show your intention to attempt something.' } } }], variants: ["정리해 볼게요"] },
+                    { term: '착한 사람', mainDef: 'a good person', examples: [], translations: { en: { main: 'a good person' } }, subDefs: [{ subTerm: '• 착하다', subDef: 'to be good, kind', translations: { en: { def: 'to be good, kind' } } }, { subTerm: '• -ㄴ/은', subDef: 'used to turn a descriptive verb, which means an adjective in English, into an “adjective-ish” phrase that describes the following noun', translations: { en: { def: 'used to turn a descriptive verb, which means an adjective in English, into an “adjective-ish” phrase that describes the following noun' } } }], variants: ["착한 사람", "착한 사람이니까"] },
+                    { term: '여기까지 할게요', mainDef: 'I\'ll stop here.', examples: [], translations: { en: { main: 'I\'ll stop here.' } }, subDefs: [{ subTerm: '• 여기까지 하다', subDef: 'to stop here, wrap something up', translations: { en: { def: 'to stop here, wrap something up' } } }, { subTerm: '• -게요', subDef: 'used to politely express your decision or intention to do something, especially when it affects the listener.', translations: { en: { def: 'used to politely express your decision or intention to do something, especially when it affects the listener.' } } }], variants: ["여기까지 할게요"] }
+                ];
+                const sentences = [
+                    { id: 1, parts: ["어제 우디 씨 집 에어컨이 ", "."], blank: 'broke down', answer: '고장났어요', bank: ['고장났어요', '버렸어요', '고쳤어요', '샀어요'], explanation: "The dialogue starts with Woody saying his air conditioner broke. '고장나다' means 'to break down'.", eng: "Yesterday, Woody's air conditioner broke down.", wrongAnswerExplanations: { '버렸어요': "'버리다' means to throw away.", '고쳤어요': "'고치다' means to fix, which is the opposite.", '샀어요': "'사다' means to buy." } },
+                    { id: 2, parts: ["우디 씨는 집이 너무 ", " 물고기가 될 뻔했어요."], blank: 'humid so', answer: '습해서', bank: ['추워서', '습해서', '건조해서', '더워서'], explanation: "Woody says his house was so humid he almost became a fish. '습하다' means 'to be humid'.", eng: "Woody's house was so humid he almost became a fish.", wrongAnswerExplanations: { '추워서': "Incorrect, it was hot and humid.", '건조해서': "This is the opposite of humid.", '더워서': "While related, 'humid' (습하다) was the specific word he used to exaggerate." } },
+                    { id: 3, parts: ["우디 씨는 자주 ", " 말해요."], blank: 'exaggeratedly', answer: '과장해서', bank: ['조용히', '솔직하게', '화나서', '과장해서'], explanation: "Yuna accuses Woody of exaggerating. '과장해서 말하다' means 'to speak exaggeratedly'.", eng: "Woody often speaks with exaggeration.", wrongAnswerExplanations: { '조용히': "'조용히' means quietly.", '솔직하게': "'솔직하게' means honestly.", '화나서': "'화나서' means angrily." } },
+                    { id: 4, parts: ["유나 씨에게 겨울에 보일러가 고장나는 것이 더 ", "."], blank: 'terrible', answer: '끔찍해요', bank: ['끔찍해요', '추워요', '경험해요', '괜찮다'], explanation: "Yuna believes a broken boiler in winter is more terrible. '끔찍하다' means 'to be terrible/horrible'.", eng: "For Yuna, a broken boiler in winter is more terrible.", wrongAnswerExplanations: { '추워요': "'춥다' means cold.", '경험해요': "'경험하다' means to experience.", '괜찮다': "'괜찮다' means okay." } },
+                    { id: 5, parts: ["겨울에 보일러가 고장나면 ", " 수도 있어요."], blank: 'freeze to death', answer: '얼어 죽을', bank: ['얼어 죽을', '웃겨 죽을', '배고파 죽을', '더워 죽을'], explanation: "Yuna's main concern is that one could freeze to death without a boiler. '얼어 죽다' means 'to freeze to death'.", eng: "If the boiler breaks in winter, you could freeze to death.", wrongAnswerExplanations: { '웃겨 죽을': "This means 'to die of laughter'.", '배고파 죽을': "This means 'to die of hunger'.", '더워 죽을': "This means 'to die of heat'." } },
+                    { id: 6, parts: ["겨울에 보일러가 고장나면 물이 ", " 안 나올 수도 있어요."], blank: 'freeze and', answer: '얼어서', bank: ['추워서', '끓어서', '녹아서', '얼어서'], explanation: "Yuna points out that without a boiler, the water can freeze and not come out. '얼다' means 'to freeze'.", eng: "If the boiler breaks in winter, the water might freeze and not come out.", wrongAnswerExplanations: { '추워서': "This means 'because it's cold'.", '끓어서': "This means 'boil and...'.", '녹아서': "This means 'melt and...'." } },
+                    { id: 7, parts: ["우디 씨는 겨울에 추우면 옷을 ", "."], blank: 'layers', answer: '껴입어요', bank: ['벗어요', '껴입어요', '빨아요', '사요'], explanation: "Woody's solution for the cold is to layer clothes. '껴입다' means 'to wear layers of clothes'.", eng: "When it's cold in winter, Woody layers his clothes.", wrongAnswerExplanations: { '벗어요': "This means 'to take off'.", '빨아요': "This means 'to wash'.", '사요': "This means 'to buy'." } },
+                    { id: 8, parts: ["우디 씨는 겨울에 ", " 죽어도 아이스 아메리카노를 마셔요."], blank: 'freeze', answer: '얼어', bank: ['얼고', '얼으니까', '얼어', '얼으면서'], explanation: "The grammar pattern '-아/어 죽어도' means 'even if I die from...'. '얼다' conjugates to '얼어'.", eng: "Woody drinks iced Americano in winter even if he freezes to death.", wrongAnswerExplanations: { '얼고': "Incorrect grammar for this context.", '얼으니까': "This means 'because it freezes'.", '얼으면서': "This means 'while freezing'." } },
+                    { id: 9, parts: ["우디 씨는 에어컨을 ", " 일주일 기다려야 해요."], blank: 'to fix', answer: '고치려면', bank: ['만들려면', '끄려면', '사려면', '고치려면'], explanation: "The grammar pattern '-(으)려면' means 'if you intend to...'. Woody needs to wait a week to fix the A/C.", eng: "Woody has to wait a week to fix his air conditioner.", wrongAnswerExplanations: { '만들려면': "This means 'if you intend to make'.", '끄려면': "This means 'if you intend to turn off'.", '사려면': "This means 'if you intend to buy'." } },
+                    { id: 10, parts: ["유나 씨는 “보일러가 고장나면, 그 다음 날 ", " 와요”라고 말했어요."], blank: 'to fix (purpose)', answer: '고치러', bank: ['고치러', '고치는데', '고쳐서', '고치려면'], explanation: "The grammar pattern '-(으)러 오다/가다' means 'to come/go in order to do...'. The repair person comes to fix it.", eng: "Yuna said, 'If the boiler breaks, they come to fix it the next day.'", wrongAnswerExplanations: { '고치는데': "This means 'fixing it, but...'.", '고쳐서': "This means 'fix it and then...'.", '고치려면': "This means 'if you intend to fix it'." } }
+                ];
+                const discussionQuestions = [
+                    { num: 1, kor: "팀 우디 “여름에 에어컨 고장” VS 팀 유나 “겨울에 보일러 고장”. 여러분에게 어떤 것이 더 <span class='text-rose-500 font-bold'>끔찍해요</span>?", eng: "Team Woody 'Broken A/C in Summer' VS Team Yuna 'Broken Boiler in Winter'. Which is more terrible for you?", vocab: [{ term: "끔찍하다", meaning: "to be terrible, horrible", context: "우디: 어떤 상황이 더 끔찍했어요?", context_eng: "Woody: Which situation was more terrible?" }] },
+                    { num: 2, kor: "여러분은 여름에 에어컨이 <span class='text-rose-500 font-bold'>고장난</span> 적이 있어요? 겨울에 보일러가 <span class='text-rose-500 font-bold'>고장난</span> 적이 있어요?", eng: "Have you ever had your A/C break down in the summer? Or your boiler break down in the winter?", vocab: [{ term: "고장나다", meaning: "to break down, to malfunction", context: "우디: 어제 우리 집 에어컨이 고장났어요!", context_eng: "Woody: My air conditioner broke down yesterday!" }, { term: "-ㄴ/은 적 (없다/있다)", meaning: "to have (never/ever) done...", context: "우디: 유나 씨, 에어컨이 고장난 적 없죠?", context_eng: "Yuna, you've never had an A/C break down, have you?" }] },
+                    { num: 3, kor: "여러분 나라에서 에어컨이 <span class='text-rose-500 font-bold'>고장나면</span> 빨리 <span class='text-rose-500 font-bold'>고치러</span> 와요?", eng: "In your country, if an air conditioner breaks down, do they come to fix it quickly?", vocab: [{ term: "고장나다", meaning: "to break down", context: "우디: 어제 우리 집 에어컨이 고장났어요!", context_eng: "Woody: My air conditioner broke down yesterday!" }, { term: "고치다", meaning: "to fix", context: "유나: 에어컨 고쳤어요?", context_eng: "Yuna: Did you fix your A/C?" }] },
+                    { num: 4, kor: "여러분은 여름에 더워 <span class='text-rose-500 font-bold'>죽을 뻔했어요</span>? 겨울에 <span class='text-rose-500 font-bold'>얼어 죽을 뻔했어요</span>? 또 언제 <span class='text-rose-500 font-bold'>죽을 뻔했어요</span>?", eng: "Have you almost died from the heat in summer? Almost died from the cold in winter? When else have you almost died?", vocab: [{ term: "죽을 뻔하다", meaning: "to almost die", context: "우디: 저 어제 죽을 뻔했어요!", context_eng: "Woody: I almost died yesterday!" }, { term: "얼어 죽다", meaning: "to freeze to death", context: "유나: 겨울에 보일러가 없으면 정말 얼어 죽을 수도 있어요.", context_eng: "Yuna: If you don't have a boiler in winter, you could really freeze to death." }] },
+                    { num: 5, kor: "여러분은 여름에 집에서 너무 <span class='text-rose-500 font-bold'>습하면</span>, 어떻게 해요?", eng: "What do you do when your house is too humid in the summer?", vocab: [{ term: "습하다", meaning: "to be humid", context: "우디: 집이 너무 습해서 물고기가 될 뻔했어요!", context_eng: "Woody: The house was so humid I almost turned into a fish!" }] },
+                    { num: 6, kor: "여러분은 겨울에 추우면 옷을 몇 개 <span class='text-rose-500 font-bold'>껴입어요</span>?", eng: "How many layers of clothes do you wear when it's cold in the winter?", vocab: [{ term: "껴입다", meaning: "to layer clothes", context: "우디: 아무튼 겨울에는 옷을 껴입을 수 있어요.", context_eng: "Woody: Anyway, in the winter you can wear layers of clothes." }] },
+                    { num: 7, kor: "여러분도 겨울에 “<span class='text-rose-500 font-bold'>얼어 죽어도</span> 아이스 아메리카노”를 마셔요? 여름이나 겨울에 항상 좋아하는 음식이 뭐예요?", eng: "Do you also drink 'Iced Americano even if I freeze to death' in the winter? What's a food you always like in summer or winter?", vocab: [{ term: "얼어 죽어도", meaning: "even if I freeze to death", context: "우디: 저도 겨울에 얼어 죽어도 아이스 아메리카노를 마셔요.", context_eng: "Woody: I also drink iced Americanos in winter even if I freeze to death." }] },
+                    { num: 8, kor: "여러분에게도 <span class='text-rose-500 font-bold'>과장해서</span> 말하는 친구가 있어요? 그 친구는 보통 어떤 이야기를 해요?", eng: "Do you also have a friend who exaggerates? What kind of stories do they usually tell?", vocab: [{ term: "과장하다", meaning: "to exaggerate", context: "유나: 우디 씨는 항상 과장해서 말해요.", context_eng: "Yuna: Woody, you always exaggerate." }] },
+                    { num: 9, kor: "여러분은 친구가 <span class='text-rose-500 font-bold'>TMI</span>(알고 싶지 않은 이야기)를 말하면 어떻게 해요?", eng: "What do you do when a friend tells you TMI (stories you don't want to know)?", vocab: [{ term: "TMI", meaning: "Too Much Information", context: "유나: 우디 씨! 그건 TMI예요.", context_eng: "Yuna: Woody! That's TMI." }] },
+                    { num: 10, kor: "여러분은 <span class='text-rose-500 font-bold'>말하기 전에 생각을 해요</span>?", eng: "Do you think before you speak?", vocab: [{ term: "말하기 전에 생각을 하다", meaning: "to think before speaking", context: "유나: 우디 씨, 말하기 전에 생각을 해요!", context_eng: "Woody, think before you speak!" }] }
+                ];
+                return { scriptContent, vocabAndGrammarList, sentences, discussionQuestions };
+            }, []);
+
+            const { vocabMap, highlightData } = React.useMemo(() => {
+                const vocabMap = new Map(vocabAndGrammarList.map(item => [item.term, item]));
+                const wordMap = new Map();
+                vocabAndGrammarList.forEach(item => wordMap.set(item.term, item));
+                const allWords = Array.from(wordMap.keys()).sort((a, b) => b.length - a.length);
+                const regexParts = [];
+                allWords.forEach(word => {
+                    const item = wordMap.get(word);
+                    if (item.variants) item.variants.forEach(v => regexParts.push(v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+                    let processed = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s*');
+                    if (word.endsWith('다')) {
+                        const parts = word.split(' ');
+                        const lastPart = parts[parts.length - 1];
+                        if (lastPart.endsWith('다')) {
+                            const stem = lastPart.slice(0, -1).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                            const firstParts = parts.slice(0, -1).map(p => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+                            regexParts.push([...firstParts, `${stem}[가-힣]*`].join('\\s*'));
+                        } else { regexParts.push(`${processed.slice(0, -1)}[가-힣]*`); }
+                    } else { regexParts.push(processed); }
+                });
+                const regexString = [...new Set(regexParts)].sort((a,b) => b.length - a.length).join('|');
+                return { vocabMap, highlightData: { regex: new RegExp(`(${regexString})`, 'g'), wordMap, sortedWords: allWords }};
+            }, [vocabAndGrammarList]);
+
+            const tabs = React.useMemo(() => {
+                const baseTabs = [
+                    { name_kor: '대화 스크립트', name_eng: '(Transcript)', icon: React.createElement(Video, { className: "w-6 h-6" }), content: React.createElement(VideoMaterialsTab, { scriptContent: scriptContent, vocabAndGrammarList: vocabAndGrammarList, highlightData: highlightData, vocabMap: vocabMap }) },
+                    { name_kor: '핵심 어휘', name_eng: '(Key Vocabulary)', icon: React.createElement(List, { className: "w-6 h-6" }), content: (
+                        React.createElement('div', null,
+                            React.createElement('h2', { className: "text-3xl font-extrabold text-gray-900 mb-8 flex items-center gap-3" }, React.createElement(List, { className: "w-8 h-8 text-green-600" }), " 핵심 어휘 (Key Vocabulary)"),
+                            React.createElement('div', { className: "w-full overflow-y-auto", style: { maxHeight: `calc(100vh - 150px)` } },
+                                React.createElement('div', { className: "border rounded-lg bg-white p-2 shadow-lg" },
+                                    React.createElement('div', { className: "space-y-1" },
+                                        vocabAndGrammarList.map(item => React.createElement(VocabItem, { key: item.term, item: item }))
+                                    )
+                                )
+                            )
+                        )
+                    )},
+                    { name_kor: '내용 확인 퀴즈', name_eng: '(Comprehension Check-Up)', icon: React.createElement(BookOpen, { className: "w-6 h-6" }), content: (
+                        React.createElement('div', null,
+                            React.createElement('h2', { className: "text-3xl font-extrabold text-gray-900 mb-8 flex items-center gap-3" }, React.createElement(BookOpen, { className: "w-8 h-8 text-green-600" }), " 내용 확인 퀴즈 (Comprehension Check-Up)"),
+                            React.createElement(ComprehensionQuiz, { sentences: sentences })
+                        )
+                    )},
+                    { name_kor: '생각해 보기', name_eng: '(Food For Thought)', icon: React.createElement(MessageSquare, { className: "w-6 h-6" }), content: (
+                        React.createElement('div', null,
+                            React.createElement('h2', { className: "text-3xl font-extrabold text-gray-900 mb-8 flex items-center gap-3" }, React.createElement(MessageSquare, { className: "w-8 h-8 text-green-600" }), " 생각해 보기 (Food For Thought)"),
+                            React.createElement(DiscussionSection, { questions: discussionQuestions })
+                        )
+                    ) }
+                ];
+                return baseTabs;
+            }, [layoutMode, scriptContent, vocabAndGrammarList, sentences, discussionQuestions, highlightData, vocabMap]);
+
+            return (
+                React.createElement('div', { className: "bg-gray-50 text-gray-800 p-4 sm:p-6 md:p-8" },
+                    React.createElement('div', { className: "mx-auto transition-all duration-300", style: { maxWidth: containerWidth } },
+                        React.createElement('header', { className: "text-center mb-12" },
+                            React.createElement('h1', { className: "text-4xl md:text-5xl font-black text-gray-900 mb-2" }, "여름 에어컨 고장 VS 겨울 보일러 고장"),
+                            React.createElement('p', { className: "text-xl text-gray-500", style: { fontFamily: "'Nanum Gothic', sans-serif" } }, "Broken A/C in Summer vs. Broken Boiler in Winter")
+                        ),
+                        React.createElement(Tabs, { tabs: tabs }),
+                        layoutMode === 'mobile' && (
+                            React.createElement('div', { className: "pt-10" },
+                                React.createElement('h2', { className: "text-3xl font-extrabold text-gray-900 mb-8 flex items-center gap-3" }, React.createElement(List, { className: "w-8 h-8 text-green-600" }), " 핵심 어휘 (Key Vocabulary)"),
+                                React.createElement('div', { className: "w-full" },
+                                    React.createElement('div', { className: "border rounded-lg bg-white p-2 shadow-lg" },
+                                        React.createElement('div', { className: "space-y-1" }, vocabAndGrammarList.map(item => React.createElement(VocabItem, { key: item.term, item: item })))
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            );
+        };
+    
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(App));
+    </script>
+</body>
+</html>
