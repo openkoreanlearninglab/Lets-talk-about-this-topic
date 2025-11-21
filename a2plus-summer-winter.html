@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <!-- Babel 스크립트 제거됨 -->
+    <!-- Babel 스크립트 제거됨 (Pure JS + React.createElement 사용) -->
     <script src="https://www.youtube.com/iframe_api"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -457,7 +457,7 @@
                     const newPlayer = new window.YT.Player('youtube-player', {
                         height: '100%',
                         width: '100%',
-                        videoId: 'YTVDuOi6L1c',
+                        videoId: '_5dwoII2L_M',
                         events: { 'onReady': onPlayerReady }
                     });
                     setPlayer(newPlayer);
@@ -847,7 +847,8 @@
                             React.createElement('div', { className: "p-4 bg-gray-100 rounded-lg text-left mb-3 text-gray-900 text-xl font-bold" },
                                 s.parts[0],
                                 React.createElement('span', { className: "inline-block bg-yellow-200 text-green-800 px-3 py-1 rounded-md font-extrabold mx-2" },
-                                    hintsVisible[s.id] ? `[ ${s.eng_hint} ]` : (selectedWords[s.id] || '___')
+                                    // 데이터 구조 변경: eng_hint -> blank
+                                    hintsVisible[s.id] ? `[ ${s.blank} ]` : (selectedWords[s.id] || '___')
                                 ),
                                 s.parts[1],
                                 results[s.id] === true && React.createElement('span', { className: "inline-block ml-2 text-green-500" }, '✓'),
@@ -855,8 +856,8 @@
                             ),
                             translationsVisible[s.id] && (
                                 React.createElement('div', { className: "text-gray-600 italic p-3 bg-gray-50 rounded-lg text-left mt-2 text-base" },
-                                    results[s.id] ? React.createElement('span', null, s.eng_parts[0], React.createElement('strong', { className: "text-green-600" }, s.eng_answer), s.eng_parts[1])
-                                        : React.createElement('span', null, s.eng_parts[0], React.createElement('span', { className: "font-bold" }, '___'), s.eng_parts[1])
+                                    // 데이터 구조 변경: eng_parts/eng_answer -> eng (전체 문장 표시)
+                                    s.eng
                                 )
                             ),
                             React.createElement('div', { className: "text-left mb-4 flex gap-2" },
@@ -875,7 +876,8 @@
                             results[s.id] !== undefined && (
                                 React.createElement('div', { className: `mt-4 p-4 border-l-4 rounded-r-lg ${results[s.id] ? 'bg-green-50 border-green-400' : 'bg-red-50 border-red-400'}` },
                                     React.createElement('p', { className: `font-bold ${results[s.id] ? 'text-green-800' : 'text-red-800'} flex items-center gap-2 text-lg` }, results[s.id] ? 'Correct!' : 'Try again.'),
-                                    React.createElement('p', { className: "mt-2 text-gray-700 text-base italic" }, results[s.id] ? s.eng_explanation : s.eng_wrongAnswerExplanations[selectedWords[s.id]])
+                                    // 데이터 구조 변경: eng_explanation -> explanation, eng_wrongAnswerExplanations -> wrongAnswerExplanations
+                                    React.createElement('p', { className: "mt-2 text-gray-700 text-base italic" }, results[s.id] ? s.explanation : s.wrongAnswerExplanations[selectedWords[s.id]])
                                 )
                             )
                         )
@@ -913,13 +915,13 @@
                     if (result.candidates && result.candidates.length > 0 &&
                         result.candidates[0].content && result.candidates[0].content.parts &&
                         result.candidates[0].content.parts.length > 0 && result.candidates[0].content.parts[0].text) {
-                       try {
+                        try {
                            const parsedJson = JSON.parse(result.candidates[0].content.parts[0].text);
                            setFeedback(parsedJson);
-                       } catch (parseError) {
+                        } catch (parseError) {
                            console.error("Error parsing JSON response:", parseError, result.candidates[0].content.parts[0].text);
                            setError("AI의 응답 형식이 올바르지 않아 처리할 수 없어요.");
-                       }
+                        }
                     } else {
                         console.error("Invalid API response structure:", result);
                         setError("AI의 응답을 처리하는 데 문제가 발생했어요.");
@@ -976,11 +978,18 @@
             const [userQuestionAnswers, setUserQuestionAnswers] = React.useState({});
             const toggleTranslation = (id) => { setTranslationsVisible(prev => ({ ...prev, [id]: !prev[id] })); };
 
+            // HTML 태그 제거 헬퍼 함수 (AI 프롬프트용)
+            const stripTags = (str) => str.replace(/<[^>]*>/g, '');
+
             return (
                 React.createElement('div', { className: "space-y-10" },
                     questions.map((q) => (
                         React.createElement('div', { key: q.num, className: "p-6 border rounded-xl bg-white shadow-lg" },
-                            React.createElement('p', { className: "text-gray-900 text-xl font-bold" }, `${q.num}. ${q.kor}`),
+                            // HTML 태그 렌더링을 위해 dangerouslySetInnerHTML 사용
+                            React.createElement('p', { 
+                                className: "text-gray-900 text-xl font-bold",
+                                dangerouslySetInnerHTML: { __html: `${q.num}. ${q.kor}` }
+                            }),
                             translationsVisible[`q-${q.num}`] && (React.createElement('p', { className: "whitespace-pre-wrap text-gray-600 italic mt-1 text-base" }, q.eng)),
                             React.createElement('button', { onClick: () => toggleTranslation(`q-${q.num}`), className: "text-xs text-gray-800 bg-gray-200 hover:bg-gray-300 font-bold py-1 px-3 rounded-full transition duration-200 mt-2 mb-6" }, "번역 (Translation)"),
                             q.vocab && q.vocab.length > 0 && (
@@ -988,7 +997,15 @@
                                     React.createElement('h3', { className: "font-bold text-lg text-gray-800" }, '📍핵심 표현 (Essential phrases)'),
                                     q.vocab.map((v, i) => (
                                         React.createElement('div', { key: i, className: "pl-4 border-l-2 border-gray-200 py-2" },
-                                            React.createElement('p', { className: "font-semibold text-green-700 text-lg" }, `${v.term}: `, React.createElement('span', { className: "font-medium text-gray-700 text-base" }, v.meaning_eng))
+                                            // 데이터 구조 변경에 따라 v.meaning 사용 (하위 호환성을 위해 || 연산자 사용)
+                                            React.createElement('p', { className: "font-semibold text-green-700 text-lg" }, `${v.term}: `, React.createElement('span', { className: "font-medium text-gray-700 text-base" }, v.meaning || v.meaning_eng)),
+                                            // context가 있으면 표시
+                                            (v.context || v.context_eng) && (
+                                                React.createElement('div', { className: "mt-1 text-sm text-gray-600 bg-gray-50 p-2 rounded" },
+                                                    v.context && React.createElement('p', null, `ex) ${v.context}`),
+                                                    v.context_eng && React.createElement('p', { className: "italic text-gray-500" }, v.context_eng)
+                                                )
+                                            )
                                         )
                                     ))
                                 )
@@ -999,7 +1016,8 @@
                                     value: userQuestionAnswers[`q-${q.num}`] || '',
                                     onChange: (e) => setUserQuestionAnswers(prev => ({ ...prev, [`q-${q.num}`]: e.target.value })),
                                     placeholder: "여기에 답변을 입력하세요 (Type your response here)",
-                                    question: q.kor
+                                    // AI에게는 태그가 제거된 텍스트 전달
+                                    question: stripTags(q.kor)
                                 })
                             )
                         )
