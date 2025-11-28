@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Korean Learning: Daily Conversation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nanum Gothic', sans-serif;
+        }
+        .vocab-popup {
+            font-family: 'Nanum Gothic', sans-serif;
+            z-index: 50;
+            max-width: 320px;
+            white-space: normal;
+        }
+        .highlight-general {
+            font-weight: 700; /* font-bold */
+            color: #374151; /* text-gray-700 */
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.2s;
+        }
+        .highlight-specific {
+            font-weight: 800; /* font-extrabold */
+            color: #059669; /* text-green-600 */
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.2s;
+        }
+        .highlight-general:hover, .highlight-specific:hover, .active-highlight {
+            background-color: #d1fae5; /* green-100 */
+            border-radius: 3px;
+        }
+        .vocab-highlight {
+            background-color: #ecfdf5; /* green-50 */
+            border-left: 4px solid #10b981; /* green-500 */
+            transition: background-color 0.3s ease-in-out;
+        }
+        .script-highlight {
+            background-color: #fefce8; /* yellow-50 */
+            border-radius: 4px;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        /* --- 화면 크기 조정을 위한 미디어 쿼리 --- */
+        .main-content-container {
+            max-width: 24cm; /* 기본 최대 너비 */
+            margin-left: auto;
+            margin-right: auto;
+            transition: max-width 0.3s ease-in-out, font-size 0.3s ease-in-out;
+        }
+
+        /* 브라우저 세로 높이가 21.2cm 이하일 경우 */
+        @media (max-height: 21.2cm) {
+            html {
+                font-size: 90%; /* 전체 콘텐츠 비율 조정을 위해 기본 글자 크기 축소 */
+            }
+            .main-content-container {
+                max-width: 15cm;
+            }
+        }
+
+        /* 브라우저 세로 높이가 16.5cm 이하일 경우 */
+        @media (max-height: 16.5cm) {
+            html {
+                font-size: 80%; /* 전체 콘텐츠 비율 조정을 위해 기본 글자 크기 더 축소 */
+            }
+            .main-content-container {
+                max-width: 10cm;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="root"></div>
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script type="text/babel">
+        const { useState, useRef, useEffect, useMemo, useCallback } = React;
+
+        // --- Mock Translation API ---
+        const mockApiTranslations = {
+            translation_button_label: { en: 'Translate', es: 'Traducir', fr: 'Traduire', ja: '翻訳', ko: '번역' },
+            translation_hide_button_label: { en: 'Hide', es: 'Ocultar', fr: 'Cacher', ja: '隠す', ko: '숨기기' },
+            term_trans_easy_korean: { en: "Let's talk in easy Korean", es: "Hablemos en coreano fácil", fr: "Parlons en coréen facile", ja: "簡単な韓国語で話しましょう" },
+            term_trans_podcast: { en: "podcast", es: "pódcast", fr: "podcast", ja: "ポッドキャスト" },
+            term_trans_today: { en: "today", es: "hoy", fr: "aujourd'hui", ja: "今日" },
+            term_trans_what_are_you_doing: { en: "What are you doing?", es: "¿Qué estás haciendo?", fr: "Qu'est-ce que tu fais?", ja: "何をしていますか？" },
+            term_trans_meet_friend: { en: "to meet a friend", es: "encontrarse con un amigo", fr: "rencontrer un ami", ja: "友達に会う" },
+            term_trans_together: { en: "together", es: "juntos", fr: "ensemble", ja: "一緒に" },
+            term_trans_eat: { en: "to eat", es: "comer", fr: "manger", ja: "食べる" },
+            term_trans_watch_movie: { en: "to watch a movie", es: "ver una película", fr: "regarder un film", ja: "映画を見る" },
+            term_trans_sounds_fun: { en: "That sounds fun!", es: "¡Eso suena divertido!", fr: "Ça a l'air amusant!", ja: "楽しそうですね！" },
+            term_trans_me_too: { en: "me too / I also", es: "yo también", fr: "moi aussi", ja: "私も" },
+            term_trans_like: { en: "to like", es: "gustar", fr: "aimer", ja: "好きです" },
+            term_trans_at_home: { en: "at home", es: "en casa", fr: "à la maison", ja: "家で" },
+            term_trans_rest: { en: "to rest", es: "descansar", fr: "se reposer", ja: "休む" },
+            term_trans_listen_music: { en: "to listen to music", es: "escuchar música", fr: "écouter de la musique", ja: "音楽を聴く" },
+            term_trans_read_book: { en: "to read a book", es: "leer un libro", fr: "lire un livre", ja: "本を読む" },
+            term_trans_tomorrow: { en: "tomorrow", es: "mañana", fr: "demain", ja: "明日" },
+            term_trans_have_plans: { en: "I have plans / an appointment", es: "Tengo planes / una cita", fr: "J'ai des projets / un rendez-vous", ja: "予定があります" },
+            term_trans_go_shopping_mall: { en: "to go to the shopping mall", es: "ir al centro comercial", fr: "aller au centre commercial", ja: "ショッピングモールに行く" },
+            term_trans_buy_clothes: { en: "to buy clothes", es: "comprar ropa", fr: "acheter des vêtements", ja: "服を買う" },
+            term_trans_are_shopping: { en: "Oh, you are shopping.", es: "Oh, estás de compras.", fr: "Oh, tu fais du shopping.", ja: "ああ、買い物をしているんですね。" },
+            term_trans_thats_right: { en: "that's right", es: "así es", fr: "c'est exact", ja: "その通りです" },
+            term_trans_on_sunday: { en: "on Sunday", es: "el domingo", fr: "le dimanche", ja: "日曜日に" },
+            term_trans_in_evening: { en: "in the evening", es: "por la noche", fr: "le soir", ja: "夕方に" },
+            term_trans_cook: { en: "to cook", es: "cocinar", fr: "cuisiner", ja: "料理する" },
+            term_trans_really: { en: "Really?", es: "¿De verdad?", fr: "Vraiment?", ja: "本当ですか？" },
+            term_trans_cook_something: { en: "to cook (something)", es: "cocinar (algo)", fr: "cuisiner (quelque chose)", ja: "料理をする" },
+            term_trans_sometimes: { en: "sometimes", es: "a veces", fr: "parfois", ja: "時々" },
+            term_trans_i_see: { en: "I see / Oh, I get it", es: "Ya veo / Ah, entiendo", fr: "Je vois / Oh, je comprends", ja: "なるほど" },
+            term_trans_expressions_learned: { en: "the expressions (we) learned", es: "las expresiones que aprendimos", fr: "les expressions que nous avons apprises", ja: "学んだ表現" },
+            term_trans_again: { en: "again", es: "otra vez", fr: "encore", ja: "また" },
+            term_trans_shall_we_check: { en: "Shall we check/confirm?", es: "¿Verificamos/confirmamos?", fr: "Vérifions-nous/confirmons-nous?", ja: "確認しましょうか？" },
+            term_trans_thats_all: { en: "That's all (for now).", es: "Eso es todo (por ahora).", fr: "C'est tout (pour le moment).", ja: "ここまでです。" },
+        };
+
+        const mockTranslateApi = (key, targetLang) => {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const translations = mockApiTranslations[key];
+                    if (translations) {
+                        resolve(translations[targetLang] || translations['en'] || key);
+                    } else {
+                        resolve(key);
+                    }
+                }, 100);
+            });
+        };
+
+        const useTranslation = () => {
+            const [lang, setLang] = useState('en');
+            useEffect(() => {
+                const browserLang = navigator.language.split('-')[0];
+                setLang(browserLang === 'ko' ? 'en' : browserLang);
+            }, []);
+            const t = useCallback(async (key) => await mockTranslateApi(key, lang), [lang]);
+            const t_static = (key) => {
+                if (!key || !mockApiTranslations[key]) return key;
+                return mockApiTranslations[key][lang] || mockApiTranslations[key]['en'] || key;
+            }
+            return { t, lang, t_static };
+        };
+
+
+        const Icon = ({ children, className = 'w-6 h-6' }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {children}
+            </svg>
+        );
+        const ThumbsUp = ({ className }) => <Icon className={className}><path d="M7 10v12"></path><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a2 2 0 0 1 3 1.88V5Z"></path></Icon>;
+        const Sparkles = ({ className }) => <Icon className={className}><path d="m12 3-1.9 5.8-5.8 1.9 5.8 1.9L12 18l1.9-5.8 5.8-1.9-5.8-1.9L12 3z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></Icon>;
+       
+        const Spinner = ({ className }) => (
+            <svg className={`animate-spin ${className}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+        );
+
+        const ComprehensionQuiz = () => {
+            const [selectedWords, setSelectedWords] = useState({});
+            const [results, setResults] = useState({});
+            const [translationsVisible, setTranslationsVisible] = useState({});
+            const [hintsVisible, setHintsVisible] = useState({});
+
+            const sentences = useMemo(() => [
+                {
+                    id: 1,
+                    parts: ["민호 씨는 ", " 친구를 만나요."],
+                    blank: '오늘',
+                    answer: '오늘',
+                    bank: ['오늘', '내일', '어제', '모레'],
+                    explanation: "'오늘' means 'today'. Minho said he is meeting a friend today.",
+                    eng: "Minho meets a friend today.",
+                    wrongAnswerExplanations: {
+                        '내일': "'내일' means 'tomorrow'.",
+                        '어제': "'어제' means 'yesterday'.",
+                        '모레': "'모레' means 'the day after tomorrow'."
+                    }
+                },
+                {
+                    id: 2,
+                    parts: ["민호 씨는 친구하고 ", "."],
+                    blank: '영화를 봐요',
+                    answer: '영화를 봐요',
+                    bank: ['영화를 봐요', '책을 읽어요', '운동해요', '요리해요'],
+                    explanation: "Minho said he watches a movie with his friend. '영화를 보다' means 'to watch a movie'.",
+                    eng: "Minho watches a movie with his friend.",
+                    wrongAnswerExplanations: {
+                        '책을 읽어요': "'책을 읽다' means 'to read a book'.",
+                        '운동해요': "'운동하다' means 'to exercise'.",
+                        '요리해요': "'요리하다' means 'to cook'."
+                    }
+                },
+                {
+                    id: 3,
+                    parts: ["유나 씨는 오늘 ", "."],
+                    blank: '집에서 쉬어요',
+                    answer: '집에서 쉬어요',
+                    bank: ['집에서 쉬어요', '친구를 만나요', '옷을 사요', '운동해요'],
+                    explanation: "Yuna said she rests at home today. '집에서 쉬다' means 'to rest at home'.",
+                    eng: "Yuna rests at home today.",
+                    wrongAnswerExplanations: {
+                        '친구를 만나요': "Yuna meets a friend tomorrow.",
+                        '옷을 사요': "Yuna buys clothes tomorrow.",
+                        '운동해요': "Minho exercises."
+                    }
+                },
+                {
+                    id: 4,
+                    parts: ["유나 씨는 집에서 ", "."],
+                    blank: '음악을 들어요',
+                    answer: '음악을 들어요',
+                    bank: ['음악을 들어요', '영화를 봐요', '친구를 만나요', '옷을 사요'],
+                    explanation: "Yuna said she listens to music at home. '음악을 듣다' means 'to listen to music'.",
+                    eng: "Yuna listens to music at home.",
+                    wrongAnswerExplanations: {
+                        '영화를 봐요': "Minho watches a movie.",
+                        '친구를 만나요': "She doesn't meet a friend at home.",
+                        '옷을 사요': "She doesn't buy clothes at home."
+                    }
+                },
+                {
+                    id: 5,
+                    parts: ["유나 씨는 집에서 ", "."],
+                    blank: '책을 읽어요',
+                    answer: '책을 읽어요',
+                    bank: ['책을 읽어요', '요리해요', '운동해요', '옷을 사요'],
+                    explanation: "Yuna said she reads a book at home. '책을 읽다' means 'to read a book'.",
+                    eng: "Yuna reads a book at home.",
+                    wrongAnswerExplanations: {
+                        '요리해요': "Yuna cooks sometimes.",
+                        '운동해요': "Minho exercises.",
+                        '옷을 사요': "Yuna buys clothes tomorrow."
+                    }
+                },
+                {
+                    id: 6,
+                    parts: ["유나 씨는 ", " 약속이 있어요."],
+                    blank: '내일',
+                    answer: '내일',
+                    bank: ['내일', '오늘', '어제', '모레'],
+                    explanation: "'내일' means 'tomorrow'. Yuna said she has plans tomorrow.",
+                    eng: "Yuna has plans tomorrow.",
+                    wrongAnswerExplanations: {
+                        '오늘': "Yuna rests at home today.",
+                        '어제': "'어제' means 'yesterday'.",
+                        '모레': "'모레' means 'the day after tomorrow'."
+                    }
+                },
+                {
+                    id: 7,
+                    parts: ["유나 씨는 내일 ", "."],
+                    blank: '옷을 사요',
+                    answer: '옷을 사요',
+                    bank: ['옷을 사요', '책을 읽어요', '음악을 들어요', '영화를 봐요'],
+                    explanation: "Yuna said she is going to the shopping mall to buy clothes tomorrow. '옷을 사다' means 'to buy clothes'.",
+                    eng: "Yuna buys clothes tomorrow.",
+                    wrongAnswerExplanations: {
+                        '책을 읽어요': "Yuna reads a book today.",
+                        '음악을 들어요': "Yuna listens to music today.",
+                        '영화를 봐요': "Minho watches a movie."
+                    }
+                },
+                {
+                    id: 8,
+                    parts: ["민호 씨는 일요일에 ", "."],
+                    blank: '운동해요',
+                    answer: '운동해요',
+                    bank: ['운동해요', '친구를 만나요', '음악을 들어요', '책을 읽어요'],
+                    explanation: "Minho said he exercises on Sunday. '운동하다' means 'to exercise'.",
+                    eng: "Minho exercises on Sunday.",
+                    wrongAnswerExplanations: {
+                        '친구를 만나요': "Minho meets a friend today.",
+                        '음악을 들어요': "Yuna listens to music.",
+                        '책을 읽어요': "Yuna reads a book."
+                    }
+                },
+                {
+                    id: 9,
+                    parts: ["민호 씨는 저녁에 ", "."],
+                    blank: '요리해요',
+                    answer: '요리해요',
+                    bank: ['요리해요', '운동해요', '영화를 봐요', '옷을 사요'],
+                    explanation: "Minho said he cooks at home in the evening. '요리하다' means 'to cook'.",
+                    eng: "Minho cooks in the evening.",
+                    wrongAnswerExplanations: {
+                        '운동해요': "Minho exercises on Sunday.",
+                        '영화를 봐요': "Minho watches a movie with his friend.",
+                        '옷을 사요': "Yuna buys clothes."
+                    }
+                },
+                {
+                    id: 10,
+                    parts: ["유나 씨는 ", " 요리해요."],
+                    blank: '가끔',
+                    answer: '가끔',
+                    bank: ['가끔', '매일', '자주', '항상'],
+                    explanation: "'가끔' means 'sometimes'. Yuna said she sometimes cooks.",
+                    eng: "Yuna sometimes cooks.",
+                    wrongAnswerExplanations: {
+                        '매일': "'매일' means 'every day'.",
+                        '자주': "'자주' means 'often'.",
+                        '항상': "'항상' means 'always'."
+                    }
+                }
+            ], []);
+            
+            const shuffledSentences = useMemo(() => {
+                const shuffleArray = (array) => {
+                    const newArray = [...array];
+                    for (let i = newArray.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+                    }
+                    return newArray;
+                };
+
+                return sentences.map(sentence => ({
+                    ...sentence,
+                    bank: shuffleArray(sentence.bank)
+                }));
+            }, [sentences]);
+
+            const handleWordSelect = (id, word) => {
+                setSelectedWords(prev => ({...prev, [id]: word}));
+                const isCorrect = sentences.find(s => s.id === id).answer === word;
+                setResults(prev => ({...prev, [id]: isCorrect}));
+            };
+
+            const handleToggleTranslation = (id) => {
+                setTranslationsVisible(prev => ({...prev, [id]: !prev[id]}));
+            };
+
+            const handleToggleHint = (id) => {
+                if (results[id] === true) return;
+                setHintsVisible(prev => ({...prev, [id]: !prev[id]}));
+            };
+
+            return (
+                 <section>
+                    <h2 className="text-3xl font-extrabold text-gray-900 mb-6 pb-3 border-b-2 border-gray-300">내용 확인 퀴즈 (Comprehension Quiz)</h2>
+                    <div className="space-y-8">
+                        {shuffledSentences.map((s, index) => (
+                            <div key={s.id} className="p-6 border rounded-xl bg-white shadow-lg transition-all duration-300">
+                                <p className="text-gray-700 font-bold text-lg mb-4">
+                                    {index + 1}. 다음 빈칸에 알맞은 말을 고르세요. (Choose the correct word for the blank.)
+                                </p>
+                                <div className="p-4 bg-gray-100 rounded-lg text-left mb-3 text-gray-900 text-xl font-bold">
+                                    {s.parts[0]}
+                                    <span className="inline-block bg-yellow-200 text-blue-800 px-3 py-1 rounded-md font-extrabold mx-2">
+                                        {hintsVisible[s.id] ? `[ ${s.blank} ]` : (selectedWords[s.id] || '___')}
+                                    </span>
+                                    {s.parts[1]}
+                                    {results[s.id] === true && <ThumbsUp className="inline-block ml-2 text-green-500 w-6 h-6" />}
+                                    {results[s.id] === false && <ThumbsUp className="inline-block ml-2 text-red-500 transform -scale-y-100 w-6 h-6" />}
+                                </div>
+
+                                {translationsVisible[s.id] && (
+                                    <div className="text-gray-600 italic p-3 bg-gray-50 rounded-lg text-left mt-2 text-base">{s.eng}</div>
+                                )}
+
+                                <div className="text-left mb-4 flex gap-2">
+                                    <button onClick={() => handleToggleTranslation(s.id)} className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-3 rounded-full transition duration-200">
+                                        번역 (Translation)
+                                    </button>
+                                    <button onClick={() => handleToggleHint(s.id)} className="text-xs bg-yellow-200 hover:bg-yellow-300 text-yellow-800 font-bold py-1 px-3 rounded-full transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed" disabled={results[s.id] === true}>
+                                        힌트 (Hint)
+                                    </button>
+                                </div>
+                    
+                                <div className="flex justify-start flex-wrap gap-3">
+                                    {s.bank.map(word => (
+                                        <button
+                                            key={word}
+                                            onClick={() => handleWordSelect(s.id, word)}
+                                            className={`px-4 py-2 rounded-lg text-lg font-bold transition-all transform hover:scale-105 shadow-md ${selectedWords[s.id] === word ? (results[s.id] ? 'bg-blue-600 text-white ring-2 ring-opacity-50 ring-blue-400' : 'bg-red-500 text-white ring-2 ring-red-300') : 'bg-white text-gray-800 hover:bg-gray-100 border'}`}
+                                        >
+                                            {word}
+                                        </button>
+                                    ))}
+                                </div>
+                                {results[s.id] !== undefined && (
+                                    <div className={`mt-4 p-4 border-l-4 rounded-r-lg ${results[s.id] ? 'bg-green-50 border-green-400' : 'bg-red-50 border-red-400'}`}>
+                                        <p className={`font-bold ${results[s.id] ? 'text-green-800' : 'text-red-800'} flex items-center gap-2 text-lg`}>
+                                            {results[s.id] ? '정답입니다! (Correct!)' : '다시 시도해 보세요. (Try again.)'}
+                                        </p>
+                                        <p className="mt-2 text-gray-700 text-base">
+                                            {results[s.id] ? s.explanation : s.wrongAnswerExplanations[selectedWords[s.id]]}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            );
+        };
+
+
+        const InlineDefinition = ({ data, onClose, t, t_static }) => {
+            const [translatedTerm, setTranslatedTerm] = useState('');
+            const [showTranslation, setShowTranslation] = useState(false);
+
+            useEffect(() => {
+                // Reset translation when data changes
+                setShowTranslation(false);
+                setTranslatedTerm('');
+            }, [data]);
+
+            const handleTranslateClick = () => {
+                if (showTranslation) {
+                    setShowTranslation(false);
+                } else {
+                    t(data.transKey).then(text => {
+                        setTranslatedTerm(text);
+                        setShowTranslation(true);
+                    });
+                }
+            };
+
+            return (
+                <div className="relative mt-2 p-4 rounded-lg shadow-lg border border-gray-200 bg-white" onClick={(e) => e.stopPropagation()}>
+                    <p className="font-bold text-lg text-green-700 mb-2">
+                        {data.term}
+                        {showTranslation && translatedTerm && <span className="text-base text-gray-500 font-medium ml-2">({translatedTerm})</span>}
+                    </p>
+                    <div className="space-y-1">
+                        <div className="text-gray-700" style={{fontSize: '16px', whiteSpace: 'pre-wrap'}}>{data.mainDef}</div>
+                        {data.subTerms && (
+                            <div className="mt-2 pt-2 border-t border-gray-200 text-sm text-gray-600 space-y-1">
+                                {data.subTerms.map((sub, index) => (
+                                    <p key={index}>• <strong className="text-gray-800">{sub.kor}</strong>: {sub.eng}</p>
+                                ))}
+                            </div>
+                        )}
+                        <button onClick={handleTranslateClick} className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-1 px-3 rounded-full transition duration-200 mt-1">
+                             {showTranslation ? t_static('translation_hide_button_label') : t_static('translation_button_label')}
+                        </button>
+                    </div>
+                    <button onClick={onClose} className="absolute top-1 right-1 text-gray-500 hover:text-gray-800 font-extrabold p-1 text-xl">&times;</button>
+                </div>
+            );
+        };
+
+        const SentenceChecker = ({ value, onChange, placeholder, question }) => { 
+            const [feedback, setFeedback] = useState(null);
+            const [isLoading, setIsLoading] = useState(false);
+            const [error, setError] = useState(null);
+            const checkSentence = async () => {
+                if (!value || value.trim() === '') {
+                    setError("문장을 입력해야 피드백을 받을 수 있어요.");
+                    setFeedback(null);
+                    return;
+                }
+                setIsLoading(true); setError(null); setFeedback(null);
+                const prompt = `You are an advanced Korean language tutor AI for B1-C2 level learners. Analyze the user's sentence in response to a specific question. The user's answer is in Korean. Your entire response MUST be a JSON object, with all string values in Korean (ending in -요) and English. Question: "${question}" User's Answer: "${value}" Your response MUST be a JSON object. 1.  **Relevance Check**: First, is the user's answer a relevant response to the question? * Set a boolean flag \`is_relevant\`. * If \`false\`, provide feedback in \`relevance_feedback_kor\` and \`relevance_feedback_eng\`. The rest of the fields can be null or empty arrays. 2.  **Grammar & Naturalness Check**: If the answer is relevant (\`is_relevant\` is \`true\`), check if it's grammatically correct and natural. * Set a boolean flag \`is_correct\`. 3.  **Generate Feedback based on Correctness**: * **If correct (\`is_correct\` is \`true\`):** * Provide a positive feedback message in \`feedback_message_kor\` and \`feedback_message_eng\`. * Provide 1-2 \`alternative_expressions\` to show different ways of saying the same thing. * **If incorrect (\`is_correct\` is \`false\`):** * Provide the \`corrected_sentence\`. * Provide a simple \`explanation_kor\` about what was corrected and why. * Provide the \`explanation_eng\`. * Provide 1-2 \`alternative_expressions\` for the *corrected* idea.`;
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { "is_relevant": { "type": "BOOLEAN" }, "relevance_feedback_kor": { "type": "STRING", "nullable": true }, "relevance_feedback_eng": { "type": "STRING", "nullable": true }, "is_correct": { "type": "BOOLEAN", "nullable": true }, "feedback_message_kor": { "type": "STRING", "nullable": true }, "feedback_message_eng": { "type": "STRING", "nullable": true }, "corrected_sentence": { "type": "STRING", "nullable": true }, "explanation_kor": { "type": "STRING", "nullable": true }, "explanation_eng": { "type": "STRING", "nullable": true }, "alternative_expressions": { "type": "ARRAY", "items": { "type": "OBJECT", "properties": { "expression_kor": { "type": "STRING" }, "expression_eng": { "type": "STRING" } }, "required": ["expression_kor", "expression_eng"] } } }, "required": ["is_relevant"] } } };
+                const apiKey = ""; const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`API error: ${response.statusText}`);
+                    const result = await response.json();
+                    if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
+                        const parsedJson = JSON.parse(result.candidates[0].content.parts[0].text);
+                        setFeedback(parsedJson);
+                    } else { setError("AI의 응답을 처리하는 데 문제가 발생했어요."); }
+                } catch (err) { console.error("Error checking sentence:", err); setError("문장 검사에 실패했어요. 다시 시도해 주세요.");
+                } finally { setIsLoading(false); }
+            };
+
+            const renderFeedbackSection = (title, content) => ( content && content.length > 0 && ( <div> <p className="text-gray-800 font-bold" style={{ fontSize: '17px' }}>{title}</p> {Array.isArray(content) ? ( <ul className="list-disc list-inside space-y-2 mt-1"> {content.map((item, index) => ( <li key={index} className="text-gray-600" style={{ fontSize: '16px' }}> <p className="font-medium">{item.expression_kor || item.sentence_kor}</p> <p className="text-gray-500 italic text-sm">{item.expression_eng || item.sentence_eng}</p> </li> ))} </ul> ) : ( <p className="text-gray-700 font-medium" style={{ fontSize: '18px' }}>{content}</p> )} </div> ) );
+            return ( <div> <textarea className="w-full p-3 border rounded-md focus:ring-2 focus:ring-green-400 transition text-lg" rows="3" placeholder={placeholder} value={value} onChange={onChange} /> <button onClick={checkSentence} disabled={isLoading} className="mt-3 flex items-center justify-center gap-2 bg-green-200 text-gray-900 py-2 px-4 rounded-md transition-colors hover:bg-green-300 disabled:opacity-50 disabled:cursor-wait" style={{ fontWeight: 600, fontSize: '14px' }} > {isLoading ? <Spinner className="w-5 h-5" /> : '✨'} {isLoading ? '피드백 생성 중...' : 'AI에게 피드백 받기'} </button> {error && <p className="mt-2 text-sm text-red-600">{error}</p>} {feedback && ( <div className="mt-4 p-4 bg-green-50 border-l-4 border-green-100 rounded-r-lg space-y-4"> {!feedback.is_relevant && ( <div> <p className="font-bold text-red-800 flex items-center gap-2 text-lg">{feedback.relevance_feedback_kor}</p> <p className="text-gray-600 italic">{feedback.relevance_feedback_eng}</p> </div> )} {feedback.is_relevant && feedback.is_correct && ( <div> <p className="font-bold text-green-800 flex items-center gap-2 text-lg"><ThumbsUp className="w-5 h-5"/> {feedback.feedback_message_kor}</p> <p className="text-gray-600 italic">{feedback.feedback_message_eng}</p> </div> )} {feedback.is_relevant && !feedback.is_correct && ( <> {feedback.corrected_sentence && ( <div> <p className="text-gray-800 font-bold" style={{ fontSize: '17px' }}>✨ 수정된 문장:</p> <p className="text-gray-700 font-medium" style={{ fontSize: '18px' }}>{feedback.corrected_sentence}</p> </div> )} {(feedback.explanation_kor || feedback.explanation_eng) && ( <div> <p className="text-gray-800 font-bold" style={{ fontSize: '17px' }}>설명:</p> {feedback.explanation_kor && <p className="text-gray-600" style={{ fontSize: '16px' }}>{feedback.explanation_kor}</p>} {feedback.explanation_eng && <p className="text-gray-500 italic mt-1" style={{ fontSize: '15px' }}>{feedback.explanation_eng}</p>} </div> )} </> )} {feedback.alternative_expressions && feedback.alternative_expressions.length > 0 && renderFeedbackSection('💡 다른 표현:', feedback.alternative_expressions)} </div> )} </div> );
+        };
+        
+        const DiscussionSection = () => {
+            const [translationsVisible, setTranslationsVisible] = useState({});
+            const [userQuestionAnswers, setUserQuestionAnswers] = useState({});
+
+            const discussionQuestions = useMemo(() => [
+                {
+                    num: 1,
+                    kor: "여러분은 오늘 뭐 해요?",
+                    eng: "What are you doing today?",
+                    vocab: [
+                        {
+                            term: "오늘",
+                            meaning: "today",
+                            context: "민호 씨, 오늘 뭐 해요?",
+                            context_eng: "Minho, what are you doing today?"
+                        }
+                    ]
+                },
+                {
+                    num: 2,
+                    kor: "여러분은 친구를 만나요? 친구하고 뭐 해요?",
+                    eng: "Do you meet friends? What do you do with your friends?",
+                    vocab: [
+                        {
+                            term: "친구를 만나요",
+                            meaning: "to meet a friend",
+                            context: "저는 오늘 친구를 만나요.",
+                            context_eng: "I'm meeting a friend today."
+                        }
+                    ]
+                },
+                {
+                    num: 3,
+                    kor: "여러분은 영화를 봐요? 어떤 영화를 봐요?",
+                    eng: "Do you watch movies? What movies do you watch?",
+                    vocab: [
+                        {
+                            term: "영화를 봐요",
+                            meaning: "to watch a movie",
+                            context: "그리고 영화를 봐요.",
+                            context_eng: "And we're watching a movie."
+                        }
+                    ]
+                },
+                {
+                    num: 4,
+                    kor: "여러분은 집에서 쉬어요? 집에서 뭐 해요?",
+                    eng: "Do you rest at home? What do you do at home?",
+                    vocab: [
+                        {
+                            term: "집에서 쉬어요",
+                            meaning: "to rest at home",
+                            context: "저는 오늘 집에서 쉬어요.",
+                            context_eng: "I'm resting at home today."
+                        }
+                    ]
+                },
+                {
+                    num: 5,
+                    kor: "여러분은 음악을 들어요? 어떤 음악을 들어요?",
+                    eng: "Do you listen to music? What kind of music do you listen to?",
+                    vocab: [
+                        {
+                            term: "음악을 들어요",
+                            meaning: "to listen to music",
+                            context: "집에서 음악을 들어요.",
+                            context_eng: "I listen to music at home."
+                        }
+                    ]
+                },
+                {
+                    num: 6,
+                    kor: "여러분은 책을 읽어요? 어떤 책을 읽어요?",
+                    eng: "Do you read books? What books do you read?",
+                    vocab: [
+                        {
+                            term: "책을 읽어요",
+                            meaning: "to read a book",
+                            context: "그리고 책을 읽어요.",
+                            context_eng: "And I read books."
+                        }
+                    ]
+                },
+                {
+                    num: 7,
+                    kor: "여러분은 내일 뭐 해요? 내일 약속이 있어요?",
+                    eng: "What are you doing tomorrow? Do you have plans tomorrow?",
+                    vocab: [
+                        {
+                            term: "내일",
+                            meaning: "tomorrow",
+                            context: "그럼 내일 뭐 해요?",
+                            context_eng: "Then what are you doing tomorrow?"
+                        },
+                        {
+                            term: "약속이 있어요",
+                            meaning: "I have plans",
+                            context: "내일은 약속이 있어요.",
+                            context_eng: "I have plans tomorrow."
+                        }
+                    ]
+                },
+                {
+                    num: 8,
+                    kor: "여러분은 옷을 사요? 어디에서 옷을 사요?",
+                    eng: "Do you buy clothes? Where do you buy clothes?",
+                    vocab: [
+                        {
+                            term: "옷을 사요",
+                            meaning: "to buy clothes",
+                            context: "옷을 사요.",
+                            context_eng: "I'm buying clothes."
+                        }
+                    ]
+                },
+                {
+                    num: 9,
+                    kor: "여러분은 운동해요? 어떤 운동을 해요?",
+                    eng: "Do you exercise? What kind of exercise do you do?",
+                    vocab: [
+                        {
+                            term: "운동해요",
+                            meaning: "to exercise",
+                            context: "일요일에는 운동해요.",
+                            context_eng: "On Sundays, I exercise."
+                        }
+                    ]
+                },
+                {
+                    num: 10,
+                    kor: "여러분은 요리해요? 가끔 요리해요?",
+                    eng: "Do you cook? Do you sometimes cook?",
+                    vocab: [
+                        {
+                            term: "요리해요",
+                            meaning: "to cook",
+                            context: "그리고 저녁에는 집에서 요리해요.",
+                            context_eng: "And in the evening, I cook at home."
+                        },
+                        {
+                            term: "가끔",
+                            meaning: "sometimes",
+                            context: "저는 가끔 요리해요.",
+                            context_eng: "I cook sometimes."
+                        }
+                    ]
+                }
+            ], []);
+
+            const toggleTranslation = (id) => {
+                setTranslationsVisible(prev => ({ ...prev, [id]: !prev[id] }));
+            };
+
+            return (
+                <section>
+                    <h2 className="text-3xl font-extrabold text-gray-900 mb-6 pb-3 border-b-2 border-gray-300">여러분은 어떻게 생각해요? (What do you think?)</h2>
+                    <div className="space-y-10">
+                        {discussionQuestions.map((q) => (
+                            <div key={q.num} className="p-6 border rounded-xl bg-white shadow-lg">
+                                <p className="text-gray-900 text-xl font-bold">{q.num}. {q.kor}</p>
+                                {translationsVisible[`q-${q.num}`] && (
+                                    <p className="whitespace-pre-wrap text-gray-600 italic mt-1 text-base">{q.eng}</p>
+                                )}
+                                <button onClick={() => toggleTranslation(`q-${q.num}`)} className="text-xs text-gray-800 bg-gray-200 hover:bg-gray-300 font-bold py-1 px-3 rounded-full transition duration-200 mt-2 mb-6">
+                                    번역 (Translation)
+                                </button>
+
+                                {q.vocab && q.vocab.length > 0 && (
+                                    <div className="mt-4 space-y-4">
+                                        <h3 className="font-bold text-lg text-gray-800">📍핵심 표현 (Essential phrases)</h3>
+                                        {q.vocab.map((v, i) => (
+                                            <div key={i} className="pl-4 border-l-2 border-gray-200 py-2">
+                                                <p className="font-semibold text-blue-700 text-lg">{v.term}: <span className="font-medium text-gray-700 text-base">{v.meaning}</span></p>
+                                                <div className="mt-2">
+                                                    <h4 className="flex items-center gap-2 text-sm font-bold text-gray-600">
+                                                        <span className="text-base">💬</span>
+                                                        대화 속에서 살펴보기 (See it in Context)
+                                                    </h4>
+                                                    <div className="mt-1 p-3 bg-gray-100 rounded-lg">
+                                                        <p className="text-gray-800">"{v.context}"</p>
+                                                        {translationsVisible[`q-${q.num}-context-${i}`] && (
+                                                            <p className="text-gray-600 italic text-sm mt-1">{v.context_eng}</p>
+                                                        )}
+                                                        <button onClick={() => toggleTranslation(`q-${q.num}-context-${i}`)} className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-1 px-2 rounded-full transition duration-200 mt-2">
+                                                            번역 (Translation)
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                
+                                <div className="mt-6">
+                                    <h3 className="font-bold text-lg text-gray-800 mb-2">핵심 표현을 사용해서 질문에 대답해 보세요.</h3>
+                                    <SentenceChecker
+                                        value={userQuestionAnswers[`q-${q.num}`] || ''}
+                                        onChange={(e) => setUserQuestionAnswers(prev => ({...prev, [`q-${q.num}`]: e.target.value}))}
+                                        placeholder="여기에 답변을 입력하세요 (Type your response here)"
+                                        question={q.kor}
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            );
+        };
+
+        const VocabItem = React.forwardRef(({ item, isHighlighted, t, t_static }, ref) => {
+            const [exampleData, setExampleData] = useState(null); 
+            const [isLoading, setIsLoading] = useState(false); 
+            const [error, setError] = useState(null); 
+            const [translatedTerm, setTranslatedTerm] = useState('');
+            const [showTranslation, setShowTranslation] = useState(false);
+
+            useEffect(() => {
+                // Reset translation state when item changes
+                setShowTranslation(false);
+                setTranslatedTerm('');
+            }, [item]);
+            
+            const handleTranslateClick = () => {
+                if (showTranslation) {
+                    setShowTranslation(false);
+                } else {
+                    setTranslatedTerm('...'); // Show loading indicator
+                    t(item.transKey).then(text => {
+                        setTranslatedTerm(text);
+                        setShowTranslation(true);
+                    });
+                }
+            };
+
+            const generateExample = async () => {
+                setIsLoading(true);
+                setError(null);
+                setExampleData(null);
+                const prompt = `You are a Korean language teacher. Create two very easy, natural-sounding example sentences for a beginner learning the Korean term "${item.term}". The sentences MUST end with a polite '-요' ending. Provide your response in the following JSON format, including English translations: { "examples": [ { "korean": "First Korean example sentence.", "english": "English translation." }, { "korean": "Second Korean example sentence.", "english": "English translation." } ] }`;
+                const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { "examples": { "type": "ARRAY", "items": { "type": "OBJECT", "properties": { "korean": { "type": "STRING" }, "english": { "type": "STRING" } }, "required": ["korean", "english"] } } }, required: ["examples"] } } };
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) { throw new Error(`API error: ${response.status} ${response.statusText}`); }
+                    const result = await response.json();
+                    if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
+                        const parsedJson = JSON.parse(result.candidates[0].content.parts[0].text);
+                        setExampleData(parsedJson.examples);
+                    } else { throw new Error("Invalid response structure from API."); }
+                } catch (err) {
+                    console.error("Error generating examples:", err);
+                    setError("예문 생성에 실패했어요. 다시 시도해 주세요.");
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+           
+            return (
+                <div ref={ref} className={`leading-normal p-4 rounded-lg border-b border-gray-200 last:border-b-0 ${isHighlighted ? 'vocab-highlight' : 'hover:bg-gray-50'}`}>
+                    <p className="font-bold text-green-700" style={{fontSize: '17px'}}>
+                        {item.term}
+                         {showTranslation && translatedTerm && <span className="text-gray-500 font-medium ml-2" style={{fontSize: '17px'}}>({translatedTerm})</span>}
+                    </p>
+                    <div className="pl-4 mt-2 space-y-1 border-l-2 border-gray-200">
+                        <div className="text-gray-700" style={{fontSize: '16px', whiteSpace: 'pre-wrap'}}>{item.mainDef}</div>
+                        {item.subTerms && (
+                            <div className="mt-2 pt-2 border-t border-gray-200 text-sm text-gray-600 space-y-1">
+                                {item.subTerms.map((sub, index) => (
+                                    <p key={index}>• <strong className="text-gray-800">{sub.kor}</strong>: {sub.eng}</p>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    <div className="mt-3 flex items-center gap-2">
+                          <button onClick={handleTranslateClick} className="bg-gray-200 hover:bg-gray-300 text-gray-800 py-1 px-3 rounded-full transition duration-200" style={{fontSize: '8pt', fontWeight: 400}}>
+                            {showTranslation ? t_static('translation_hide_button_label') : t_static('translation_button_label')}
+                          </button>
+                          <button onClick={generateExample} disabled={isLoading} className="flex items-center gap-2 text-gray-900 bg-green-50 hover:bg-green-100 rounded-md px-3 py-1.5 transition-colors disabled:opacity-50 disabled:cursor-wait" style={{fontSize: '8pt', fontWeight: 400}}>
+                            {isLoading ? <Spinner className="w-4 h-4" /> : <Sparkles className="w-4 h-4 text-green-600" />}
+                            {isLoading ? '생성 중...' : 'Example'}
+                        </button>
+                    </div>
+                    {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+                    {exampleData && <div className="mt-3 p-3 bg-green-50 border-l-4 border-green-100 rounded-r-lg space-y-2">{exampleData.map((ex, i) => <div key={i}><p className="text-sm text-gray-800"><strong className="font-semibold text-gray-700">{`예문 ${i+1}:`}</strong> {ex.korean}</p><p className="text-sm text-gray-500 italic ml-4">{ex.english}</p></div>)}</div>}
+                </div>
+            );
+        });
+       
+        const App = () => {
+            const { t, lang, t_static } = useTranslation();
+                       
+            const scriptContent = useMemo(() => [
+                { speaker: '유나', lines: [
+                    { id: 's1-1', kor: '안녕하세요.', eng: 'Hello.', start: 6.900, end: 8.204 },
+                    { id: 's1-2', kor: '<쉬운 한국어로 이야기해 봐요> 팟캐스트예요.', eng: "This is the <Let's talk in easy Korean> podcast.", start: 8.204, end: 12.259 },
+                    { id: 's1-3', kor: '저는 유나예요.', eng: "I'm Yuna.", start: 12.259, end: 13.250 }
+                ]},
+                { speaker: '민호', lines: [
+                    { id: 's2-1', kor: '안녕하세요, 저는 민호예요.', eng: "Hello, I'm Minho.", start: 13.800, end: 16.286 }
+                ]},
+                { speaker: '유나', lines: [
+                    { id: 's3-1', kor: '민호 씨, 오늘 뭐 해요?', eng: "Minho, what are you doing today?", start: 16.286, end: 18.335 },
+                    { id: 's3-2', kor: "'오늘' means 'today'.", eng: "'오늘' means 'today'.", start: 18.335, end: 20.150 }
+                ]},
+                { speaker: '민호', lines: [
+                    { id: 's4-1', kor: '저는 오늘 친구를 만나요.', eng: "I'm meeting a friend today.", start: 20.587, end: 23.083 },
+                    { id: 's4-2', kor: "'친구를 만나요' means 'to meet a friend'.", eng: "'친구를 만나요' means 'to meet a friend'.", start: 23.083, end: 26.546 }
+                ]},
+                { speaker: '유나', lines: [
+                    { id: 's5-1', kor: '와, 좋네요!', eng: "Wow, that's nice!", start: 26.546, end: 27.060 },
+                    { id: 's5-2', kor: '친구하고 뭐 해요?', eng: "What are you doing with your friend?", start: 28.141, end: 29.700 }
+                ]},
+                { speaker: '민호', lines: [
+                    { id: 's6-1', kor: '같이 피자를 먹어요.', eng: "We're eating pizza together.", start: 29.700, end: 31.740 },
+                    { id: 's6-2', kor: '그리고 영화를 봐요.', eng: "And we're watching a movie.", start: 31.740, end: 33.865 },
+                    { id: 's6-3', kor: "'영화를 봐요' means 'to watch a movie'.", eng: "'영화를 봐요' means 'to watch a movie'.", start: 33.865, end: 36.736 }
+                ]},
+                { speaker: '유나', lines: [
+                    { id: 's7-1', kor: '영화요?', eng: "A movie?", start: 36.736, end: 38.110 },
+                    { id: 's7-2', kor: "재미있겠네요! It means, 'That sounds fun!'", eng: "재미있겠네요! It means, 'That sounds fun!'", start: 38.110, end: 42.724 },
+                    { id: 's7-3', kor: '저도 영화 좋아해요.', eng: "I like movies too.", start: 42.724, end: 45.924 }
+                ]},
+                { speaker: '민호', lines: [
+                    { id: 's8-1', kor: '유나 씨는 오늘 뭐 해요?', eng: "Yuna, what are you doing today?", start: 45.924, end: 48.127 }
+                ]},
+                { speaker: '유나', lines: [
+                    { id: 's9-1', kor: '저는 오늘 집에서 쉬어요.', eng: "I'm resting at home today.", start: 48.127, end: 51.702 },
+                    { id: 's9-2', kor: "'집에서 쉬어요' means 'to rest at home'.", eng: "'집에서 쉬어요' means 'to rest at home'.", start: 51.702, end: 55.530 }
+                ]},
+                { speaker: '유나', lines: [
+                    { id: 's9-3', kor: '집에서 음악을 들어요.', eng: "I listen to music at home.", start: 55.530, end: 58.444 },
+                    { id: 's9-4', kor: "'음악을 들어요' means 'to listen to music'.", eng: "'음악을 들어요' means 'to listen to music'.", start: 58.444, end: 62.236 }
+                ]},
+                { speaker: '유나', lines: [
+                    { id: 's9-5', kor: '그리고 책을 읽어요.', eng: "And I read books.", start: 62.236, end: 64.719 },
+                    { id: 's9-6', kor: "'책을 읽어요' means 'to read a book'.", eng: "'책을 읽어요' means 'to read a book'.", start: 64.719, end: 67.869 }
+                ]},
+                { speaker: '민호', lines: [
+                    { id: 's10-1', kor: '그럼 내일 뭐 해요?', eng: "Then what are you doing tomorrow?", start: 67.869, end: 70.297 },
+                    { id: 's10-2', kor: "'내일' means 'tomorrow'.", eng: "'내일' means 'tomorrow'.", start: 70.297, end: 72.524 }
+                ]},
+                { speaker: '유나', lines: [
+                    { id: 's11-1', kor: '내일은 약속이 있어요.', eng: "I have plans tomorrow.", start: 72.524, end: 74.700 },
+                    { id: 's11-2', kor: "'약속이 있어요' means 'I have plans'.", eng: "'약속이 있어요' means 'I have plans'.", start: 74.700, end: 78.348 },
+                    { id: 's11-3', kor: '친구를 만나요.', eng: "I'm meeting a friend.", start: 78.348, end: 80.334 }
+                ]},
+                { speaker: '유나', lines: [
+                    { id: 's11-4', kor: '그리고 쇼핑몰에 가요.', eng: "And I'm going to the shopping mall.", start: 80.334, end: 82.976 },
+                    { id: 's11-5', kor: '옷을 사요.', eng: "I'm buying clothes.", start: 82.976, end: 84.714 },
+                    { id: 's11-6', kor: "'옷을 사요' means 'to buy clothes'.", eng: "'옷을 사요' means 'to buy clothes'.", start: 84.714, end: 87.855 }
+                ]},
+                { speaker: '민호', lines: [
+                    { id: 's12-1', kor: '쇼핑하네요. Oh, so you\'re shopping.', eng: 'Oh, so you\'re shopping.', start: 87.855, end: 90.572 }
+                ]},
+                { speaker: '유나', lines: [
+                    { id: 's13-1', kor: '맞아요. 민호 씨는 일요일에는 뭐 해요?', eng: "That's right. Minho, what do you do on Sundays?", start: 90.572, end: 94.824 }
+                ]},
+                { speaker: '민호', lines: [
+                    { id: 's14-1', kor: '일요일에는 운동해요.', eng: "On Sundays, I exercise.", start: 94.824, end: 96.890 },
+                    { id: 's14-2', kor: '그리고 저녁에는 집에서 요리해요.', eng: "And in the evening, I cook at home.", start: 96.890, end: 100.000 },
+                    { id: 's14-3', kor: "'요리해요' means 'to cook'.", eng: "'요리해요' means 'to cook'.", start: 100.000, end: 102.111 }
+                ]},
+                { speaker: '유나', lines: [
+                    { id: 's15-1', kor: '정말요? 민호 씨가 요리해요?', eng: "Really? You cook, Minho?", start: 102.431, end: 105.666 }
+                ]},
+                { speaker: '민호', lines: [
+                    { id: 's16-1', kor: '네, 저는 집에서 요리를 해요.', eng: "Yes, I cook at home.", start: 105.666, end: 108.111 },
+                    { id: 's16-2', kor: '유나 씨는요?', eng: "How about you, Yuna?", start: 108.428, end: 109.545 }
+                ]},
+                { speaker: '유나', lines: [
+                    { id: 's17-1', kor: '저는 가끔 요리해요.', eng: "I cook sometimes.", start: 109.545, end: 112.500 },
+                    { id: 's17-2', kor: "'가끔' means 'sometimes'.", eng: "'가끔' means 'sometimes'.", start: 112.500, end: 115.324 }
+                ]},
+                { speaker: '민호', lines: [
+                    { id: 's18-1', kor: '그렇군요. Okay then.', eng: 'Okay then.', start: 115.324, end: 117.486 },
+                    { id: 's18-2', kor: '그럼 오늘 배운 표현들을 다시 확인해 볼까요? \n Shall we review the expressions we learned today?', eng: 'Shall we review the expressions we learned today?', start: 117.486, end: 123.080 }
+                ]},
+                { speaker: '유나', lines: [
+                    { id: 's19-1', kor: '좋아요!', eng: "Good!", start: 123.334, end: 124.641 }
+                ]},
+                { speaker: '유나', lines: [
+                    { id: 's19-2', kor: '• 오늘: today', eng: '• 오늘: today', start: 125.531, end: 128.134 },
+                    { id: 's19-3', kor: '• 친구를 만나요: to meet a friend', eng: '• 친구를 만나요: to meet a friend', start: 128.134, end: 133.407 },
+                    { id: 's19-4', kor: '• 영화를 봐요: to watch a movie', eng: '• 영화를 봐요: to watch a movie', start: 133.407, end: 137.669 }
+                ]},
+                { speaker: '유나', lines: [
+                    { id: 's19-5', kor: '• 집에서 쉬어요: to rest at home', eng: '• 집에서 쉬어요: to rest at home', start: 137.669, end: 141.971 },
+                    { id: 's19-6', kor: '• 음악을 들어요: to listen to music', eng: '• 음악을 들어요: to listen to music', start: 141.971, end: 146.296 },
+                    { id: 's19-7', kor: '• 책을 읽어요: to read a book', eng: '• 책을 읽어요: to read a book', start: 146.296, end: 150.366 }
+                ]},
+                { speaker: '민호', lines: [
+                    { id: 's20-1', kor: '• 내일: tomorrow', eng: '• 내일: tomorrow', start: 150.666, end: 152.927 },
+                    { id: 's20-2', kor: '• 약속이 있어요: I have plans', eng: '• 약속이 있어요: I have plans', start: 152.927, end: 156.572 },
+                    { id: 's20-3', kor: '• 옷을 사요: to buy clothes', eng: '• 옷을 사요: to buy clothes', start: 156.572, end: 159.572 }
+                ]},
+                { speaker: '민호', lines: [
+                    { id: 's20-4', kor: '• 운동해요: to exercise', eng: '• 운동해요: to exercise', start: 159.572, end: 162.558 },
+                    { id: 's20-5', kor: '• 요리해요: to cook', eng: '• 요리해요: to cook', start: 162.558, end: 165.200 },
+                    { id: 's20-6', kor: '• 가끔: sometimes', eng: '• 가끔: sometimes', start: 165.200, end: 167.535 }
+                ]},
+                { speaker: '유나', lines: [
+                    { id: 's21-1', kor: '오늘은 여기까지예요. That\'s all for today.', eng: 'That\'s all for today.', start: 168.145, end: 172.089 },
+                    { id: 's21-2', kor: '안녕히 계세요.', eng: 'Goodbye.', start: 172.389, end: 173.800 }
+                ]},
+                { speaker: '민호', lines: [
+                    { id: 's22-1', kor: '안녕히 계세요. 다음에 만나요.', eng: 'Goodbye. See you next time.', start: 174.000, end: 176.349 }
+                ]}
+            ], []);
+           
+            const vocabAndGrammarList = useMemo(() => [
+                { term: '쉬운 한국어로 이야기해 봐요', mainDef: 'Let\'s talk in easy Korean', subTerms: [{ kor: '쉬운', eng: 'easy' }, { kor: '한국어로', eng: 'in Korean' }, { kor: '이야기하다', eng: 'to talk' }, { kor: '-아/어 보다', eng: 'used to make gentle suggestions without sounding pushy' }], transKey: 'term_trans_easy_korean' },
+                { term: '팟캐스트', mainDef: 'podcast', transKey: 'term_trans_podcast' },
+                { term: '오늘', mainDef: 'today', transKey: 'term_trans_today' },
+                { term: '뭐 해요?', mainDef: 'What are you doing?', subTerms: [{ kor: '뭐', eng: 'what' }, { kor: '해요', eng: 'to do' }], transKey: 'term_trans_what_are_you_doing' },
+                { term: '친구를 만나요', mainDef: 'to meet a friend', subTerms: [{ kor: '친구', eng: 'friend' }, { kor: '만나요', eng: 'to meet' }], transKey: 'term_trans_meet_friend' },
+                { term: '같이', mainDef: 'together', transKey: 'term_trans_together' },
+                { term: '먹어요', mainDef: 'to eat', transKey: 'term_trans_eat' },
+                { term: '영화를 봐요', mainDef: 'to watch a movie', subTerms: [{ kor: '영화', eng: 'movie' }, { kor: '봐요', eng: 'to watch' }], transKey: 'term_trans_watch_movie' },
+                { term: '재미있겠네요', mainDef: 'That sounds fun!', subTerms: [{ kor: '재미있어요', eng: 'to be fun, interesting' }, { kor: '-네요', eng: 'ending to show reaction or realization' }], transKey: 'term_trans_sounds_fun' },
+                { term: '저도', mainDef: 'me too / I also', transKey: 'term_trans_me_too' },
+                { term: '좋아해요', mainDef: 'to like', transKey: 'term_trans_like' },
+                { term: '집에서', mainDef: 'at home', subTerms: [{ kor: '집', eng: 'home' }, { kor: '-에서', eng: 'particle indicating location of action' }], transKey: 'term_trans_at_home' },
+                { term: '쉬어요', mainDef: 'to rest', transKey: 'term_trans_rest' },
+                { term: '음악을 들어요', mainDef: 'to listen to music', subTerms: [{ kor: '음악', eng: 'music' }, { kor: '들어요', eng: 'to listen' }], transKey: 'term_trans_listen_music' },
+                { term: '책을 읽어요', mainDef: 'to read a book', subTerms: [{ kor: '책', eng: 'book' }, { kor: '읽어요', eng: 'to read' }], transKey: 'term_trans_read_book' },
+                { term: '내일', mainDef: 'tomorrow', transKey: 'term_trans_tomorrow' },
+                { term: '약속이 있어요', mainDef: 'I have plans / an appointment', subTerms: [{ kor: '약속', eng: 'promise, plan, appointment' }], transKey: 'term_trans_have_plans' },
+                { term: '쇼핑몰에 가요', mainDef: 'to go to the shopping mall', subTerms: [{ kor: '쇼핑몰', eng: 'shopping mall' }, { kor: '-에', eng: 'to (location)' }, { kor: '가요', eng: 'to go' }], transKey: 'term_trans_go_shopping_mall' },
+                { term: '옷을 사요', mainDef: 'to buy clothes', subTerms: [{ kor: '옷', eng: 'clothes' }, { kor: '사요', eng: 'to buy' }], transKey: 'term_trans_buy_clothes' },
+                { term: '쇼핑하네요', mainDef: 'Oh, you are shopping.', subTerms: [{ kor: '쇼핑하다', eng: 'to shop' }, { kor: '-네요', eng: 'showing realization or surprise' }], transKey: 'term_trans_are_shopping' },
+                { term: '맞아요', mainDef: "that's right", transKey: 'term_trans_thats_right' },
+                { term: '일요일에는', mainDef: 'on Sunday', subTerms: [{ kor: '일요일', eng: 'Sunday' }, { kor: '-에', eng: 'on (time marker)' }], transKey: 'term_trans_on_sunday' },
+                { term: '저녁에는', mainDef: 'in the evening', subTerms: [{ kor: '저녁', eng: 'evening' }, { kor: '-에', eng: 'at, in (time marker)' }], transKey: 'term_trans_in_evening' },
+                { term: '요리해요', mainDef: 'to cook', transKey: 'term_trans_cook' },
+                { term: '정말요?', mainDef: 'Really?', transKey: 'term_trans_really' },
+                { term: '요리를 해요', mainDef: 'to cook (something)', subTerms: [{ kor: '요리', eng: 'cooking, dish' }, { kor: '해요', eng: 'to do' }], transKey: 'term_trans_cook_something' },
+                { term: '가끔', mainDef: 'sometimes', transKey: 'term_trans_sometimes' },
+                { term: '그렇군요', mainDef: 'I see / Oh, I get it', transKey: 'term_trans_i_see' },
+                { term: '배운 표현들', mainDef: 'the expressions (we) learned', transKey: 'term_trans_expressions_learned' },
+                { term: '다시', mainDef: 'again', transKey: 'term_trans_again' },
+                { term: '확인해 볼까요?', mainDef: 'Shall we check/confirm?', subTerms: [{ kor: '확인하다', eng: 'to check, confirm' }, { kor: '-아/어 볼까요?', eng: 'Shall we try... ? (polite suggestion)' }], transKey: 'term_trans_shall_we_check' },
+                { term: '여기까지예요', mainDef: "That's all (for now).", subTerms: [{ kor: '여기', eng: 'here' }, { kor: '까지', eng: 'until, up to' }], transKey: 'term_trans_thats_all' }
+            ], []);
+           
+            const [activeTab, setActiveTab] = useState('script');
+            const [translationsVisible, setTranslationsVisible] = useState({});
+            const [inlinePopupData, setInlinePopupData] = useState(null);
+            const [activeWordId, setActiveWordId] = useState(null);
+            const [highlightedVocab, setHighlightedVocab] = useState(null);
+            const vocabRefs = useRef({});
+            const scriptLineRefs = useRef({});
+            const scriptBlockRefs = useRef({});
+            const [player, setPlayer] = useState(null);
+            const [activeScriptLine, setActiveScriptLine] = useState(null);
+            const [isSyncEnabled, setIsSyncEnabled] = useState(true);
+            const [isVocabSidebarVisible, setIsVocabSidebarVisible] = useState(true);
+            const [repeatingLine, setRepeatingLine] = useState(null);
+            const intervalRef = useRef();
+            const playerContainerRef = useRef(null);
+            const [playerHeight, setPlayerHeight] = useState(0);
+            const vocabContainerRef = useRef(null);
+
+            const toggleTranslation = useCallback((id) => {
+                setTranslationsVisible(prev => ({ ...prev, [id]: !prev[id] }));
+            }, []);
+
+            useEffect(() => {
+                let ro;
+                if (activeTab === 'script' && playerContainerRef.current) {
+                    const updateHeight = () => playerContainerRef.current && setPlayerHeight(playerContainerRef.current.offsetHeight);
+                    ro = new ResizeObserver(updateHeight);
+                    ro.observe(playerContainerRef.current);
+                    updateHeight();
+                }
+                return () => ro?.disconnect();
+            }, [activeTab]);
+
+            const allScriptLines = useMemo(() => scriptContent.flatMap(block => block.lines), [scriptContent]);
+            const onPlayerReady = (event) => setPlayer(event.target);
+            const setupPlayer = useCallback(() => {
+                if (window.YT && window.YT.Player) {
+                    new window.YT.Player('youtube-player', { videoId: 'dvs7VQb-b3U', width: '100%', height: '100%', events: { 'onReady': onPlayerReady } });
+                }
+            }, []);
+
+            useEffect(() => {
+                if (!window.YT) {
+                    window.onYouTubeIframeAPIReady = setupPlayer;
+                } else {
+                    setupPlayer();
+                }
+                return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+            }, [setupPlayer]);
+
+            useEffect(() => {
+                if (player && isSyncEnabled && !repeatingLine) {
+                    intervalRef.current = setInterval(() => {
+                        const currentTime = player.getCurrentTime();
+                        const currentLine = allScriptLines.find(line => currentTime >= line.start && currentTime < line.end);
+                        setActiveScriptLine(currentLine ? currentLine.id : null);
+                    }, 250);
+                } else {
+                    clearInterval(intervalRef.current);
+                }
+                return () => clearInterval(intervalRef.current);
+            }, [player, isSyncEnabled, allScriptLines, repeatingLine]);
+
+            useEffect(() => {
+                if (activeScriptLine && isSyncEnabled && !repeatingLine && !inlinePopupData) {
+                    const activeBlock = scriptContent.find(block => block.lines.some(line => line.id === activeScriptLine));
+                    if (activeBlock) {
+                        const blockKey = activeBlock.lines[0].id;
+                        const blockElement = scriptBlockRefs.current[blockKey];
+                        if (blockElement) {
+                            const gapInPixels = 19; // 0.5cm
+                            const blockTop = blockElement.getBoundingClientRect().top;
+                            const scrollAmount = blockTop - (playerHeight + gapInPixels);
+                            window.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+                        }
+                    }
+                }
+            }, [activeScriptLine, isSyncEnabled, repeatingLine, playerHeight, scriptContent, inlinePopupData]);
+
+            useEffect(() => {
+                if (repeatingLine && player) {
+                    const { start, end } = repeatingLine;
+                    player.seekTo(start); player.playVideo();
+                    intervalRef.current = setInterval(() => { if (player.getCurrentTime() >= end) { player.seekTo(start); } }, 200);
+                } else {
+                    clearInterval(intervalRef.current);
+                }
+                return () => clearInterval(intervalRef.current);
+            }, [repeatingLine, player]);
+
+            const handleRepeatClick = (line) => {
+                 if (repeatingLine && repeatingLine.id === line.id) {
+                    setRepeatingLine(null); 
+                    player.pauseVideo();
+                } else {
+                    setRepeatingLine({id: line.id, start: line.start, end: line.end});
+                }
+            };
+
+            const vocabMap = useMemo(() => new Map(vocabAndGrammarList.map(item => [item.term, item])), [vocabAndGrammarList]);
+            const highlightableWords = useMemo(() => Array.from(vocabMap.keys()).sort((a, b) => b.length - a.length), [vocabMap]);
+           
+            const handleClosePopup = () => {
+                setInlinePopupData(null);
+                setActiveWordId(null);
+                setHighlightedVocab(null);
+            };
+
+            useEffect(() => {
+                window.addEventListener('click', handleClosePopup);
+                return () => window.removeEventListener('click', handleClosePopup);
+            }, []);
+           
+            const handleWordClick = (e, word, lineId, partIndex) => {
+                e.stopPropagation();
+                const uniqueWordId = `${lineId}-${partIndex}-${word}`;
+                const wordData = vocabMap.get(word.trim());
+
+                if (wordData) {
+                    if (activeWordId === uniqueWordId) {
+                        handleClosePopup();
+                    } else {
+                        setActiveWordId(uniqueWordId);
+                        setInlinePopupData({ lineId: lineId, data: wordData });
+                        setHighlightedVocab(wordData.term);
+                       
+                        const vocabElement = vocabRefs.current[wordData.term];
+                        const vocabContainer = vocabContainerRef.current;
+                        if (vocabElement && vocabContainer) {
+                            const offset = 19; // 0.5cm
+                            vocabContainer.scrollTo({ top: vocabElement.offsetTop - offset, behavior: 'smooth' });
+                        }
+                    }
+                }
+            };
+
+            useEffect(() => {
+                if (inlinePopupData) {
+                    const lineElement = scriptLineRefs.current[inlinePopupData.lineId];
+                    const playerEl = playerContainerRef.current;
+                    if (lineElement && playerEl) {
+                        const offset = 19; // 0.5cm
+                        const playerBottom = playerEl.getBoundingClientRect().bottom;
+                        const lineTop = lineElement.getBoundingClientRect().top;
+                       
+                        // Check if the line is already in the correct position
+                        const currentGap = lineTop - playerBottom;
+                        if (Math.abs(currentGap - offset) > 1) { // Add a small tolerance
+                            const scrollByY = lineTop - playerBottom - offset;
+                            window.scrollBy({ top: scrollByY, behavior: 'smooth' });
+                        }
+                    }
+                }
+            }, [inlinePopupData]);
+
+            const HighlightedText = ({ text, words, onWordClick, lineId, activeWordId }) => {
+                if (!words.length) return text;
+                const regex = new RegExp(`(${words.map(w => w.replace(/[.*+?^${}()|[\\\\\\]]/g, '\\\\$&')).join('|')})`, 'g');
+                return (<>{text.split(regex).map((part, index) => {
+                    const isWord = words.includes(part);
+                    if (!isWord) return part;
+                    const uniqueWordId = `${lineId}-${index}-${part}`;
+                    let className = 'highlight-general';
+                    if (activeWordId === uniqueWordId) className += ' active-highlight';
+                    return <span key={index} className={className} onClick={(e) => onWordClick(e, part, lineId, index)}>{part}</span>;
+                })}</>);
+            };
+
+            const tabs = [
+                { id: 'script', kor: '대화 스크립트', eng: '(Transcript)' },
+                { id: 'quiz', kor: '내용 확인 퀴즈', eng: '(Comprehension Quiz)' },
+                { id: 'practice', kor: '여러분은 어떻게 생각해요?', eng: '(What do you think?)' }
+            ];
+           
+            return (
+                <div className="bg-gray-50 text-gray-800 p-4 sm:p-6 md:p-8">
+                    <div className="main-content-container">
+                        <header className="text-center mb-4">
+                            <h1 className="text-3xl font-black text-gray-900 mb-2">쉬운 한국어로 이야기해 봐요</h1>
+                            <p className="text-lg text-gray-500">[팟캐스트] 오늘 뭐 해요?</p>
+                        </header>
+                       
+                        {activeTab === 'script' && <div ref={playerContainerRef} className="sticky top-4 z-20 mb-4"><div className="w-full rounded-xl shadow-xl overflow-hidden aspect-video border-4 border-white"><div id="youtube-player"></div></div></div>}
+
+                        <div className="bg-white rounded-xl shadow-lg p-2 sm:p-4">
+                            <div className="border-b border-gray-200">
+                                <nav className="-mb-px flex flex-wrap gap-x-4 sm:gap-x-6">
+                                    {tabs.map(tab => (
+                                        <button 
+                                            key={tab.id} 
+                                            onClick={() => setActiveTab(tab.id)} 
+                                            className={`${activeTab === tab.id ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-bold transition-colors`}
+                                        >
+                                            <span className="text-sm sm:text-base">{tab.kor}</span>
+                                            <span className="text-[10px] sm:text-xs ml-1">{tab.eng}</span>
+                                        </button>
+                                    ))}
+                                </nav>
+                            </div>
+                            <div className="py-6">
+                                {activeTab === 'script' && (
+                                    <div className="flex flex-col md:flex-row gap-6">
+                                        <div className="flex-grow">
+                                            <div className="space-y-6 px-2 sm:px-4">{scriptContent.map((block, blockIndex) => <div key={`${block.speaker}-${blockIndex}`} ref={el => scriptBlockRefs.current[block.lines[0].id] = el} className="leading-relaxed"><p className="font-extrabold text-green-700 text-xl">{block.speaker}</p><div className="pl-4 border-l-4 border-gray-200 mt-2 space-y-2">{block.lines.map(line => <div key={line.id}><div ref={el => scriptLineRefs.current[line.id] = el} className={`p-2 ${activeScriptLine === line.id && !inlinePopupData ? 'script-highlight' : ''}`}><p className="whitespace-pre-wrap text-xl text-gray-900 font-medium"><HighlightedText text={line.kor} words={highlightableWords} onWordClick={handleWordClick} lineId={line.id} activeWordId={activeWordId}/></p>{translationsVisible[line.id] && <p className="whitespace-pre-wrap text-gray-600 italic mt-1 text-base">{line.eng}</p>}<div className="flex items-center gap-2 mt-2"><button onClick={() => toggleTranslation(line.id)} className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-1 px-4 rounded-full transition duration-200" style={{fontSize: '10px'}}>번역 (Translation)</button><button onClick={() => handleRepeatClick(line)} className={`${repeatingLine?.id === line.id ? 'bg-green-500 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'} font-medium py-1 px-4 rounded-full transition duration-200`} style={{fontSize: '10px'}}>{repeatingLine?.id === line.id ? '반복 중' : '구간 반복 (A-B Repeat)'}</button></div></div>{inlinePopupData?.lineId === line.id && <InlineDefinition data={inlinePopupData.data} onClose={handleClosePopup} t={t} t_static={t_static} />}</div>)}</div></div>)}</div>
+                                        </div>
+                                        <div className="w-full md:w-auto flex-shrink-0">
+                                            <div className="sticky z-10" style={{ top: playerHeight ? `${playerHeight + 32}px` : '40vh' }}>
+                                                <div className="flex flex-row items-stretch gap-2 mb-2" style={{ maxWidth: '7cm' }}>
+                                                    <label htmlFor="sync-toggle" className="flex-1 flex items-center justify-between cursor-pointer bg-white py-1.5 px-2 rounded-lg shadow-md border"><span className="text-xs font-medium text-gray-900 whitespace-nowrap">자동 스크롤</span><div className="relative w-10" style={{height: '0.3cm'}}><input type="checkbox" id="sync-toggle" className="sr-only" checked={isSyncEnabled} onChange={() => setIsSyncEnabled(!isSyncEnabled)}/><div className={`block w-full h-full rounded-full transition-colors ${isSyncEnabled ? 'bg-green-500' : 'bg-gray-200'}`}></div><div className={`dot absolute bg-white rounded-full transition-transform transform`} style={{height: 'calc(0.3cm - 4px)', width: 'calc(0.3cm - 4px)', top: '2px', left: '2px', transform: isSyncEnabled ? 'translateX(calc(2.5rem - 0.3cm))' : 'translateX(0px)' }}></div></div></label>
+                                                    <label htmlFor="vocab-toggle" className="flex-1 flex items-center justify-between cursor-pointer bg-white py-1.5 px-2 rounded-lg shadow-md border"><span className="text-xs font-medium text-gray-900 whitespace-nowrap">핵심 어휘 목록</span><div className="relative w-10" style={{height: '0.3cm'}}><input type="checkbox" id="vocab-toggle" className="sr-only" checked={isVocabSidebarVisible} onChange={() => setIsVocabSidebarVisible(!isVocabSidebarVisible)}/><div className={`block w-full h-full rounded-full transition-colors ${isVocabSidebarVisible ? 'bg-green-500' : 'bg-gray-200'}`}></div><div className={`dot absolute bg-white rounded-full transition-transform transform`} style={{height: 'calc(0.3cm - 4px)', width: 'calc(0.3cm - 4px)', top: '2px', left: '2px', transform: isVocabSidebarVisible ? 'translateX(calc(2.5rem - 0.3cm))' : 'translateX(0px)'}}></div></div></label>
+                                                </div>
+                                                {isVocabSidebarVisible && <aside ref={vocabContainerRef} className="w-full max-h-[calc(100vh-450px)] overflow-y-auto" style={{maxWidth: '7cm'}}><div className="border rounded-lg bg-white p-2 shadow-lg"><div className="space-y-1">{vocabAndGrammarList.map(item => <VocabItem key={item.term} item={item} ref={el => vocabRefs.current[item.term] = el} isHighlighted={highlightedVocab === item.term} t={t} t_static={t_static}/>)}</div></div></aside>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                {activeTab === 'quiz' && <ComprehensionQuiz />}
+                                {activeTab === 'practice' && <DiscussionSection />}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+       
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
