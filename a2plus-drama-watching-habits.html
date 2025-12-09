@@ -94,6 +94,8 @@
             "C2": "bg-red-50 text-red-600 border-red-100",         
         };
 
+        const LEVEL_OPTIONS = ["A1", "A1+", "A2", "A2+", "B1", "B1+", "B2", "B2+", "C1", "C1+", "C2"];
+
         // --- Icons ---
         const HomeIcon = ({ className }) => (<svg viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>);
         const DashboardIcon = ({ className }) => (<svg viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z"/></svg>);
@@ -247,7 +249,7 @@
             { id: 's32', speaker: '유나', kor: '하지만 매주 안 보면 친구들한테 스포일러 당할 수 있어요.', time: [118.759, 124.089], eng: "But if you don't watch weekly, you can get spoiled by friends." },
             { id: 's33', speaker: '유나', kor: "'스포일러 당하다’는 ‘내용을 미리 듣다’라는 뜻이에요.", time: [124.166, 129.313], eng: "'Get spoiled' means 'to hear the content in advance'." },
             { id: 's34', speaker: '우디', kor: '괜찮아요! 저는 드라마가 완결될 때까지 인터넷도 안 보고, 친구도 안 만날 거예요.', time: [129.800, 136.140], eng: "It's okay! I won't check the internet or meet friends until the drama is completed." },
-            { id: 's35', speaker: '우디', kor: "'완결되다’는 '이야기가 다 끝나다’라는 뜻이에요.", time: [136.297, 140.470], eng: "'Completed' means 'the story is finished'." },
+            { id: 's35', speaker: '우디', kor: "'완결되다’는 '이야기가 다 끝나다’라는 뜻이에요.", time: [136.297, 140.470], eng: "Id. 'Completed' means 'the story is finished'." },
             { id: 's36', speaker: '유나', kor: '드라마 때문에 친구를 버리는 사람이 어디 있어요?', time: [140.623, 144.744], eng: "Who abandons their friends because of a drama?" },
             { id: 's37', speaker: '우디', kor: '저에게 친구보다 드라마가 중요해요!', time: [144.885, 147.792], eng: "Drama is more important to me than friends!" },
             { id: 's38', speaker: '유나', kor: '아 맞다, 우디 씨는 원래 친구가 없죠! 😆', time: [148.368, 153.610], eng: "Ah right, Woody, you originally don't have friends! 😆" },
@@ -282,20 +284,6 @@
             { id: 's67', speaker: '우디', kor: '여러분의 생각을 알려 주세요!', time: [258.194, 260.309], eng: "Please tell us your thoughts!" },
             { id: 's68', speaker: '우디', kor: '그럼 안녕히 계세요! 저는 드라마 보러 갈게요! 👋', time: [260.398, 263.541], eng: "Then goodbye! I'm going to watch a drama!" },
             { id: 's69', speaker: '유나', kor: '안녕히 계세요! 다음에 또 만나요!', time: [263.784, 266.910], eng: "Goodbye! See you next time!" }
-        ];
-
-        // --- DISCUSION QUESTIONS DATA ---
-        const DISCUSSION_QUESTIONS = [
-            { num: 1, kor: "여러분은 원래 드라마를 자주 봐요? 최근에 무슨 드라마를 봤어요?", eng: "Do you usually watch dramas often? What drama did you watch recently?", vocab: [ { term: "원래", meaning_eng: "Originally; Usually" }, { term: "최근에", meaning_eng: "Recently" } ] },
-            { num: 2, kor: "여러분은 드라마를 어떻게 봐요? 몰아서 봐요? 매주 한 편씩 봐요?", eng: "How do you watch dramas? Do you binge-watch them? Or do you watch one episode each week?", vocab: [ { term: "몰아서 보다", meaning_eng: "To binge-watch; to watch all at once" }, { term: "매주 한 편씩 보다", meaning_eng: "To watch one episode every week" } ] },
-            { num: 3, kor: "드라마를 보고 나서 일주일이 지났어요. 여러분은 드라마 내용을 잘 기억해요? 아니면 다 잊어버려요?", eng: "A week has passed since you watched the drama. Do you remember the story well? Or do you forget everything?", vocab: [ { term: "지나다", meaning_eng: "To pass (time)" }, { term: "내용", meaning_eng: "Content; story" }, { term: "기억하다", meaning_eng: "To remember" }, { term: "잊어버리다", meaning_eng: "To forget" } ] },
-            { num: 4, kor: "유나는 일주일 동안 다음 편을 기대해 보라고 했어요. 여러분도 다음 편을 기다리는 동안 보통 뭐해요?", eng: "Yuna said to try looking forward to the next episode for a week. What do you usually do while waiting for the next episode?", vocab: [ { term: "일주일 동안", meaning_eng: "For a week" }, { term: "다음 편", meaning_eng: "Next episode" }, { term: "기대하다", meaning_eng: "To look forward to; to expect" }, { term: "기다리다", meaning_eng: "To wait" } ] },
-            { num: 5, kor: "우디는 다음 이야기가 너무 궁금해서 잠을 못 잤어요. 여러분도 그런 적이 있어요?", eng: "Woody couldn't sleep because he was so curious about the next story. Have you ever had that experience?", vocab: [ { term: "궁금하다", meaning_eng: "To be curious" }, { term: "잠을 못 자다", meaning_eng: "Cannot sleep" }, { term: "그런 적이 있다", meaning_eng: "To have had such an experience" } ] },
-            { num: 6, kor: "여러분은 2시간 30분 영화를 볼 때 잘 몰입해요? 아니면 50분 드라마를 볼 때 잘 몰입해요?", eng: "Do you get immersed well when watching a 2.5-hour movie? Or do you get immersed well when watching a 50-minute drama?", vocab: [ { term: "-ㄹ/을 때", meaning_eng: "When..." }, { term: "몰입하다", meaning_eng: "To be immersed; to be completely absorbed" } ] },
-            { num: 7, kor: "우디는 드라마가 완결될 때까지 안 봐요. 여러분은 완결을 기다릴 수 있어요?", eng: "Woody doesn't watch until the drama is completed. Can you wait for the completion?", vocab: [ { term: "완결되다", meaning_eng: "To be completed; to finish" }, { term: "-ㄹ/을 때", meaning_eng: "When; until" }, { term: "기다리다", meaning_eng: "To wait" } ] },
-            { num: 8, kor: "드라마의 에피소드가 너무 많으면 그 드라마를 보기 부담스러워요?", eng: "If a drama has too many episodes, does it feel burdensome to watch?", vocab: [ { term: "에피소드", meaning_eng: "Episode" }, { term: "-기 부담스럽다", meaning_eng: "To be burdensome to (do)" } ] },
-            { num: 9, kor: "여러분은 스포일러를 당한 적이 있어요? 누구한테 당했어요? 그때 기분이 어땠어요?", eng: "Have you ever been spoiled? Who spoiled it for you? How did you feel then?", vocab: [ { term: "스포일러를 당하다", meaning_eng: "To get spoiled" }, { term: "-ㄴ/은 적이 있다", meaning_eng: "To have experienced..." }, { term: "누구한테", meaning_eng: "From whom; by whom" }, { term: "기분", meaning_eng: "Mood; feeling" } ] },
-            { num: 10, kor: "여러분도 우디처럼 드라마 때문에 휴가를 쓰고 싶어요?", eng: "Do you also want to take a vacation because of a drama like Woody?", vocab: [ { term: "처럼", meaning_eng: "Like..." }, { term: "휴가를 쓰다", meaning_eng: "To take a vacation" } ] }
         ];
 
         // --- Sidebar Component ---
@@ -532,7 +520,7 @@
                                     </div>
                                     <div className="flex flex-col mt-3">
                                         <a 
-                                            href="https://gemini.google.com/share/2dba55279e79" 
+                                            href="https://gemini.google.com/share/a49ed6236fad" 
                                             target="_blank" 
                                             rel="noopener noreferrer" 
                                             className="text-xl font-black text-blue-600 hover:text-blue-800 hover:underline transition-colors block leading-tight"
@@ -1034,6 +1022,17 @@
             const isCurrentQuestionAnswered = !!selectedAnswer; // 답변을 시도한 적이 있는가?
             const isAnsweredCorrectly = answers[currentQuestionIndex] === currentQuestion.answer; // 현재 정답을 맞혔는가?
 
+            // Use useMemo to shuffle options once per question
+            const shuffledBank = useMemo(() => {
+                const bank = [...currentQuestion.bank];
+                // Fisher-Yates shuffle
+                for (let i = bank.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [bank[i], bank[j]] = [bank[j], bank[i]];
+                }
+                return bank;
+            }, [currentQuestion]);
+
             // 선택된 답변에 대한 피드백 메시지 찾기
             const getFeedback = (selected) => {
                 if (selected === currentQuestion.answer) {
@@ -1224,7 +1223,7 @@
                         
                         {/* 보기 옵션 */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 px-2">
-                            {currentQuestion.bank.map((option, idx) => {
+                            {shuffledBank.map((option, idx) => {
                                 const isSelected = selectedAnswer === option;
                                 let btnClass = "bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300";
                                 let isCorrectOption = option === currentQuestion.answer;
