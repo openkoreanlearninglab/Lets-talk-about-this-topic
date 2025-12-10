@@ -8,7 +8,6 @@
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- YouTube Iframe API: LearnView에서 사용 -->
     <script src="https://www.youtube.com/iframe_api"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -85,16 +84,14 @@
             "A1+": "bg-orange-50 text-orange-600 border-orange-100", 
             "A2": "bg-green-50 text-green-600 border-green-100",    
             "A2+": "bg-green-50 text-green-600 border-green-100",    
-            "B1": "bg-blue-50 text-blue-600 border-blue-100",      
-            "B1+": "bg-blue-50 text-blue-600 border-blue-100",      
+            "B1": "bg-blue-50 text-blue-600 border-blue-100",       
+            "B1+": "bg-blue-50 text-blue-600 border-blue-100",       
             "B2": "bg-purple-50 text-purple-600 border-purple-100", 
             "B2+": "bg-purple-50 text-purple-600 border-purple-100", 
             "C1": "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-100", 
             "C1+": "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-100", 
-            "C2": "bg-red-50 text-red-600 border-red-100",         
+            "C2": "bg-red-50 text-red-600 border-red-100",        
         };
-
-        const LEVEL_OPTIONS = ["A1", "A1+", "A2", "A2+", "B1", "B1+", "B2", "B2+", "C1", "C1+", "C2"];
 
         // --- Icons ---
         const HomeIcon = ({ className }) => (<svg viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>);
@@ -103,7 +100,7 @@
         const VocabIcon = ({ className }) => (<svg viewBox="0 0 24 24" fill="currentColor" className={className}><rect x="3" y="6" width="13" height="15" rx="2" transform="rotate(-8 9.5 13.5)" opacity="0.5" /><rect x="8" y="3" width="13" height="15" rx="2" transform="rotate(4 14.5 10.5)" /><circle cx="10.5" cy="6.5" r="1.2" fill="white" /></svg>);
         const QuizIcon = ({ className }) => (<svg viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>);
         const DiscussIcon = ({ className }) => (<svg viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M20 2H8C6.9 2 6 2.9 6 4V16C6 17.1 6.9 18 8 18H18L22 22V4C22 2.9 21.1 2 20 2ZM19 14H9V6H19V14Z"/><path d="M4 6H2V20C2 21.1 2.9 22 4 22H18V20H4V6Z"/></svg>);
-        const UserIcon = ({ className }) => (<svg viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>);
+        const UserIcon = ({ className }) => (<svg viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>);
         const QuizHeaderIcon = ({ className }) => (<svg viewBox="0 0 48 48" fill="none" className={className}><rect x="8" y="14" width="28" height="28" rx="4" stroke="#7C3AED" strokeWidth="4"/><rect x="14" y="6" width="28" height="28" rx="4" fill="#8B5CF6"/><path d="M28 14C30.2 14 32 15.8 32 18C32 20.2 30.2 22 28 22C26.8 22 26 22.8 26 24V25" stroke="white" strokeWidth="3" strokeLinecap="round"/><circle cx="26" cy="29" r="2" fill="white"/></svg>);
         const VocabHeaderIcon = ({ className }) => (<svg viewBox="0 0 48 48" fill="none" className={className} xmlns="http://www.w3.org/2000/svg"><path d="M24 10C24 10 34 11 40 10V38C34 39 24 38 24 38V10Z" fill="#43A047"/><path d="M24 10C24 10 14 11 8 10V38C14 39 24 38 24 38V10Z" fill="#2E7D32"/><path d="M12 16H20" stroke="white" strokeWidth="3" strokeLinecap="round"/><path d="M12 22H20" stroke="white" strokeWidth="3" strokeLinecap="round"/><path d="M12 28H20" stroke="white" strokeWidth="3" strokeLinecap="round"/><path d="M12 34H17" stroke="white" strokeWidth="3" strokeLinecap="round"/><path d="M28 16H36" stroke="white" strokeWidth="3" strokeLinecap="round"/><path d="M28 22H36" stroke="white" strokeWidth="3" strokeLinecap="round"/><path d="M28 28H36" stroke="white" strokeWidth="3" strokeLinecap="round"/><path d="M28 34H33" stroke="white" strokeWidth="3" strokeLinecap="round"/></svg>);
         const DiscussHeaderIcon = ({ className }) => (<svg viewBox="0 0 48 48" fill="none" className={className} xmlns="http://www.w3.org/2000/svg"><path d="M18 10H38C39.1 10 40 10.9 40 12V32C40 33.1 39.1 34 38 34H34V38L30 34H18C16.9 34 16 33.1 16 32V28" stroke="#3B82F6" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/><path d="M8 16H28C29.1 16 30 16.9 30 18V30C30 31.1 29.1 32 28 32H16L12 36V32H8C6.9 32 6 31.1 6 30V18C6 16.9 6.9 16 8 16Z" fill="#3B82F6"/><path d="M10 22H26" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.3"/></svg>);
@@ -114,18 +111,21 @@
         const ChevronLeft = ({ className }) => <LineIcon d="m15 18-6-6 6-6" className={className}/>;
         const ChevronRight = ({ className }) => <LineIcon d="m9 18 6-6-6-6" className={className}/>;
         const SpeedSolidIcon = ({ className }) => (<svg viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M20.38 8.57l-1.23 1.85a8 8 0 0 1-.22 7.58H5.07A8 8 0 0 1 15.58 6.85l1.85-1.23A10 10 0 0 0 3.35 19a2 2 0 0 0 1.72 1h13.85a2 2 0 0 0 1.74-1 10 10 0 0 0-.27-10.44z"/><path d="M10.59 15.41a2 2 0 0 0 2.83 0l5.66-8.49-8.49 5.66a2 2 0 0 0 0 2.83z"/></svg>);
-        const SparklesIcon = ({ className }) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 00-1.423 1.423z" /></svg>);
+        const SparklesIcon = ({ className }) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" /></svg>);
 
         // --- Component: Level Badge ---
         const LevelBadge = ({ levelCode }) => {
             const [isHovered, setIsHovered] = useState(false);
             const info = LEVEL_DEFINITIONS[levelCode] || LEVEL_DEFINITIONS["A2+"];
+            
             const getLevelStyle = (code) => {
                 if (LEVEL_STYLES[code]) return LEVEL_STYLES[code];
                 const base = code.substring(0, 2);
                 return LEVEL_STYLES[base] || "bg-gray-50 text-gray-600 border-gray-100";
             };
+            
             const badgeStyle = getLevelStyle(levelCode);
+
             return (
                 <div 
                     className="relative inline-flex items-center cursor-help z-50"
@@ -147,71 +147,762 @@
         };
 
         const VOCAB_DATA = [
-            { "term": "얼굴이 안 좋아 보이다", "mainDef": "To look unwell; to look like something is wrong.", "variants": ["얼굴이 안 좋아 보이다", "얼굴이 안 좋아 보여요"], "subDefs": [{ "subTerm": "얼굴이 좋아 보이다", "subDef": "To look healthy; to look good." }], "examples": [{ "kor": "오늘 얼굴이 안 좋아 보여요. 무슨 일 있어요?", "eng": "You don't look good today. Is something wrong?" }, { "kor": "잠을 못 자서 얼굴이 안 좋아 보여요.", "eng": "You look unwell because you couldn't sleep." }] },
-            { "term": "<왕자의 게임>", "mainDef": "<Game of Princes> (A fictional title parodying 'Game of Thrones').", "variants": ["<왕자의 게임>"], "subDefs": [{ "subTerm": "왕자", "subDef": "Prince." }], "examples": [{ "kor": "요즘 <왕자의 게임>을 보고 있어요.", "eng": "I'm watching <Game of Princes> these days." }, { "kor": " <왕자의 게임>에 나오는 왕자가 멋있어요.", "eng": "The prince in <Game of Princes> is cool." }] },
-            { "term": "몰아서 보다", "mainDef": "To binge-watch; to watch all at once.", "variants": ["몰아서 보다", "몰아서 봐요", "몰아서 보는"], "subDefs": [], "examples": [{ "kor": "주말에 드라마를 몰아서 봤어요.", "eng": "I binge-watched a drama over the weekend." }, { "kor": "저는 웹툰을 완결까지 기다렸다가 몰아서 봐요.", "eng": "I wait until a webtoon is finished and binge-read it." }] },
-            { "term": "동안", "mainDef": "During; for (a period of time).", "variants": ["동안"], "subDefs": [{ "subTerm": "24시간 동안", "subDef": "For 24 hours." }, { "subTerm": "일주일 동안", "subDef": "For one week." }, { "subTerm": "3일 동안", "subDef": "For 3 days." }], "examples": [{ "kor": "방학 동안 여행을 갈 거예요.", "eng": "I'm going to travel during the vacation." }, { "kor": "1시간 동안 운동했어요.", "eng": "I exercised for 1 hour." }] },
-            { "term": "한 번에 다", "mainDef": "All at once; in one go.", "variants": ["한 번에 다"], "subDefs": [], "examples": [{ "kor": "숙제를 한 번에 다 했어요.", "eng": "I did all my homework at once." }, { "kor": "약을 한 번에 다 먹으면 안 돼요.", "eng": "You shouldn't take all the medicine at once." }] },
-            { "term": "-라는 뜻이에요", "mainDef": "\"It means that…\"", "variants": ["라는 뜻이에요"], "subDefs": [], "examples": [{ "kor": "이 표시는 '멈추세요'라는 뜻이에요.", "eng": "This sign means 'stop'." }, { "kor": "그 말은 동의한다는 뜻이에요.", "eng": "That expression means I agree." }] },
-            { "term": "-면 돼요", "mainDef": "You just have to...; It works if...", "variants": ["면 돼요", "있으면 돼요", "자면 돼요"], "subDefs": [{ "subTerm": "커피☕️ 12잔만 있으면 돼요", "subDef": "I just need 12 cups of coffee." }, { "subTerm": "회사에서 자면 돼요", "subDef": "I just have to sleep at the office." }], "examples": [{ "kor": "여기에 서명하면 돼요.", "eng": "You just have to sign here." }, { "kor": "모르면 물어보면 돼요.", "eng": "If you don't know, you just have to ask." }] },
-            { "term": "매주 한 편", "mainDef": "One episode every week.", "variants": ["매주 한 편"], "subDefs": [{ "subTerm": "매주", "subDef": "Every week." }, { "subTerm": "한 편", "subDef": "One episode (counter for movies/dramas)." }, { "subTerm": "매주 한 편씩", "subDef": "One episode each week." }], "examples": [{ "kor": "이 드라마는 매주 한 편 나와요.", "eng": "This drama comes out one episode every week." }, { "kor": "저는 매주 한 편씩 영화를 봐요.", "eng": "I watch one movie each week." }] },
-            { "term": "에피소드", "mainDef": "Episode.", "variants": ["에피소드"], "subDefs": [], "examples": [{ "kor": "다음 에피소드가 궁금해요.", "eng": "I'm curious about the next episode." }, { "kor": "이 드라마는 에피소드가 많아요.", "eng": "This drama has many episodes." }] },
-            { "term": "기다리다", "mainDef": "To wait.", "variants": ["기다리다", "기다려요"], "subDefs": [], "examples": [{ "kor": "친구를 1시간 기다렸어요.", "eng": "I waited for my friend for an hour." }, { "kor": "조금만 기다려 주세요.", "eng": "Please wait a moment." }] },
-            { "term": "궁금해서 잠도 못 자요", "mainDef": "I can't even sleep because I'm curious.", "variants": ["궁금해서 잠도 못 자요"], "subDefs": [{ "subTerm": "-아서/어서", "subDef": "Used to connect clauses indicating cause or reason (\"because…\")." }, { "subTerm": "-도 못 하다", "subDef": "Cannot even do..." }], "examples": [{ "kor": "결과가 궁금해서 잠도 못 자요.", "eng": "I can't sleep because I'm curious about the result." }, { "kor": "너무 아파서 걷지도 못해요.", "eng": "I can't even walk because it hurts so much." }] },
-            { "term": "궁금하다", "mainDef": "To be curious.", "variants": ["궁금하다", "궁금해서"], "subDefs": [], "examples": [{ "kor": "다음 이야기가 정말 궁금해요.", "eng": "I'm really curious about the next story." }, { "kor": "궁금한 게 있으면 물어보세요.", "eng": "If you are curious about anything, please ask." }] },
-            { "term": "알고 싶다", "mainDef": "To want to know.", "variants": ["알고 싶다", "알고 싶어요"], "subDefs": [{ "subTerm": "알다", "subDef": "To know." }, { "subTerm": "-고 싶다", "subDef": "\"Want to…\"; used to express desire." }], "examples": [{ "kor": "진실을 알고 싶어요.", "eng": "I want to know the truth." }, { "kor": "그 사람 이름을 알고 싶어요.", "eng": "I want to know that person's name." }] },
-            { "term": "내용", "mainDef": "Content; plot; story.", "variants": ["내용", "내용이"], "subDefs": [], "examples": [{ "kor": "이 책의 내용은 아주 슬퍼요.", "eng": "The content of this book is very sad." }, { "kor": "드라마 내용을 다 잊어버렸어요.", "eng": "I forgot all the plot of the drama." }] },
-            { "term": "기대하다", "mainDef": "To expect; to look forward to.", "variants": ["기대하다", "기대해"], "subDefs": [{ "subTerm": "기대해 보세요", "subDef": "Please look forward to it." }], "examples": [{ "kor": "다음 시즌을 기대하고 있어요.", "eng": "I'm looking forward to the next season." }, { "kor": "너무 많이 기대하지 마세요.", "eng": "Don't expect too much." }] },
-            { "term": "일주일 지나면", "mainDef": "If a week passes.", "variants": ["일주일 지나면"], "subDefs": [{ "subTerm": "지나다", "subDef": "To pass (time)." }, { "subTerm": "-면", "subDef": "\"If…\"; conditional particle." }], "examples": [{ "kor": "일주일 지나면 괜찮아질 거예요.", "eng": "It will be okay after a week passes." }, { "kor": "시간이 지나면 알 수 있어요.", "eng": "If time passes, you will know." }] },
-            { "term": "잊어버리다", "mainDef": "To forget.", "variants": ["잊어버리다", "잊어버려요"], "subDefs": [], "examples": [{ "kor": "비밀번호를 잊어버렸어요.", "eng": "I forgot the password." }, { "kor": "나쁜 기억은 빨리 잊어버리세요.", "eng": "Please forget bad memories quickly." }] },
-            { "term": "잠시 쉬어야 기억을 잘 해요", "mainDef": "You have to rest for a moment to remember well.", "variants": ["잠시 쉬어야 기억을 잘 해요"], "subDefs": [{ "subTerm": "잠시", "subDef": "For a moment; briefly." }, { "subTerm": "-아야/어야 - 잘 하다", "subDef": "Must do [...] to do [...] well." }, { "subTerm": "기억을 하다", "subDef": "To remember." }], "examples": [{ "kor": "잠시 쉬어야 일을 더 잘 할 수 있어요.", "eng": "You have to rest a bit to work better." }, { "kor": "연습을 해야 노래를 잘 해요.", "eng": "You have to practice to sing well." }] },
-            { "term": "어제 본 드라마", "mainDef": "The drama I watched yesterday.", "variants": ["어제 본 드라마"], "subDefs": [{ "subTerm": "보다", "subDef": "To watch." }, { "subTerm": "-ㄴ/은", "subDef": "Used to turn a past-tense verb into an \"adjective-ish\" phrase that describes the following noun." }, { "subTerm": "드라마", "subDef": "Drama." }], "examples": [{ "kor": "어제 본 드라마가 정말 재미있었어요.", "eng": "The drama I watched yesterday was really fun." }, { "kor": "이것은 내가 읽은 책이에요.", "eng": "This is the book I read." }] },
-            { "term": "주인공", "mainDef": "Protagonist; main character.", "variants": ["주인공"], "subDefs": [], "examples": [{ "kor": "이 영화의 주인공은 누구예요?", "eng": "Who is the main character of this movie?" }, { "kor": "저는 드라마 주인공처럼 살고 싶어요.", "eng": "I want to live like a drama protagonist." }] },
-            { "term": "거 봐요", "mainDef": "See? / I told you so.", "variants": ["거 봐요"], "subDefs": [], "examples": [{ "kor": "거 봐요, 내가 맞았죠?", "eng": "See? I was right, wasn't I?" }, { "kor": "거 봐요, 비가 온다고 했잖아요.", "eng": "See? I told you it would rain." }] },
-            { "term": "기억 못 하잖아요", "mainDef": "You don't remember, you know.", "variants": ["기억 못 하잖아요"], "subDefs": [{ "subTerm": "기억하다", "subDef": "To remember." }, { "subTerm": "-잖아요", "subDef": "Used to remind the listener of shared or obvious information." }], "examples": [{ "kor": "우리는 돈이 없잖아요.", "eng": "We don't have money, you know." }, { "kor": "벌써 밥을 먹었잖아요.", "eng": "You already ate, didn't you?" }] },
-            { "term": "처럼", "mainDef": "Like; as.", "variants": ["처럼", "영화처럼"], "subDefs": [{ "subTerm": "영화처럼", "subDef": "Like a movie." }], "examples": [{ "kor": "너는 천사처럼 착해요.", "eng": "You are kind like an angel." }, { "kor": "우리 가족처럼 지내요.", "eng": "Let's live like family." }] },
-            { "term": "몰입하다", "mainDef": "To be immersed; to get absorbed.", "variants": ["몰입하다", "몰입해서"], "subDefs": [{ "subTerm": "몰입해서 보다", "subDef": "To watch with immersion." }], "examples": [{ "kor": "영화에 너무 몰입해서 울었어요.", "eng": "I was so immersed in the movie that I cried." }, { "kor": "공부에 몰입하면 시간이 빨리 가요.", "eng": "If you get absorbed in studying, time flies." }] },
-            { "term": "완전히", "mainDef": "Completely; fully.", "variants": ["완전히"], "subDefs": [], "examples": [{ "kor": "병이 완전히 나았어요.", "eng": "I am completely cured." }, { "kor": "그 사람은 완전히 달라졌어요.", "eng": "That person has completely changed." }] },
-            { "term": "집중하다", "mainDef": "To concentrate; to focus.", "variants": ["집중하다"], "subDefs": [], "examples": [{ "kor": "수업 시간에 집중하세요.", "eng": "Please concentrate during class." }, { "kor": "시끄러워서 일에 집중할 수 없어요.", "eng": "I can't focus on work because it's noisy." }] },
-            { "term": "-한테", "mainDef": "To (someone) - colloquial particle.", "variants": ["한테", "친구들한테"], "subDefs": [{ "subTerm": "친구들한테", "subDef": "To friends." }], "examples": [{ "kor": "친구한테 선물을 줬어요.", "eng": "I gave a gift to my friend." }, { "kor": "선생님한테 물어보세요.", "eng": "Please ask the teacher." }] },
-            { "term": "스포일러 당하다", "mainDef": "To be spoiled (get a spoiler).", "variants": ["스포일러 당하다", "스포일러 당했어요"], "subDefs": [], "examples": [{ "kor": "인터넷에서 스포일러 당했어요.", "eng": "I got spoiled on the internet." }, { "kor": "스포일러 당하기 싫어서 뉴스를 안 봐요.", "eng": "I don't watch the news because I don't want to get spoiled." }] },
-            { "term": "미리", "mainDef": "In advance; beforehand.", "variants": ["미리"], "subDefs": [], "examples": [{ "kor": "표를 미리 예매했어요.", "eng": "I booked the ticket in advance." }, { "kor": "오기 전에 미리 연락해 주세요.", "eng": "Please contact me in advance before coming." }] },
-            { "term": "완결되다", "mainDef": "To be completed; to be finished (for series).", "variants": ["완결되다", "완결될"], "subDefs": [], "examples": [{ "kor": "이 웹툰은 곧 완결돼요.", "eng": "This webtoon will be finished soon." }, { "kor": "완결된 드라마만 봐요.", "eng": "I only watch completed dramas." }] },
-            { "term": "-ㄹ/을 때까지", "mainDef": "Until...", "variants": ["때까지", "완결될 때까지"], "subDefs": [{ "subTerm": "완결될 때까지", "subDef": "Until it is completed." }], "examples": [{ "kor": "성공할 때까지 포기하지 마세요.", "eng": "Don't give up until you succeed." }, { "kor": "친구가 올 때까지 기다릴 거예요.", "eng": "I will wait until my friend comes." }] },
-            { "term": "끝나다", "mainDef": "To end; to finish.", "variants": ["끝나다", "끝나요"], "subDefs": [], "examples": [{ "kor": "수업이 언제 끝나요?", "eng": "When does the class end?" }, { "kor": "영화가 끝난 후에 밥을 먹었어요.", "eng": "We ate after the movie ended." }] },
-            { "term": "친구를 버리는 사람", "mainDef": "A person who abandons their friend.", "variants": ["친구를 버리는 사람"], "subDefs": [{ "subTerm": "버리다", "subDef": "To throw away; to abandon." }, { "subTerm": "-는", "subDef": "Noun-modifying ending (present tense)." }], "examples": [{ "kor": "쓰레기를 아무데나 버리는 사람은 나빠요.", "eng": "A person who throws trash anywhere is bad." }, { "kor": "가족을 버리는 사람은 없어요.", "eng": "No one abandons their family." }] },
-            { "term": "-에게", "mainDef": "To (someone) - particle.", "variants": ["에게", "저에게"], "subDefs": [{ "subTerm": "저에게", "subDef": "To me." }], "examples": [{ "kor": "부모님에게 편지를 썼어요.", "eng": "I wrote a letter to my parents." }, { "kor": "그 책을 저에게 주세요.", "eng": "Please give that book to me." }] },
-            { "term": "A 보다 B", "mainDef": "B rather than A; B more than A.", "variants": ["보다", "친구보다 드라마"], "subDefs": [{ "subTerm": "친구보다 드라마", "subDef": "Drama rather than friends / Drama more than friends." }], "examples": [{ "kor": "저는 커피보다 차를 더 좋아해요.", "eng": "I like tea more than coffee." }, { "kor": "말보다 행동이 중요해요.", "eng": "Actions are more important than words." }] },
-            { "term": "원래", "mainDef": "Originally; actually; by nature.", "variants": ["원래"], "subDefs": [], "examples": [{ "kor": "원래는 안 가려고 했어요.", "eng": "Originally, I wasn't going to go." }, { "kor": "그 사람은 원래 착해요.", "eng": "That person is naturally kind." }] },
-            { "term": "처음부터", "mainDef": "From the beginning.", "variants": ["처음부터"], "subDefs": [], "examples": [{ "kor": "처음부터 다시 시작해요.", "eng": "Let's start over from the beginning." }, { "kor": "처음부터 끝까지 다 봤어요.", "eng": "I watched it all from beginning to end." }] },
-            { "term": "인생", "mainDef": "Life.", "variants": ["인생"], "subDefs": [], "examples": [{ "kor": "인생은 즐거워요.", "eng": "Life is enjoyable." }, { "kor": "이것이 제 인생 영화예요.", "eng": "This is the movie of my life (best movie ever)." }] },
-            { "term": "혼자 사는 거예요", "mainDef": "You live alone / It's about living alone.", "variants": ["혼자 사는 거예요"], "subDefs": [{ "subTerm": "살다", "subDef": "To live." }, { "subTerm": "-는 거예요", "subDef": "It is that... (explaining a fact)." }], "examples": [{ "kor": "저는 지금 혼자 살고 있어요.", "eng": "I am living alone right now." }, { "kor": "인생은 결국 혼자 사는 거예요.", "eng": "Life is ultimately about living alone." }] },
-            { "term": "시즌", "mainDef": "Season.", "variants": ["시즌"], "subDefs": [{ "subTerm": "드라마 시즌", "subDef": "Drama season." }, { "subTerm": "마지막 시즌", "subDef": "Final season." }], "examples": [{ "kor": "이 드라마는 시즌 2가 재미있어요.", "eng": "Season 2 of this drama is fun." }, { "kor": "다음 시즌을 기다리고 있어요.", "eng": "I am waiting for the next season." }] },
-            { "term": "애피소드가 50개면", "mainDef": "If there are 50 episodes.", "variants": ["애피소드가 50개면"], "subDefs": [{ "subTerm": "에피소드 *개", "subDef": "Counter for episodes." }, { "subTerm": "-면", "subDef": "\"If…\"; conditional particle." }], "examples": [{ "kor": "사과가 10개면 충분해요.", "eng": "If there are 10 apples, that's enough." }, { "kor": "돈이 많으면 여행을 가고 싶어요.", "eng": "If I have a lot of money, I want to go on a trip." }] },
-            { "term": "몰아보기 부담스러울 수도 있어요", "mainDef": "It might be burdensome to binge-watch.", "variants": ["몰아보기 부담스러울 수도 있어요"], "subDefs": [{ "subTerm": "몰아보다", "subDef": "To binge-watch." }, { "subTerm": "-기 부담스럽다", "subDef": "To be burdensome to do (something)." }, { "subTerm": "-ㄹ/을 수도 있다", "subDef": "\"Might…\" or \"could…\"; used to express possibility." }], "examples": [{ "kor": "혼자 가기 부담스러울 수도 있어요.", "eng": "It might be uncomfortable to go alone." }, { "kor": "가격이 비싸서 부담스러울 수도 있어요.", "eng": "It might be burdensome because the price is high." }] },
-            { "term": "부담스럽다", "mainDef": "To be burdensome; uncomfortable; pressure-inducing.", "variants": ["부담스럽다", "부담스러워요"], "subDefs": [], "examples": [{ "kor": "그 사람의 부탁이 좀 부담스러워요.", "eng": "That person's request is a bit burdensome." }, { "kor": "너무 비싼 선물은 부담스러워요.", "eng": "Too expensive gifts are burdensome." }] },
-            { "term": "휴가를 쓰다", "mainDef": "To take a vacation; to use leave.", "variants": ["휴가를 쓰다", "휴가를 써요"], "subDefs": [{ "subTerm": "휴가", "subDef": "Vacation; leave." }], "examples": [{ "kor": "다음 주에 휴가를 쓸 거예요.", "eng": "I'm going to take a vacation next week." }, { "kor": "아파서 휴가를 썼어요.", "eng": "I took leave because I was sick." }] },
-            { "term": "진심이에요", "mainDef": "I'm serious; I mean it.", "variants": ["진심이에요"], "subDefs": [], "examples": [{ "kor": "저는 농담이 아니라 진심이에요.", "eng": "I'm not joking, I'm serious." }, { "kor": "당신을 사랑하는 마음은 진심이에요.", "eng": "My love for you is sincere." }] },
-            { "term": "오늘 배운 단어", "mainDef": "Words learned today.", "variants": ["오늘 배운 단어"], "subDefs": [{ "subTerm": "배우다", "subDef": "To learn." }, { "subTerm": "-ㄴ/은", "subDef": "Used to turn a past-tense verb into an \"adjective-ish\" phrase that describes the following noun." }, { "subTerm": "단어", "subDef": "Word; vocabulary." }], "examples": [{ "kor": "오늘 배운 단어를 복습하세요.", "eng": "Please review the words learned today." }, { "kor": "배운 단어를 사용해서 문장을 만드세요.", "eng": "Make sentences using the words you learned." }] },
-            { "term": "정리해 봐요", "mainDef": "Let's summarize; Let's organize.", "variants": ["정리해 봐요"], "subDefs": [{ "subTerm": "정리하다", "subDef": "To summarize; to organize." }, { "subTerm": "-아/어 보다", "subDef": "\"Let's try…\"; suggestion." }], "examples": [{ "kor": "방을 깨끗하게 정리해 봐요.", "eng": "Let's try organizing the room cleanly." }, { "kor": "오늘 회의 내용을 정리해 봐요.", "eng": "Let's summarize today's meeting content." }] },
-            { "term": "여기까지 할까요?", "mainDef": "Shall we stop here?", "variants": ["여기까지 할까요"], "subDefs": [{ "subTerm": "여기까지 하다", "subDef": "To do up to here." }, { "subTerm": "-까요?", "subDef": "\"Shall we…?\"; suggestion." }], "examples": [{ "kor": "오늘은 피곤하니까 여기까지 할까요?", "eng": "Since we are tired today, shall we stop here?" }, { "kor": "수업은 여기까지 할까요?", "eng": "Shall we end the class here?" }] },
-            { "term": "농담", "mainDef": "Joke.", "variants": ["농담"], "subDefs": [], "examples": [{ "kor": "그것은 그냥 농담이었어요.", "eng": "That was just a joke." }, { "kor": "농담을 잘 하는 사람을 좋아해요.", "eng": "I like people who are good at telling jokes." }] },
-            { "term": "1편", "mainDef": "Episode 1; One episode.", "variants": ["1편"], "subDefs": [], "examples": [{ "kor": "영화 1편이 더 재미있어요.", "eng": "The first movie is more fun." }, { "kor": "오늘 드라마 1편을 봤어요.", "eng": "I watched one episode of the drama today." }] },
-            { "term": "알려주세요", "mainDef": "Please let me know; Please tell me.", "variants": ["알려주세요"], "subDefs": [{ "subTerm": "알리다", "subDef": "To inform; to tell." }, { "subTerm": "-아/어 주세요", "subDef": "Please do (for me)." }], "examples": [{ "kor": "도착하면 알려주세요.", "eng": "Please let me know when you arrive." }, { "kor": "전화번호를 알려주세요.", "eng": "Please tell me your phone number." }] },
-            { "term": "드라마 보러 갈게요", "mainDef": "I'll go watch a drama.", "variants": ["드라마 보러 갈게요"], "subDefs": [{ "subTerm": "-러 가다", "subDef": "To go to do (purpose)." }, { "subTerm": "-게요", "subDef": "\"I will…\"; expressing intention." }], "examples": [{ "kor": "친구를 만나러 갈게요.", "eng": "I will go to meet a friend." }, { "kor": "밥 먹으러 갈게요.", "eng": "I will go to eat." }] }
+            {
+                "term": "얼굴이 안 좋아 보이다",
+                "mainDef": "To look unwell; to look like something is wrong.",
+                "variants": ["얼굴이 안 좋아 보이다", "얼굴이 안 좋아 보여요"],
+                "subDefs": [
+                    { "subTerm": "• 얼굴이 좋아 보이다", "subDef": "To look healthy; to look good." }
+                ],
+                "examples": [
+                    { "kor": "오늘 얼굴이 안 좋아 보여요. 무슨 일 있어요?", "eng": "You don't look good today. Is something wrong?" },
+                    { "kor": "잠을 못 자서 얼굴이 안 좋아 보여요.", "eng": "You look unwell because you couldn't sleep." }
+                ]
+            },
+            {
+                "term": "<왕자의 게임>",
+                "mainDef": "<Game of Princes> (A fictional title parodying 'Game of Thrones').",
+                "variants": ["<왕자의 게임>"],
+                "subDefs": [
+                    { "subTerm": "• 왕자", "subDef": "Prince." }
+                ],
+                "examples": [
+                    { "kor": "요즘 <왕자의 게임>을 보고 있어요.", "eng": "I'm watching <Game of Princes> these days." },
+                    { "kor": "<왕자의 게임>에 나오는 왕자가 멋있어요.", "eng": "The prince in <Game of Princes> is cool." }
+                ]
+            },
+            {
+                "term": "몰아서 보다",
+                "mainDef": "To binge-watch; to watch all at once.",
+                "variants": ["몰아서 보다", "몰아서 봐요", "몰아서 보는"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "주말에 드라마를 몰아서 봤어요.", "eng": "I binge-watched a drama over the weekend." },
+                    { "kor": "저는 웹툰을 완결까지 기다렸다가 몰아서 봐요.", "eng": "I wait until a webtoon is finished and binge-read it." }
+                ]
+            },
+            {
+                "term": "동안",
+                "mainDef": "During; for (a period of time).",
+                "variants": ["동안"],
+                "subDefs": [
+                    { "subTerm": "• 24시간 동안", "subDef": "For 24 hours." },
+                    { "subTerm": "• 일주일 동안", "subDef": "For one week." },
+                    { "subTerm": "• 3일 동안", "subDef": "For 3 days." }
+                ],
+                "examples": [
+                    { "kor": "방학 동안 여행을 갈 거예요.", "eng": "I'm going to travel during the vacation." },
+                    { "kor": "1시간 동안 운동했어요.", "eng": "I exercised for 1 hour." }
+                ]
+            },
+            {
+                "term": "한 번에 다",
+                "mainDef": "All at once; in one go.",
+                "variants": ["한 번에 다"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "숙제를 한 번에 다 했어요.", "eng": "I did all my homework at once." },
+                    { "kor": "약을 한 번에 다 먹으면 안 돼요.", "eng": "You shouldn't take all the medicine at once." }
+                ]
+            },
+            {
+                "term": "-라는 뜻이에요",
+                "mainDef": "\"It means that…\"",
+                "variants": ["라는 뜻이에요"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "이 표시는 '멈추세요'라는 뜻이에요.", "eng": "This sign means 'stop'." },
+                    { "kor": "그 말은 동의한다는 뜻이에요.", "eng": "That expression means I agree." }
+                ]
+            },
+            {
+                "term": "-면 돼요",
+                "mainDef": "You just have to...; It works if...",
+                "variants": ["면 돼요", "있으면 돼요", "자면 돼요"],
+                "subDefs": [
+                    { "subTerm": "• 커피☕️ 12잔만 있으면 돼요", "subDef": "I just need 12 cups of coffee." },
+                    { "subTerm": "• 회사에서 자면 돼요", "subDef": "I just have to sleep at the office." }
+                ],
+                "examples": [
+                    { "kor": "여기에 서명하면 돼요.", "eng": "You just have to sign here." },
+                    { "kor": "모르면 물어보면 돼요.", "eng": "If you don't know, you just have to ask." }
+                ]
+            },
+            {
+                "term": "매주 한 편",
+                "mainDef": "One episode every week.",
+                "variants": ["매주 한 편"],
+                "subDefs": [
+                    { "subTerm": "• 매주", "subDef": "Every week." },
+                    { "subTerm": "• 한 편", "subDef": "One episode (counter for movies/dramas)." },
+                    { "subTerm": "• 매주 한 편씩", "subDef": "One episode each week." }
+                ],
+                "examples": [
+                    { "kor": "이 드라마는 매주 한 편 나와요.", "eng": "This drama comes out one episode every week." },
+                    { "kor": "저는 매주 한 편씩 영화를 봐요.", "eng": "I watch one movie each week." }
+                ]
+            },
+            {
+                "term": "에피소드",
+                "mainDef": "Episode.",
+                "variants": ["에피소드"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "다음 에피소드가 궁금해요.", "eng": "I'm curious about the next episode." },
+                    { "kor": "이 드라마는 에피소드가 많아요.", "eng": "This drama has many episodes." }
+                ]
+            },
+            {
+                "term": "기다리다",
+                "mainDef": "To wait.",
+                "variants": ["기다리다", "기다려요"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "친구를 1시간 기다렸어요.", "eng": "I waited for my friend for an hour." },
+                    { "kor": "조금만 기다려 주세요.", "eng": "Please wait a moment." }
+                ]
+            },
+            {
+                "term": "궁금해서 잠도 못 자요",
+                "mainDef": "I can't even sleep because I'm curious.",
+                "variants": ["궁금해서 잠도 못 자요"],
+                "subDefs": [
+                    { "subTerm": "• -아서/어서", "subDef": "Used to connect clauses indicating cause or reason (\"because…\")." },
+                    { "subTerm": "• -도 못 하다", "subDef": "Cannot even do..." }
+                ],
+                "examples": [
+                    { "kor": "결과가 궁금해서 잠도 못 자요.", "eng": "I can't sleep because I'm curious about the result." },
+                    { "kor": "너무 아파서 걷지도 못해요.", "eng": "I can't even walk because it hurts so much." }
+                ]
+            },
+            {
+                "term": "궁금하다",
+                "mainDef": "To be curious.",
+                "variants": ["궁금하다", "궁금해서"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "다음 이야기가 정말 궁금해요.", "eng": "I'm really curious about the next story." },
+                    { "kor": "궁금한 게 있으면 물어보세요.", "eng": "If you are curious about anything, please ask." }
+                ]
+            },
+            {
+                "term": "알고 싶다",
+                "mainDef": "To want to know.",
+                "variants": ["알고 싶다", "알고 싶어요"],
+                "subDefs": [
+                    { "subTerm": "• 알다", "subDef": "To know." },
+                    { "subTerm": "• -고 싶다", "subDef": "\"Want to…\"; used to express desire." }
+                ],
+                "examples": [
+                    { "kor": "진실을 알고 싶어요.", "eng": "I want to know the truth." },
+                    { "kor": "그 사람 이름을 알고 싶어요.", "eng": "I want to know that person's name." }
+                ]
+            },
+            {
+                "term": "내용",
+                "mainDef": "Content; plot; story.",
+                "variants": ["내용", "내용이"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "이 책의 내용은 아주 슬퍼요.", "eng": "The content of this book is very sad." },
+                    { "kor": "드라마 내용을 다 잊어버렸어요.", "eng": "I forgot all the plot of the drama." }
+                ]
+            },
+            {
+                "term": "기대하다",
+                "mainDef": "To expect; to look forward to.",
+                "variants": ["기대하다", "기대해"],
+                "subDefs": [
+                    { "subTerm": "• 기대해 보세요", "subDef": "Please look forward to it." }
+                ],
+                "examples": [
+                    { "kor": "다음 시즌을 기대하고 있어요.", "eng": "I'm looking forward to the next season." },
+                    { "kor": "너무 많이 기대하지 마세요.", "eng": "Don't expect too much." }
+                ]
+            },
+            {
+                "term": "일주일 지나면",
+                "mainDef": "If a week passes.",
+                "variants": ["일주일 지나면"],
+                "subDefs": [
+                    { "subTerm": "• 지나다", "subDef": "To pass (time)." },
+                    { "subTerm": "• -면", "subDef": "\"If…\"; conditional particle." }
+                ],
+                "examples": [
+                    { "kor": "일주일 지나면 괜찮아질 거예요.", "eng": "It will be okay after a week passes." },
+                    { "kor": "시간이 지나면 알 수 있어요.", "eng": "If time passes, you will know." }
+                ]
+            },
+            {
+                "term": "잊어버리다",
+                "mainDef": "To forget.",
+                "variants": ["잊어버리다", "잊어버려요"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "비밀번호를 잊어버렸어요.", "eng": "I forgot the password." },
+                    { "kor": "나쁜 기억은 빨리 잊어버리세요.", "eng": "Please forget bad memories quickly." }
+                ]
+            },
+            {
+                "term": "잠시 쉬어야 기억을 잘 해요",
+                "mainDef": "You have to rest for a moment to remember well.",
+                "variants": ["잠시 쉬어야 기억을 잘 해요"],
+                "subDefs": [
+                    { "subTerm": "• 잠시", "subDef": "For a moment; briefly." },
+                    { "subTerm": "• -아야/어야 - 잘 하다", "subDef": "Must do [...] to do [...] well." },
+                    { "subTerm": "• 기억을 하다", "subDef": "To remember." }
+                ],
+                "examples": [
+                    { "kor": "잠시 쉬어야 일을 더 잘 할 수 있어요.", "eng": "You have to rest a bit to work better." },
+                    { "kor": "연습을 해야 노래를 잘 해요.", "eng": "You have to practice to sing well." }
+                ]
+            },
+            {
+                "term": "어제 본 드라마",
+                "mainDef": "The drama I watched yesterday.",
+                "variants": ["어제 본 드라마"],
+                "subDefs": [
+                    { "subTerm": "• 보다", "subDef": "To watch." },
+                    { "subTerm": "• -ㄴ/은", "subDef": "Used to turn a past-tense verb into an \"adjective-ish\" phrase that describes the following noun." },
+                    { "subTerm": "• 드라마", "subDef": "Drama." }
+                ],
+                "examples": [
+                    { "kor": "어제 본 드라마가 정말 재미있었어요.", "eng": "The drama I watched yesterday was really fun." },
+                    { "kor": "이것은 내가 읽은 책이에요.", "eng": "This is the book I read." }
+                ]
+            },
+            {
+                "term": "주인공",
+                "mainDef": "Protagonist; main character.",
+                "variants": ["주인공"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "이 영화의 주인공은 누구예요?", "eng": "Who is the main character of this movie?" },
+                    { "kor": "저는 드라마 주인공처럼 살고 싶어요.", "eng": "I want to live like a drama protagonist." }
+                ]
+            },
+            {
+                "term": "거 봐요",
+                "mainDef": "See? / I told you so.",
+                "variants": ["거 봐요"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "거 봐요, 내가 맞았죠?", "eng": "See? I was right, wasn't I?" },
+                    { "kor": "거 봐요, 비가 온다고 했잖아요.", "eng": "See? I told you it would rain." }
+                ]
+            },
+            {
+                "term": "기억 못 하잖아요",
+                "mainDef": "You don't remember, you know.",
+                "variants": ["기억 못 하잖아요"],
+                "subDefs": [
+                    { "subTerm": "• 기억하다", "subDef": "To remember." },
+                    { "subTerm": "• -잖아요", "subDef": "Used to remind the listener of shared or obvious information." }
+                ],
+                "examples": [
+                    { "kor": "우리는 돈이 없잖아요.", "eng": "We don't have money, you know." },
+                    { "kor": "벌써 밥을 먹었잖아요.", "eng": "You already ate, didn't you?" }
+                ]
+            },
+            {
+                "term": "처럼",
+                "mainDef": "Like; as.",
+                "variants": ["처럼", "영화처럼"],
+                "subDefs": [
+                    { "subTerm": "• 영화처럼", "subDef": "Like a movie." }
+                ],
+                "examples": [
+                    { "kor": "너는 천사처럼 착해요.", "eng": "You are kind like an angel." },
+                    { "kor": "우리 가족처럼 지내요.", "eng": "Let's live like family." }
+                ]
+            },
+            {
+                "term": "몰입하다",
+                "mainDef": "To be immersed; to get absorbed.",
+                "variants": ["몰입하다", "몰입해서"],
+                "subDefs": [
+                    { "subTerm": "• 몰입해서 보다", "subDef": "To watch with immersion." }
+                ],
+                "examples": [
+                    { "kor": "영화에 너무 몰입해서 울었어요.", "eng": "I was so immersed in the movie that I cried." },
+                    { "kor": "공부에 몰입하면 시간이 빨리 가요.", "eng": "If you get absorbed in studying, time flies." }
+                ]
+            },
+            {
+                "term": "완전히",
+                "mainDef": "Completely; fully.",
+                "variants": ["완전히"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "병이 완전히 나았어요.", "eng": "I am completely cured." },
+                    { "kor": "그 사람은 완전히 달라졌어요.", "eng": "That person has completely changed." }
+                ]
+            },
+            {
+                "term": "집중하다",
+                "mainDef": "To concentrate; to focus.",
+                "variants": ["집중하다"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "수업 시간에 집중하세요.", "eng": "Please concentrate during class." },
+                    { "kor": "시끄러워서 일에 집중할 수 없어요.", "eng": "I can't focus on work because it's noisy." }
+                ]
+            },
+            {
+                "term": "-한테",
+                "mainDef": "To (someone) - colloquial particle.",
+                "variants": ["한테", "친구들한테"],
+                "subDefs": [
+                    { "subTerm": "• 친구들한테", "subDef": "To friends." }
+                ],
+                "examples": [
+                    { "kor": "친구한테 선물을 줬어요.", "eng": "I gave a gift to my friend." },
+                    { "kor": "선생님한테 물어보세요.", "eng": "Please ask the teacher." }
+                ]
+            },
+            {
+                "term": "스포일러 당하다",
+                "mainDef": "To be spoiled (get a spoiler).",
+                "variants": ["스포일러 당하다", "스포일러 당했어요"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "인터넷에서 스포일러 당했어요.", "eng": "I got spoiled on the internet." },
+                    { "kor": "스포일러 당하기 싫어서 뉴스를 안 봐요.", "eng": "I don't watch the news because I don't want to get spoiled." }
+                ]
+            },
+            {
+                "term": "미리",
+                "mainDef": "In advance; beforehand.",
+                "variants": ["미리"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "표를 미리 예매했어요.", "eng": "I booked the ticket in advance." },
+                    { "kor": "오기 전에 미리 연락해 주세요.", "eng": "Please contact me in advance before coming." }
+                ]
+            },
+            {
+                "term": "완결되다",
+                "mainDef": "To be completed; to be finished (for series).",
+                "variants": ["완결되다", "완결될"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "이 웹툰은 곧 완결돼요.", "eng": "This webtoon will be finished soon." },
+                    { "kor": "완결된 드라마만 봐요.", "eng": "I only watch completed dramas." }
+                ]
+            },
+            {
+                "term": "-ㄹ/을 때까지",
+                "mainDef": "Until...",
+                "variants": ["때까지", "완결될 때까지"],
+                "subDefs": [
+                    { "subTerm": "• 완결될 때까지", "subDef": "Until it is completed." }
+                ],
+                "examples": [
+                    { "kor": "성공할 때까지 포기하지 마세요.", "eng": "Don't give up until you succeed." },
+                    { "kor": "친구가 올 때까지 기다릴 거예요.", "eng": "I will wait until my friend comes." }
+                ]
+            },
+            {
+                "term": "끝나다",
+                "mainDef": "To end; to finish.",
+                "variants": ["끝나다", "끝나요"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "수업이 언제 끝나요?", "eng": "When does the class end?" },
+                    { "kor": "영화가 끝난 후에 밥을 먹었어요.", "eng": "We ate after the movie ended." }
+                ]
+            },
+            {
+                "term": "친구를 버리는 사람",
+                "mainDef": "A person who abandons their friend.",
+                "variants": ["친구를 버리는 사람"],
+                "subDefs": [
+                    { "subTerm": "• 버리다", "subDef": "To throw away; to abandon." },
+                    { "subTerm": "• -는", "subDef": "Noun-modifying ending (present tense)." }
+                ],
+                "examples": [
+                    { "kor": "쓰레기를 아무데나 버리는 사람은 나빠요.", "eng": "A person who throws trash anywhere is bad." },
+                    { "kor": "가족을 버리는 사람은 없어요.", "eng": "No one abandons their family." }
+                ]
+            },
+            {
+                "term": "-에게",
+                "mainDef": "To (someone) - particle.",
+                "variants": ["에게", "저에게"],
+                "subDefs": [
+                    { "subTerm": "• 저에게", "subDef": "To me." }
+                ],
+                "examples": [
+                    { "kor": "부모님에게 편지를 썼어요.", "eng": "I wrote a letter to my parents." },
+                    { "kor": "그 책을 저에게 주세요.", "eng": "Please give that book to me." }
+                ]
+            },
+            {
+                "term": "A 보다 B",
+                "mainDef": "B rather than A; B more than A.",
+                "variants": ["보다", "친구보다 드라마"],
+                "subDefs": [
+                    { "subTerm": "• 친구보다 드라마", "subDef": "Drama rather than friends / Drama more than friends." }
+                ],
+                "examples": [
+                    { "kor": "저는 커피보다 차를 더 좋아해요.", "eng": "I like tea more than coffee." },
+                    { "kor": "말보다 행동이 중요해요.", "eng": "Actions are more important than words." }
+                ]
+            },
+            {
+                "term": "원래",
+                "mainDef": "Originally; actually; by nature.",
+                "variants": ["원래"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "원래는 안 가려고 했어요.", "eng": "Originally, I wasn't going to go." },
+                    { "kor": "그 사람은 원래 착해요.", "eng": "That person is naturally kind." }
+                ]
+            },
+            {
+                "term": "처음부터",
+                "mainDef": "From the beginning.",
+                "variants": ["처음부터"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "처음부터 다시 시작해요.", "eng": "Let's start over from the beginning." },
+                    { "kor": "처음부터 끝까지 다 봤어요.", "eng": "I watched it all from beginning to end." }
+                ]
+            },
+            {
+                "term": "인생",
+                "mainDef": "Life.",
+                "variants": ["인생"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "인생은 즐거워요.", "eng": "Life is enjoyable." },
+                    { "kor": "이것이 제 인생 영화예요.", "eng": "This is the movie of my life (best movie ever)." }
+                ]
+            },
+            {
+                "term": "혼자 사는 거예요",
+                "mainDef": "You live alone / It's about living alone.",
+                "variants": ["혼자 사는 거예요"],
+                "subDefs": [
+                    { "subTerm": "• 살다", "subDef": "To live." },
+                    { "subTerm": "• -는 거예요", "subDef": "It is that... (explaining a fact)." }
+                ],
+                "examples": [
+                    { "kor": "저는 지금 혼자 살고 있어요.", "eng": "I am living alone right now." },
+                    { "kor": "인생은 결국 혼자 사는 거예요.", "eng": "Life is ultimately about living alone." }
+                ]
+            },
+            {
+                "term": "시즌",
+                "mainDef": "Season.",
+                "variants": ["시즌"],
+                "subDefs": [
+                    { "subTerm": "• 드라마 시즌", "subDef": "Drama season." },
+                    { "subTerm": "• 마지막 시즌", "subDef": "Final season." }
+                ],
+                "examples": [
+                    { "kor": "이 드라마는 시즌 2가 재미있어요.", "eng": "Season 2 of this drama is fun." },
+                    { "kor": "다음 시즌을 기다리고 있어요.", "eng": "I am waiting for the next season." }
+                ]
+            },
+            {
+                "term": "애피소드가 50개면",
+                "mainDef": "If there are 50 episodes.",
+                "variants": ["애피소드가 50개면"],
+                "subDefs": [
+                    { "subTerm": "• 에피소드 *개", "subDef": "Counter for episodes." },
+                    { "subTerm": "• -면", "subDef": "\"If…\"; conditional particle." }
+                ],
+                "examples": [
+                    { "kor": "사과가 10개면 충분해요.", "eng": "If there are 10 apples, that's enough." },
+                    { "kor": "돈이 많으면 여행을 가고 싶어요.", "eng": "If I have a lot of money, I want to go on a trip." }
+                ]
+            },
+            {
+                "term": "몰아보기 부담스러울 수도 있어요",
+                "mainDef": "It might be burdensome to binge-watch.",
+                "variants": ["몰아보기 부담스러울 수도 있어요"],
+                "subDefs": [
+                    { "subTerm": "• 몰아보다", "subDef": "To binge-watch." },
+                    { "subTerm": "• -기 부담스럽다", "subDef": "To be burdensome to do (something)." },
+                    { "subTerm": "• -ㄹ/을 수도 있다", "subDef": "\"Might…\" or \"could…\"; used to express possibility." }
+                ],
+                "examples": [
+                    { "kor": "혼자 가기 부담스러울 수도 있어요.", "eng": "It might be uncomfortable to go alone." },
+                    { "kor": "가격이 비싸서 부담스러울 수도 있어요.", "eng": "It might be burdensome because the price is high." }
+                ]
+            },
+            {
+                "term": "부담스럽다",
+                "mainDef": "To be burdensome; uncomfortable; pressure-inducing.",
+                "variants": ["부담스럽다", "부담스러워요"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "그 사람의 부탁이 좀 부담스러워요.", "eng": "That person's request is a bit burdensome." },
+                    { "kor": "너무 비싼 선물은 부담스러워요.", "eng": "Too expensive gifts are burdensome." }
+                ]
+            },
+            {
+                "term": "휴가를 쓰다",
+                "mainDef": "To take a vacation; to use leave.",
+                "variants": ["휴가를 쓰다", "휴가를 써요"],
+                "subDefs": [
+                    { "subTerm": "• 휴가", "subDef": "Vacation; leave." }
+                ],
+                "examples": [
+                    { "kor": "다음 주에 휴가를 쓸 거예요.", "eng": "I'm going to take a vacation next week." },
+                    { "kor": "아파서 휴가를 썼어요.", "eng": "I took leave because I was sick." }
+                ]
+            },
+            {
+                "term": "진심이에요",
+                "mainDef": "I'm serious; I mean it.",
+                "variants": ["진심이에요"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "저는 농담이 아니라 진심이에요.", "eng": "I'm not joking, I'm serious." },
+                    { "kor": "당신을 사랑하는 마음은 진심이에요.", "eng": "My love for you is sincere." }
+                ]
+            },
+            {
+                "term": "오늘 배운 단어",
+                "mainDef": "Words learned today.",
+                "variants": ["오늘 배운 단어"],
+                "subDefs": [
+                    { "subTerm": "• 배우다", "subDef": "To learn." },
+                    { "subTerm": "• -ㄴ/은", "subDef": "Used to turn a past-tense verb into an \"adjective-ish\" phrase that describes the following noun." },
+                    { "subTerm": "• 단어", "subDef": "Word; vocabulary." }
+                ],
+                "examples": [
+                    { "kor": "오늘 배운 단어를 복습하세요.", "eng": "Please review the words learned today." },
+                    { "kor": "배운 단어를 사용해서 문장을 만드세요.", "eng": "Make sentences using the words you learned." }
+                ]
+            },
+            {
+                "term": "정리해 봐요",
+                "mainDef": "Let's summarize; Let's organize.",
+                "variants": ["정리해 봐요"],
+                "subDefs": [
+                    { "subTerm": "• 정리하다", "subDef": "To summarize; to organize." },
+                    { "subTerm": "• -아/어 보다", "subDef": "\"Let's try…\"; suggestion." }
+                ],
+                "examples": [
+                    { "kor": "방을 깨끗하게 정리해 봐요.", "eng": "Let's try organizing the room cleanly." },
+                    { "kor": "오늘 회의 내용을 정리해 봐요.", "eng": "Let's summarize today's meeting content." }
+                ]
+            },
+            {
+                "term": "여기까지 할까요?",
+                "mainDef": "Shall we stop here?",
+                "variants": ["여기까지 할까요"],
+                "subDefs": [
+                    { "subTerm": "• 여기까지 하다", "subDef": "To do up to here." },
+                    { "subTerm": "• -까요?", "subDef": "\"Shall we…?\"; suggestion." }
+                ],
+                "examples": [
+                    { "kor": "오늘은 피곤하니까 여기까지 할까요?", "eng": "Since we are tired today, shall we stop here?" },
+                    { "kor": "수업은 여기까지 할까요?", "eng": "Shall we end the class here?" }
+                ]
+            },
+            {
+                "term": "농담",
+                "mainDef": "Joke.",
+                "variants": ["농담"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "그것은 그냥 농담이었어요.", "eng": "That was just a joke." },
+                    { "kor": "농담을 잘 하는 사람을 좋아해요.", "eng": "I like people who are good at telling jokes." }
+                ]
+            },
+            {
+                "term": "1편",
+                "mainDef": "Episode 1; One episode.",
+                "variants": ["1편"],
+                "subDefs": [],
+                "examples": [
+                    { "kor": "영화 1편이 더 재미있어요.", "eng": "The first movie is more fun." },
+                    { "kor": "오늘 드라마 1편을 봤어요.", "eng": "I watched one episode of the drama today." }
+                ]
+            },
+            {
+                "term": "알려주세요",
+                "mainDef": "Please let me know; Please tell me.",
+                "variants": ["알려주세요"],
+                "subDefs": [
+                    { "subTerm": "• 알리다", "subDef": "To inform; to tell." },
+                    { "subTerm": "• -아/어 주세요", "subDef": "Please do (for me)." }
+                ],
+                "examples": [
+                    { "kor": "도착하면 알려주세요.", "eng": "Please let me know when you arrive." },
+                    { "kor": "전화번호를 알려주세요.", "eng": "Please tell me your phone number." }
+                ]
+            },
+            {
+                "term": "드라마 보러 갈게요",
+                "mainDef": "I'll go watch a drama.",
+                "variants": ["드라마 보러 갈게요"],
+                "subDefs": [
+                    { "subTerm": "• -러 가다", "subDef": "To go to do (purpose)." },
+                    { "subTerm": "• -게요", "subDef": "\"I will…\"; expressing intention." }
+                ],
+                "examples": [
+                    { "kor": "친구를 만나러 갈게요.", "eng": "I will go to meet a friend." },
+                    { "kor": "밥 먹으러 갈게요.", "eng": "I will go to eat." }
+                ]
+            }
         ];
-
+        
         const QUIZ_LIST = [
-            { id: 1, parts: ["우디는 어제 <왕자의 게임>을 24시간 동안 \"", "\" 봤어요."], answer: "몰아서", bank: ["몰아서", "나눠서", "잠자코", "대충"], eng_parts: ["Woody ", " watched 'Game of Princes' for 24 hours yesterday."], eng_answer: "binge", eng_hint: "(동사) 한 번에 다 하다. (Verb) To do all at once.", eng_explanation: "Correct. '몰아서 보다' means 'to binge-watch' (watch all at once). Woody watched it for 24 hours straight.", eng_wrongAnswerExplanations: { "나눠서": "'나눠서' means 'dividedly/separately', which is the opposite of binge-watching.", "잠자코": "'잠자코' means 'without saying a word/quietly'.", "대충": "'대충' means 'roughly/carelessly'." } },
-            { id: 2, parts: ["유나는 우디에게 건강을 위해 드라마를 \"", "\" 한 편씩 보라고 조언했어요."], answer: "매주", bank: ["매주", "매년", "평생", "몰아서"], eng_parts: ["Yuna advised Woody to watch one episode ", " for his health."], eng_answer: "every week", eng_hint: "(명사) 일주일마다. (Noun) Each week.", eng_explanation: "Correct. Yuna suggested watching '매주' (every week) instead of binge-watching.", eng_wrongAnswerExplanations: { "매년": "'매년' means 'every year'.", "평생": "'평생' means 'lifetime'.", "몰아서": "'몰아서' means 'all at once', which is what Yuna told him NOT to do." } },
-            { id: 3, parts: ["우디는 다음 내용이 너무 \"", "\" 잠을 못 잔다고 했어요."], answer: "궁금해서", bank: ["궁금해서", "심심해서", "싫어서", "무서워서"], eng_parts: ["Woody said he can't sleep because he is so \"", "\" about the next part."], eng_answer: "curious", eng_hint: "(형용사) 알고 싶다. (Adjective) Want to know.", eng_explanation: "Correct. '궁금하다' means 'to be curious'. Woody stays awake because he wants to know what happens next.", eng_wrongAnswerExplanations: { "심심해서": "'심심해서' means 'because he is bored'.", "싫어서": "'싫어서' means 'because he dislikes it'.", "무서워서": "'무서워서' means 'because he is scared'." } },
-            { id: 4, parts: ["유나는 다음 내용이 뭘지 \"", "\" 보는 것도 좋다고 말했어요."], answer: "기대해", bank: ["기대해", "포기해", "무시해", "걱정해"], eng_parts: ["Yuna said it's also good to \"", "\" what the next part will be."], eng_answer: "look forward to", eng_hint: "(동사) 좋은 일을 기다리다. (Verb) To wait for something good.", eng_explanation: "Correct. '기대하다' means 'to look forward to' or 'to anticipate'. Yuna suggests enjoying the anticipation.", eng_wrongAnswerExplanations: { "포기해": "'포기해' means 'give up'.", "무시해": "'무시해' means 'ignore'.", "걱정해": "'걱정해' means 'worry'." } },
-            { id: 5, parts: ["우디는 일주일이 지나면 앞의 내용을 다 \"", "\"라고 말했어요."], answer: "잊어버려요", bank: ["잊어버려요", "기억해요", "만들어요", "좋아해요"], eng_parts: ["Woody said that if a week passes, he \"", "\" all the previous content."], eng_answer: "forgets", eng_hint: "(동사) 기억하지 못하다. (Verb) To not remember.", eng_explanation: "Correct. '잊어버리다' means 'to forget'. Woody claims he forgets everything after a week.", eng_wrongAnswerExplanations: { "기억해요": "'기억해요' means 'remember', which is the opposite.", "만들어요": "'만들어요' means 'make'.", "좋아해요": "'좋아해요' means 'like'." } },
-            { id: 6, parts: ["우디는 영화처럼 드라마에 깊게 \"", "\" 보고 싶어 해요."], answer: "몰입해서", bank: ["몰입해서", "방해해서", "이사해서", "사랑해서"], eng_parts: ["Woody wants to watch dramas while deeply \"", "\" like a movie."], eng_answer: "immersed", eng_hint: "(동사) 완전히 집중하다. (Verb) To completely focus.", eng_explanation: "Correct. '몰입하다' means 'to be immersed' or 'to focus deeply'. He wants the movie-like experience.", eng_wrongAnswerExplanations: { "방해해서": "'방해해서' means 'by disturbing/interrupting'.", "이사해서": "'이사해서' means 'by moving house'.", "사랑해서": "'사랑해서' means 'because he loves'. While he loves the show, '몰입해서' describes *how* he watches." } },
-            { id: 7, parts: ["유나는 매주 보지 않으면 친구들에게 \"", "\"를 당할 수 있다고 했어요."], answer: "스포일러", bank: ["스포일러", "칭찬", "선물", "초대"], eng_parts: ["Yuna said if you don't watch weekly, you might get \"", "\" from friends."], eng_answer: "spoilers", eng_hint: "(명사) 내용을 미리 듣는 것. (Noun) Hearing the story in advance.", eng_explanation: "Correct. '스포일러 당하다' means 'to get spoiled'. Friends might reveal the plot if he falls behind.", eng_wrongAnswerExplanations: { "칭찬": "'칭찬' means 'compliment'.", "선물": "'선물' means 'gift'.", "초대": "'초대' means 'invitation'." } },
-            { id: 8, parts: ["유나는 우디 씨가 \"", "\" 친구가 없다고 농담했어요."], answer: "원래", bank: ["원래", "가끔", "방금", "아마도"], eng_parts: ["Yuna joked that Woody \"", "\" has no friends."], eng_answer: "originally", eng_hint: "(부사) 처음부터. (Adverb) From the beginning/by nature.", eng_explanation: "Correct. '원래' means 'originally' or 'from the start'. She jokes that he didn't have friends to begin with.", eng_wrongAnswerExplanations: { "가끔": "'가끔' means 'sometimes'.", "방금": "'방금' means 'just now'.", "아마도": "'아마도' means 'maybe'." } },
-            { id: 9, parts: ["에피소드가 50개나 되면, 한 번에 보기가 \"", "\" 수 있어요."], answer: "부담스러울", bank: ["부담스러울", "자랑스러울", "사랑스러울", "부드러울"], eng_parts: ["If there are 50 episodes, watching them all at once can be \"", ".\""], eng_answer: "burdensome", eng_hint: "(형용사) 마음이 무겁거나 어렵다. (Adjective) Feeling heavy or difficult.", eng_explanation: "Correct. '부담스럽다' means 'burdensome' or 'overwhelming'. Watching 50 episodes at once is hard.", eng_wrongAnswerExplanations: { "자랑스러울": "'자랑스러울' means 'proud'.", "사랑스러울": "'사랑스러울' means 'lovely'.", "부드러울": "'부드러울' means 'soft'." } },
-            { id: 10, parts: ["우디는 드라마를 다 보기 위해 회사에 \"", "\"를 쓰겠다고 했어요."], answer: "휴가", bank: ["휴가", "편지", "일기", "돈"], eng_parts: ["Woody said he would submit a \"", "\" to work to watch the whole drama."], eng_answer: "leave/vacation", eng_hint: "(명사) 일을 쉬는 것. (Noun) Taking time off work.", eng_explanation: "Correct. '휴가를 쓰다' means 'to take a vacation/leave'. He wants to take days off to watch TV.", eng_wrongAnswerExplanations: { "편지": "'편지' means 'letter'.", "일기": "'일기' means 'diary'.", "돈": "'돈' means 'money'." } }
+            { 
+                id: 1, 
+                parts: ["우디는 어제 <왕자의 게임>을 24시간 동안 \"", "\" 봤어요."], 
+                answer: "몰아서", 
+                bank: ["몰아서", "나눠서", "잠자코", "대충"], 
+                eng_parts: ["Woody ", " watched 'Game of Princes' for 24 hours yesterday."], 
+                eng_answer: "binge", 
+                eng_hint: "(동사) 한 번에 다 하다. (Verb) To do all at once.", 
+                eng_explanation: "Correct. '몰아서 보다' means 'to binge-watch' (watch all at once). Woody watched it for 24 hours straight.", 
+                eng_wrongAnswerExplanations: { 
+                    "나눠서": "'나눠서' means 'dividedly/separately', which is the opposite of binge-watching.", 
+                    "잠자코": "'잠자코' means 'without saying a word/quietly'.", 
+                    "대충": "'대충' means 'roughly/carelessly'." 
+                } 
+            },
+            { 
+                id: 2, 
+                parts: ["유나는 우디에게 건강을 위해 드라마를 \"", "\" 한 편씩 보라고 조언했어요."], 
+                answer: "매주", 
+                bank: ["매주", "매년", "평생", "몰아서"], 
+                eng_parts: ["Yuna advised Woody to watch one episode ", " for his health."], 
+                eng_answer: "every week", 
+                eng_hint: "(명사) 일주일마다. (Noun) Each week.", 
+                eng_explanation: "Correct. Yuna suggested watching '매주' (every week) instead of binge-watching.", 
+                eng_wrongAnswerExplanations: { 
+                    "매년": "'매년' means 'every year'.", 
+                    "평생": "'평생' means 'lifetime'.", 
+                    "몰아서": "'몰아서' means 'all at once', which is what Yuna told him NOT to do." 
+                } 
+            },
+            { 
+                id: 3, 
+                parts: ["우디는 다음 내용이 너무 \"", "\" 잠을 못 잔다고 했어요."], 
+                answer: "궁금해서", 
+                bank: ["궁금해서", "심심해서", "싫어서", "무서워서"], 
+                eng_parts: ["Woody said he can't sleep because he is so \"", "\" about the next part."], 
+                eng_answer: "curious", 
+                eng_hint: "(형용사) 알고 싶다. (Adjective) Want to know.", 
+                eng_explanation: "Correct. '궁금하다' means 'to be curious'. Woody stays awake because he wants to know what happens next.", 
+                eng_wrongAnswerExplanations: { 
+                    "심심해서": "'심심해서' means 'because he is bored'.", 
+                    "싫어서": "'싫어서' means 'because he dislikes it'.", 
+                    "무서워서": "'무서워서' means 'because he is scared'." 
+                } 
+            },
+            { 
+                id: 4, 
+                parts: ["유나는 다음 내용이 뭘지 \"", "\" 보는 것도 좋다고 말했어요."], 
+                answer: "기대해", 
+                bank: ["기대해", "포기해", "무시해", "걱정해"], 
+                eng_parts: ["Yuna said it's also good to \"", "\" what the next part will be."], 
+                eng_answer: "look forward to", 
+                eng_hint: "(동사) 좋은 일을 기다리다. (Verb) To wait for something good.", 
+                eng_explanation: "Correct. '기대하다' means 'to look forward to' or 'to anticipate'. Yuna suggests enjoying the anticipation.", 
+                eng_wrongAnswerExplanations: { 
+                    "포기해": "'포기해' means 'give up'.", 
+                    "무시해": "'무시해' means 'ignore'.", 
+                    "걱정해": "'걱정해' means 'worry'." 
+                } 
+            },
+            { 
+                id: 5, 
+                parts: ["우디는 일주일이 지나면 앞의 내용을 다 \"", "\"라고 말했어요."], 
+                answer: "잊어버려요", 
+                bank: ["잊어버려요", "기억해요", "만들어요", "좋아해요"], 
+                eng_parts: ["Woody said that if a week passes, he \"", "\" all the previous content."], 
+                eng_answer: "forgets", 
+                eng_hint: "(동사) 기억하지 못하다. (Verb) To not remember.", 
+                eng_explanation: "Correct. '잊어버리다' means 'to forget'. Woody claims he forgets everything after a week.", 
+                eng_wrongAnswerExplanations: { 
+                    "기억해요": "'기억해요' means 'remember', which is the opposite.", 
+                    "만들어요": "'만들어요' means 'make'.", 
+                    "좋아해요": "'좋아해요' means 'like'." 
+                } 
+            },
+            { 
+                id: 6, 
+                parts: ["우디는 영화처럼 드라마에 깊게 \"", "\" 보고 싶어 해요."], 
+                answer: "몰입해서", 
+                bank: ["몰입해서", "방해해서", "이사해서", "사랑해서"], 
+                eng_parts: ["Woody wants to watch dramas while deeply \"", "\" like a movie."], 
+                eng_answer: "immersed", 
+                eng_hint: "(동사) 완전히 집중하다. (Verb) To completely focus.", 
+                eng_explanation: "Correct. '몰입하다' means 'to be immersed' or 'to focus deeply'. He wants the movie-like experience.", 
+                eng_wrongAnswerExplanations: { 
+                    "방해해서": "'방해해서' means 'by disturbing/interrupting'.", 
+                    "이사해서": "'이사해서' means 'by moving house'.", 
+                    "사랑해서": "'사랑해서' means 'because he loves'. While he loves the show, '몰입해서' describes *how* he watches." 
+                } 
+            },
+            { 
+                id: 7, 
+                parts: ["유나는 매주 보지 않으면 친구들에게 \"", "\"를 당할 수 있다고 했어요."], 
+                answer: "스포일러", 
+                bank: ["스포일러", "칭찬", "선물", "초대"], 
+                eng_parts: ["Yuna said if you don't watch weekly, you might get \"", "\" from friends."], 
+                eng_answer: "spoilers", 
+                eng_hint: "(명사) 내용을 미리 듣는 것. (Noun) Hearing the story in advance.", 
+                eng_explanation: "Correct. '스포일러 당하다' means 'to get spoiled'. Friends might reveal the plot if he falls behind.", 
+                eng_wrongAnswerExplanations: { 
+                    "칭찬": "'칭찬' means 'compliment'.", 
+                    "선물": "'선물' means 'gift'.", 
+                    "초대": "'초대' means 'invitation'." 
+                } 
+            },
+            { 
+                id: 8, 
+                parts: ["유나는 우디 씨가 \"", "\" 친구가 없다고 농담했어요."], 
+                answer: "원래", 
+                bank: ["원래", "가끔", "방금", "아마도"], 
+                eng_parts: ["Yuna joked that Woody \"", "\" has no friends."], 
+                eng_answer: "originally", 
+                eng_hint: "(부사) 처음부터. (Adverb) From the beginning/by nature.", 
+                eng_explanation: "Correct. '원래' means 'originally' or 'from the start'. She jokes that he didn't have friends to begin with.", 
+                eng_wrongAnswerExplanations: { 
+                    "가끔": "'가끔' means 'sometimes'.", 
+                    "방금": "'방금' means 'just now'.", 
+                    "아마도": "'아마도' means 'maybe'." 
+                } 
+            },
+            { 
+                id: 9, 
+                parts: ["에피소드가 50개나 되면, 한 번에 보기가 \"", "\" 수 있어요."], 
+                answer: "부담스러울", 
+                bank: ["부담스러울", "자랑스러울", "사랑스러울", "부드러울"], 
+                eng_parts: ["If there are 50 episodes, watching them all at once can be \"", ".\""], 
+                eng_answer: "burdensome", 
+                eng_hint: "(형용사) 마음이 무겁거나 어렵다. (Adjective) Feeling heavy or difficult.", 
+                eng_explanation: "Correct. '부담스럽다' means 'burdensome' or 'overwhelming'. Watching 50 episodes at once is hard.", 
+                eng_wrongAnswerExplanations: { 
+                    "자랑스러울": "'자랑스러울' means 'proud'.", 
+                    "사랑스러울": "'사랑스러울' means 'lovely'.", 
+                    "부드러울": "'부드러울' means 'soft'." 
+                } 
+            },
+            { 
+                id: 10, 
+                parts: ["우디는 드라마를 다 보기 위해 회사에 \"", "\"를 쓰겠다고 했어요."], 
+                answer: "휴가", 
+                bank: ["휴가", "편지", "일기", "돈"], 
+                eng_parts: ["Woody said he would submit a \"", "\" to work to watch the whole drama."], 
+                eng_answer: "leave/vacation", 
+                eng_hint: "(명사) 일을 쉬는 것. (Noun) Taking time off work.", 
+                eng_explanation: "Correct. '휴가를 쓰다' means 'to take a vacation/leave'. He wants to take days off to watch TV.", 
+                eng_wrongAnswerExplanations: { 
+                    "편지": "'편지' means 'letter'.", 
+                    "일기": "'일기' means 'diary'.", 
+                    "돈": "'돈' means 'money'." 
+                } 
+            } 
         ];
 
         const SCRIPT_DATA = [
@@ -249,7 +940,7 @@
             { id: 's32', speaker: '유나', kor: '하지만 매주 안 보면 친구들한테 스포일러 당할 수 있어요.', time: [118.759, 124.089], eng: "But if you don't watch weekly, you can get spoiled by friends." },
             { id: 's33', speaker: '유나', kor: "'스포일러 당하다’는 ‘내용을 미리 듣다’라는 뜻이에요.", time: [124.166, 129.313], eng: "'Get spoiled' means 'to hear the content in advance'." },
             { id: 's34', speaker: '우디', kor: '괜찮아요! 저는 드라마가 완결될 때까지 인터넷도 안 보고, 친구도 안 만날 거예요.', time: [129.800, 136.140], eng: "It's okay! I won't check the internet or meet friends until the drama is completed." },
-            { id: 's35', speaker: '우디', kor: "'완결되다’는 '이야기가 다 끝나다’라는 뜻이에요.", time: [136.297, 140.470], eng: "Id. 'Completed' means 'the story is finished'." },
+            { id: 's35', speaker: '우디', kor: "'완결되다’는 '이야기가 다 끝나다’라는 뜻이에요.", time: [136.297, 140.470], eng: "'Completed' means 'the story is finished'." },
             { id: 's36', speaker: '유나', kor: '드라마 때문에 친구를 버리는 사람이 어디 있어요?', time: [140.623, 144.744], eng: "Who abandons their friends because of a drama?" },
             { id: 's37', speaker: '우디', kor: '저에게 친구보다 드라마가 중요해요!', time: [144.885, 147.792], eng: "Drama is more important to me than friends!" },
             { id: 's38', speaker: '유나', kor: '아 맞다, 우디 씨는 원래 친구가 없죠! 😆', time: [148.368, 153.610], eng: "Ah right, Woody, you originally don't have friends! 😆" },
@@ -297,14 +988,12 @@
             ];
             
             const getLevelColor = (code) => {
-                // If direct match exists in LEVEL_STYLES, use it. Otherwise fallback to base.
                 if (LEVEL_STYLES[code]) return LEVEL_STYLES[code];
                 const base = code.substring(0, 2);
                 return LEVEL_STYLES[base] || "bg-gray-50 text-gray-600 border-gray-100";
             };
 
             const currentStyle = getLevelColor(userLevel);
-            // Extract the background class (e.g., "bg-orange-50") and text class (e.g., "text-orange-600")
             const bgClass = currentStyle.split(' ')[0];
             const textClass = currentStyle.split(' ')[1];
 
@@ -397,13 +1086,10 @@
             );
         };
 
-        // --- View Components ---
-
+        // ... existing view components (HomeView, LearnView, VocabView, QuizView) ...
         const HomeView = ({ setActiveTab, progress, userLevel }) => {
             const completedCount = Object.values(progress).filter(val => val === true || (typeof val === 'number' && val > 0)).length;
             const percentage = Math.round((completedCount / 4) * 100);
-
-            // 퀴즈 진행률 표시 로직
             const quizScoreDisplay = typeof progress.quiz === 'number' ? `${progress.quiz}%` : (progress.quiz ? '100%' : '0%');
             const quizColorClass = (progress.quiz === 100 || progress.quiz === true) ? 'text-green-600' : 'text-gray-900';
             const quizIconBg = (progress.quiz === 100 || progress.quiz === true) ? 'bg-green-100 text-green-600' : 'bg-purple-50 text-purple-600';
@@ -435,7 +1121,6 @@
                         <div className="md:w-7/12 p-8 md:p-10 flex flex-col justify-center">
                             <div className="flex items-center gap-2 mb-4">
                                 <span className="px-2 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold rounded uppercase tracking-wide">Listening</span>
-                                {/* Level Badge Applied */}
                                 <LevelBadge levelCode={userLevel} />
                             </div>
                             
@@ -462,7 +1147,6 @@
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Card 1: Vocabulary */}
                         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between h-40 hover:shadow-md transition-shadow">
                             <div className="flex justify-between items-start">
                                 <div>
@@ -485,7 +1169,6 @@
                             </button>
                         </div>
 
-                        {/* Card 2: Quiz Progress */}
                         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between h-40 hover:shadow-md transition-shadow">
                             <div className="flex justify-between items-start">
                                 <div>
@@ -510,7 +1193,6 @@
                             </button>
                         </div>
 
-                        {/* Card 3: Food For Thought -> Modified to Gemini AI Feedback */}
                         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between h-40 hover:shadow-md transition-shadow">
                             <div className="flex justify-between items-start">
                                 <div>
@@ -520,7 +1202,7 @@
                                     </div>
                                     <div className="flex flex-col mt-3">
                                         <a 
-                                            href="https://gemini.google.com/share/a49ed6236fad" 
+                                            href="https://gemini.google.com/share/9a1a9be9481b" 
                                             target="_blank" 
                                             rel="noopener noreferrer" 
                                             className="text-xl font-black text-blue-600 hover:text-blue-800 hover:underline transition-colors block leading-tight"
@@ -548,6 +1230,7 @@
         };
 
         const LearnView = ({ updateProgress }) => {
+            // ... LearnView implementation from the latest provided file ...
             const [player, setPlayer] = useState(null);
             const playerRef = useRef(null); 
             const [currentTime, setCurrentTime] = useState(0);
@@ -557,11 +1240,8 @@
             const [playbackRate, setPlaybackRate] = useState(1.0);
             const [translations, setTranslations] = useState({});
             const [popup, setPopup] = useState({ show: false, fixed: false, data: null, x: 0, y: 0 });
-            
-            // New state for vocab highlight
             const [activeVocabTerm, setActiveVocabTerm] = useState(null);
             const sidebarVocabRefs = useRef({});
-
             const scriptRefs = useRef({});
             const intervalRef = useRef(null);
 
@@ -662,13 +1342,11 @@
                 const rect = e.target.getBoundingClientRect();
                 setPopup({
                     show: true,
-                    fixed: false, // 호버 시에는 fixed: false (간단히 보이기)
+                    fixed: false,
                     data: wordData,
                     x: rect.left + rect.width / 2, 
                     y: rect.bottom
                 });
-
-                // Scroll sidebar if open
                 if (showVocab) {
                     setActiveVocabTerm(wordData.term);
                     scrollToVocab(wordData.term);
@@ -682,7 +1360,6 @@
 
             const handleVocabClick = (e, wordData) => {
                 e.stopPropagation(); 
-                // Popup logic
                 if (popup.fixed && popup.data && popup.data.term === wordData.term) {
                     setPopup(prev => ({ ...prev, show: false, fixed: false }));
                     return;
@@ -690,15 +1367,12 @@
                 const rect = e.target.getBoundingClientRect();
                 setPopup({
                     show: true,
-                    fixed: true, // 클릭 시에는 fixed: true (자세히 보이기)
+                    fixed: true,
                     data: wordData,
                     x: rect.left + rect.width / 2,
                     y: rect.bottom
                 });
-
-                // Sidebar logic
                 if (!showVocab) {
-                   // Do NOT open sidebar. Only show popup.
                 } else {
                     setActiveVocabTerm(wordData.term);
                     scrollToVocab(wordData.term);
@@ -708,21 +1382,24 @@
             const renderTextWithVocab = (text) => {
                 let parts = [text];
                 VOCAB_DATA.forEach(vocab => {
-                    const nextParts = [];
-                    parts.forEach(part => {
-                        if (typeof part === 'string') {
-                            const split = part.split(vocab.term);
-                            split.forEach((s, i) => {
-                                if (s) nextParts.push(s);
-                                if (i < split.length - 1) {
-                                    nextParts.push({ isVocab: true, ...vocab });
-                                }
-                            });
-                        } else {
-                            nextParts.push(part);
-                        }
+                    const searchTerms = vocab.variants && vocab.variants.length > 0 ? vocab.variants : [vocab.term];
+                    searchTerms.forEach(searchTerm => {
+                        const nextParts = [];
+                        parts.forEach(part => {
+                            if (typeof part === 'string') {
+                                const split = part.split(searchTerm);
+                                split.forEach((s, i) => {
+                                    if (s) nextParts.push(s);
+                                    if (i < split.length - 1) {
+                                        nextParts.push({ isVocab: true, ...vocab, displayText: searchTerm });
+                                    }
+                                });
+                            } else {
+                                nextParts.push(part);
+                            }
+                        });
+                        parts = nextParts;
                     });
-                    parts = nextParts;
                 });
 
                 return parts.map((part, index) => {
@@ -740,7 +1417,7 @@
                             onMouseLeave={handleVocabLeave}
                             onClick={(e) => handleVocabClick(e, part)}
                         >
-                            {part.term}
+                            {part.displayText || part.term}
                         </span>
                     );
                 });
@@ -748,7 +1425,6 @@
 
             return (
                 <div className="flex h-[calc(100vh-4rem)] gap-4 animate-fade-in overflow-hidden relative">
-                    {/* Vocab Popup */}
                     {popup.show && popup.data && createPortal(
                         <div 
                             className="fixed z-[9999] bg-white rounded-xl shadow-xl border border-gray-200 p-4 w-72 animate-fade-in pointer-events-none"
@@ -762,8 +1438,6 @@
                                 <h3 className="text-lg font-black text-gray-900">{popup.data.term}</h3>
                             </div>
                             <p className="text-sm text-gray-700 font-medium mb-3 leading-snug">{popup.data.mainDef}</p>
-                            
-                            {/* 예문 대신 관련 표현(subTerms) 표시: 클릭 시(fixed=true)에만 보임 */}
                             {popup.fixed && popup.data.subDefs && popup.data.subDefs.length > 0 && (
                                 <div className="space-y-1 mt-2">
                                     {popup.data.subDefs.map((sub, idx) => (
@@ -774,20 +1448,17 @@
                                     ))}
                                 </div>
                             )}
-                            
                             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white border-l border-t border-gray-200 rotate-45"></div>
                         </div>,
                         document.body
                     )}
 
                     <div className={`bg-black rounded-xl overflow-hidden shadow-lg transition-all duration-300 ${showVocab ? 'w-5/12' : 'flex-1'}`}>
-                           <div id="youtube-player" className="w-full h-full"></div>
+                         <div id="youtube-player" className="w-full h-full"></div>
                     </div>
 
                     <div className={`flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm transition-all duration-300 ${showVocab ? 'w-4/12' : 'w-5/12'}`}>
-                        {/* --- Controls Header (Modified for Responsive Layout) --- */}
                         <div className="flex flex-col xl:flex-row items-center justify-between p-3 border-b border-gray-100 bg-white rounded-t-xl z-10 gap-3 xl:gap-0">
-                            {/* Speed Control Group */}
                             <div className="w-full xl:w-auto flex items-center justify-between gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl shadow-sm">
                                 <div className="flex items-center gap-1.5 text-gray-600 shrink-0">
                                     <SpeedSolidIcon className="w-5 h-5 text-gray-500" />
@@ -807,7 +1478,6 @@
                                 </div>
                             </div>
 
-                            {/* Right Group: Auto Scroll & Vocabulary */}
                             <div className="w-full xl:w-auto flex items-center justify-between xl:justify-end gap-3">
                                 <div className="flex items-center gap-2 cursor-pointer group" onClick={() => setAutoScroll(!autoScroll)}>
                                     <div className={`w-9 h-5 rounded-full relative transition-colors duration-200 ease-in-out ${autoScroll ? 'bg-green-500' : 'bg-gray-300'}`}>
@@ -901,12 +1571,11 @@
                                         </div>
                                         <p className="text-sm text-gray-600 mb-3 font-medium">{word.mainDef}</p>
                                         
-                                        {/* 예문 대신 관련 표현(subDefs) 표시로 변경 */}
                                         {word.subDefs && word.subDefs.length > 0 && (
                                             <div className="space-y-2 bg-blue-50 p-2.5 rounded-lg border border-blue-100">
                                                 {word.subDefs.map((sub, i) => (
                                                     <div key={i}>
-                                                        <p className="text-xs text-blue-900 font-bold leading-snug">{sub.subTerm.replace('• ', '')}</p>
+                                                        <p className="text-xs text-blue-900 font-bold leading-snug">{sub.subTerm}</p>
                                                         <p className="text-[10px] text-blue-700">{sub.subDef}</p>
                                                     </div>
                                                 ))}
@@ -921,10 +1590,9 @@
             );
         };
 
-        // 새로 추가된 VocabCard 컴포넌트
         const VocabCard = ({ word }) => {
+            // ... VocabCard implementation ...
             const [isOpen, setIsOpen] = useState(false);
-
             return (
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all h-full flex flex-col">
                     <div className="flex justify-between mb-4">
@@ -933,7 +1601,6 @@
                     <div className="pl-4 border-l-4 border-green-500 mb-6">
                         <p className="text-lg text-gray-600 font-medium">{word.mainDef}</p>
                     </div>
-                    
                     <div className="flex-1 flex flex-col">
                         <button 
                             onClick={() => setIsOpen(!isOpen)}
@@ -947,7 +1614,6 @@
                             </div>
                             <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${isOpen ? 'rotate-90' : ''}`} />
                         </button>
-
                         <div 
                             className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}
                         >
@@ -960,7 +1626,6 @@
                                 ))}
                             </div>
                         </div>
-
                         {word.subDefs && word.subDefs.length > 0 && (
                             <div className="bg-blue-50 rounded-xl p-5 space-y-2 border border-blue-100 mt-4">
                                 <h4 className="font-bold text-blue-800 text-xs mb-2 flex items-center gap-2 uppercase tracking-wider">
@@ -969,7 +1634,7 @@
                                 </h4>
                                 {word.subDefs.map((sub, i) => (
                                     <div key={i} className="flex flex-col">
-                                        <span className="font-bold text-blue-900 text-sm">{sub.subTerm.replace('• ', '')}</span>
+                                        <span className="font-bold text-blue-900 text-sm">{sub.subTerm}</span>
                                         <span className="text-xs text-blue-600">{sub.subDef}</span>
                                     </div>
                                 ))}
@@ -981,10 +1646,7 @@
         };
 
         const VocabView = ({ updateProgress }) => {
-            useEffect(() => {
-                updateProgress('vocab');
-            }, []);
-
+            useEffect(() => { updateProgress('vocab'); }, []);
             return (
             <div className="max-w-5xl animate-fade-in mx-auto">
                 <div className="flex items-center gap-4 mb-8">
@@ -996,7 +1658,6 @@
                         <span className="text-base text-gray-500 font-medium">Key Vocabulary</span>
                     </div>
                 </div>
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {VOCAB_DATA.map((word, idx) => (
                         <VocabCard key={idx} word={word} />
@@ -1005,79 +1666,31 @@
             </div>
             );
         };
-        
-        // --- QUIZ COMPONENT LOGIC ---
+
         const QuizView = ({ updateProgress }) => {
+            // ... QuizView implementation ...
             const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
             const [answers, setAnswers] = useState({});
-            const [firstAttempts, setFirstAttempts] = useState({}); // { 0: true, 1: false, ... }
+            const [firstAttempts, setFirstAttempts] = useState({}); 
             const [showHint, setShowHint] = useState(false);
             const [showTranslation, setShowTranslation] = useState(false);
             const [isFinished, setIsFinished] = useState(false);
-            const [currentAttempt, setCurrentAttempt] = useState({}); // { 0: 1, 1: 3, ... }
-
             const currentQuestion = QUIZ_LIST[currentQuestionIndex];
-            const selectedAnswer = answers[currentQuestionIndex] || null; // 선택된 답변 텍스트
-            const isCorrect = selectedAnswer === currentQuestion.answer;
-            const isCurrentQuestionAnswered = !!selectedAnswer; // 답변을 시도한 적이 있는가?
-            const isAnsweredCorrectly = answers[currentQuestionIndex] === currentQuestion.answer; // 현재 정답을 맞혔는가?
-
-            // Use useMemo to shuffle options once per question
-            const shuffledBank = useMemo(() => {
-                const bank = [...currentQuestion.bank];
-                // Fisher-Yates shuffle
-                for (let i = bank.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [bank[i], bank[j]] = [bank[j], bank[i]];
-                }
-                return bank;
+            const shuffledOptions = useMemo(() => {
+                if (!currentQuestion) return [];
+                return [...currentQuestion.bank].sort(() => Math.random() - 0.5);
             }, [currentQuestion]);
-
-            // 선택된 답변에 대한 피드백 메시지 찾기
-            const getFeedback = (selected) => {
-                if (selected === currentQuestion.answer) {
-                    return {
-                        message: currentQuestion.eng_explanation,
-                        isCorrect: true
-                    };
-                } else {
-                    const wrongExplanation = currentQuestion.eng_wrongAnswerExplanations[selected] || "This is not the correct answer for this context. Please try again.";
-                    return {
-                        message: wrongExplanation,
-                        isCorrect: false
-                    };
-                }
-            };
-            
-            const selectedFeedback = isCurrentQuestionAnswered ? getFeedback(selectedAnswer) : null;
+            const selectedOption = answers[currentQuestionIndex] || null;
+            const isCorrect = selectedOption === currentQuestion.answer;
 
             const handleOptionClick = (option) => {
-                if (isAnsweredCorrectly) return; // 이미 정답을 맞혔다면 시도 불가
-
-                const isFirstAttempt = firstAttempts[currentQuestionIndex] === undefined;
-                
-                // 첫 시도 기록: 정답 여부를 기록 (정답률 측정에 사용)
-                if (isFirstAttempt) {
-                    setFirstAttempts(prev => ({
-                        ...prev,
-                        [currentQuestionIndex]: option === currentQuestion.answer
-                    }));
+                if (answers[currentQuestionIndex] === currentQuestion.answer) return; 
+                if (firstAttempts[currentQuestionIndex] === undefined) {
+                    setFirstAttempts(prev => ({ ...prev, [currentQuestionIndex]: option === currentQuestion.answer }));
                 }
-                
-                // 시도 횟수 업데이트
-                setCurrentAttempt(prev => ({
-                    ...prev,
-                    [currentQuestionIndex]: (prev[currentQuestionIndex] || 0) + 1
-                }));
-
-                // 답변 기록
-                setAnswers(prev => ({
-                    ...prev,
-                    [currentQuestionIndex]: option
-                }));
+                setAnswers(prev => ({ ...prev, [currentQuestionIndex]: option }));
                 setShowHint(false); 
             };
-
             const handlePrev = () => {
                 if (currentQuestionIndex > 0) {
                     setCurrentQuestionIndex(prev => prev - 1);
@@ -1085,10 +1698,7 @@
                     setShowTranslation(false);
                 }
             };
-
             const handleNext = () => {
-                if (!isAnsweredCorrectly) return; // 정답을 맞힌 경우에만 다음으로 이동
-
                 if (currentQuestionIndex < QUIZ_LIST.length - 1) {
                     setCurrentQuestionIndex(prev => prev + 1);
                     setShowHint(false);
@@ -1097,30 +1707,23 @@
                     finishQuiz();
                 }
             };
-
             const finishQuiz = () => {
                 setIsFinished(true);
                 const totalQuestions = QUIZ_LIST.length;
-                // 첫 시도가 true인 경우만 카운트
-                const correctCount = Object.values(firstAttempts).filter(isCorrect => isCorrect === true).length; 
+                const correctCount = Object.values(firstAttempts).filter(isCorrect => isCorrect === true).length;
                 const finalScore = Math.round((correctCount / totalQuestions) * 100);
                 updateProgress('quiz', finalScore);
             };
-
             const handleRetry = () => {
                 setCurrentQuestionIndex(0);
                 setAnswers({});
                 setFirstAttempts({});
-                setCurrentAttempt({});
                 setIsFinished(false);
                 updateProgress('quiz', 0); 
             };
-            
+
             if (isFinished) {
-                const totalQuestions = QUIZ_LIST.length;
                 const correctCount = Object.values(firstAttempts).filter(isCorrect => isCorrect === true).length;
-                const finalScore = Math.round((correctCount / totalQuestions) * 100);
-                
                 return (
                     <div className="max-w-4xl animate-fade-in mx-auto text-center py-10">
                         <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-10">
@@ -1128,18 +1731,9 @@
                                 <QuizIcon className="w-10 h-10" />
                             </div>
                             <h2 className="text-3xl font-black text-gray-900 mb-2">퀴즈 완료!</h2>
-                            <p className="text-gray-500 mb-8">
-                                **총 {totalQuestions}문제 중 {correctCount}문제**를 첫 시도에 맞혔습니다.
-                            </p>
-                            <div className="text-5xl font-black text-purple-600 mb-10">
-                                {finalScore}%
-                            </div>
-                            <button 
-                                onClick={handleRetry}
-                                className="px-8 py-3 rounded-xl bg-purple-600 text-white font-bold hover:bg-purple-700 transition-colors shadow-md"
-                            >
-                                다시 풀기 (Try Again)
-                            </button>
+                            <p className="text-gray-500 mb-8">총 {QUIZ_LIST.length}문제 중 {correctCount}문제를 한 번에 맞혔습니다.</p>
+                            <div className="text-5xl font-black text-purple-600 mb-10">{Math.round((correctCount / QUIZ_LIST.length) * 100)}%</div>
+                            <button onClick={handleRetry} className="px-8 py-3 rounded-xl bg-purple-600 text-white font-bold hover:bg-purple-700 transition-colors">다시 풀기 (Try Again)</button>
                         </div>
                     </div>
                 );
@@ -1156,159 +1750,86 @@
                             <span className="text-base text-gray-500 font-medium">Comprehension Quiz ({currentQuestionIndex + 1}/{QUIZ_LIST.length})</span>
                         </div>
                     </div>
-
                     <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
                         <p className="font-bold text-gray-800">다음 빈칸에 알맞은 말을 고르세요.</p>
                         <p className="text-gray-500 text-sm">Choose the correct word for the blank.</p>
                     </div>
-
                     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-2">
                         <div className="flex items-start gap-3 p-4">
                             <span className="bg-purple-100 text-purple-700 font-black rounded-lg px-2 py-1 text-sm shrink-0">Q{currentQuestion.id}</span>
                             <div className="flex flex-col">
-                                <h3 className="font-bold text-gray-900 text-lg leading-snug">
-                                    {/* 한국어 퀴즈 문장 */}
+                                <h3 className="font-bold text-gray-900 text-lg leading-snug">빈칸에 알맞은 말을 선택해서 문장을 완성하세요.</h3>
+                                <p className="text-gray-500 font-medium text-sm mt-1">Select the correct word to complete the sentence.</p>
+                            </div>
+                        </div>
+                        <div className="bg-gray-50 rounded-xl p-4 mb-4 mx-1">
+                            <div>
+                                <div className="flex items-center flex-wrap gap-2 leading-relaxed">
                                     <span className="text-xl font-bold text-gray-900">{currentQuestion.parts[0]}</span>
-                                    <div className={`px-4 py-1 rounded-md font-bold text-xl transition-all duration-300 min-w-[80px] inline-block text-center border-b-2 mx-2 
-                                        ${isCurrentQuestionAnswered
-                                            ? (isAnsweredCorrectly
-                                                ? 'bg-[#dcfce7] text-green-700 border-green-500'
+                                    <div className={`px-4 py-1 rounded-md font-bold text-xl transition-all duration-300 min-w-[80px] text-center border-b-2 
+                                        ${selectedOption 
+                                            ? (isCorrect 
+                                                ? 'bg-[#dcfce7] text-green-700 border-green-500' 
                                                 : 'bg-[#fee2e2] text-red-700 border-red-500')
                                             : (showHint ? 'bg-[#fef08a] text-yellow-800 border-yellow-400' : 'bg-[#fef08a] text-transparent border-yellow-400 select-none')
                                         }`}
                                     >
-                                        {isCurrentQuestionAnswered
-                                            ? selectedAnswer
-                                            : (showHint ? `[ ${currentQuestion.answer} ]` : "___")
-                                        }
+                                        {selectedOption ? selectedOption : (showHint ? `[ ${currentQuestion.eng_hint} ]` : "___")}
                                     </div>
-                                    <span className="text-xl font-bold text-gray-900">{currentQuestion.parts[1]}</span>
-                                    {isCurrentQuestionAnswered && (
-                                        <span className={`ml-2 text-lg ${isAnsweredCorrectly ? 'text-green-600' : 'text-red-600'}`}>
-                                            {isAnsweredCorrectly ? '✓' : '✗'}
-                                        </span>
-                                    )}
-                                </h3>
-                                
-                                {/* 영어 번역 (숨겨진 상태) */}
+                                    <span className="text-xl font-bold text-gray-900">{currentQuestion.parts[1]}
+                                        {selectedOption && (
+                                            <span className={`ml-2 text-lg ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>{isCorrect ? '✓' : '✗'}</span>
+                                        )}
+                                    </span>
+                                </div>
                                 {showTranslation && (
-                                    <p className="text-gray-500 font-medium text-sm mt-3 animate-fade-in">
-                                        {currentQuestion.eng_parts[0]} **({currentQuestion.eng_answer})** {currentQuestion.eng_parts[1]}
-                                    </p>
+                                    <div className="mt-4 pt-4 border-t border-gray-200 text-gray-500 italic text-sm animate-fade-in font-medium">
+                                        {currentQuestion.eng_parts[0]} {currentQuestion.eng_answer} {currentQuestion.eng_parts[1]}
+                                    </div>
                                 )}
                             </div>
                         </div>
-
-                        {/* 힌트 및 번역 버튼 */}
-                        <div className="flex gap-2 mb-4 px-6 pt-2">
-                            <button 
-                                onClick={() => { setShowHint(!showHint); }}
-                                disabled={isAnsweredCorrectly}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${isAnsweredCorrectly ? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400' : (showHint ? 'bg-yellow-200 text-yellow-800 ring-2 ring-yellow-400' : 'bg-[#fef08a] text-yellow-800 hover:bg-yellow-200')}`}
-                            >
-                                힌트 (Hint)
-                            </button>
-                            <button 
-                                onClick={() => setShowTranslation(!showTranslation)}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${showTranslation ? 'bg-gray-300 text-gray-800 ring-2 ring-gray-400' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
-                            >
-                                번역 (Translation)
-                            </button>
-                            {showHint && !isAnsweredCorrectly && (
-                                <span className="text-xs text-yellow-700 font-medium self-center animate-fade-in pl-3">
-                                    {currentQuestion.eng_hint}
-                                </span>
-                            )}
+                        <div className="flex gap-2 mb-4 px-2">
+                            <button onClick={() => { setShowHint(!showHint); }} disabled={isCorrect} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${isCorrect ? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400' : (showHint ? 'bg-yellow-200 text-yellow-800 ring-2 ring-yellow-400' : 'bg-[#fef08a] text-yellow-800 hover:bg-yellow-200')}`}>힌트 (Hint)</button>
+                            <button onClick={() => setShowTranslation(!showTranslation)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${showTranslation ? 'bg-gray-300 text-gray-800 ring-2 ring-gray-400' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}>번역 (Translation)</button>
                         </div>
-                        
-                        {/* 보기 옵션 */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 px-2">
-                            {shuffledBank.map((option, idx) => {
-                                const isSelected = selectedAnswer === option;
+                            {shuffledOptions.map((option, idx) => {
+                                const isSelected = selectedOption === option;
                                 let btnClass = "bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300";
-                                let isCorrectOption = option === currentQuestion.answer;
-                                
-                                if (isAnsweredCorrectly) {
-                                    if (isCorrectOption) {
-                                        // 정답을 맞혔을 때 정답 옵션을 강조
-                                        btnClass = "bg-green-500 border-green-600 text-white shadow-md ring-2 ring-green-200 cursor-default";
+                                if (isSelected) {
+                                    if (option === currentQuestion.answer) {
+                                        btnClass = "bg-green-500 border-green-600 text-white shadow-md ring-2 ring-green-200";
                                     } else {
-                                        // 정답 외 옵션은 비활성화
-                                        btnClass = "bg-gray-50 border-gray-200 text-gray-400 cursor-default opacity-60";
-                                    }
-                                } else if (isCurrentQuestionAnswered) {
-                                    if (isSelected) {
-                                        // 오답 선택 시 빨간색 강조
                                         btnClass = "bg-red-500 border-red-600 text-white shadow-md ring-2 ring-red-200";
-                                    } else {
-                                        // 다른 옵션들은 계속 선택 가능
-                                        btnClass = "bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300";
                                     }
+                                } else if (isCorrect) {
+                                    btnClass = "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed";
                                 }
-                                // 선택된 상태가 아니라면, 첫 시도가 있었는지 여부와 관계없이 클릭 가능해야 함
-                                
                                 return (
-                                    <button
-                                        key={idx}
-                                        onClick={() => handleOptionClick(option)}
-                                        disabled={isAnsweredCorrectly} // 정답을 맞힌 경우만 비활성화
-                                        className={`py-3 px-4 rounded-xl border font-bold text-base transition-all duration-200 ${btnClass}`}
-                                    >
-                                        {option}
-                                    </button>
+                                    <button key={idx} onClick={() => handleOptionClick(option)} disabled={isCorrect} className={`py-3 px-4 rounded-xl border font-bold text-base transition-all duration-200 ${btnClass}`}>{option}</button>
                                 );
                             })}
                         </div>
-
-                        {/* 피드백 메시지 */}
-                        {isCurrentQuestionAnswered && selectedFeedback && (
+                        {selectedOption && (
                             <div className="p-4 rounded-xl border-l-4 mb-4 mx-2 animate-fade-in transition-all bg-[#f8fafc] border-gray-300">
-                                <div className={`mt-4 rounded-xl p-6 border animate-fade-in ${selectedFeedback.isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                                    <h4 className={`font-bold text-sm mb-1 ${selectedFeedback.isCorrect ? 'text-green-800' : 'text-red-800'}`}>
-                                        {selectedFeedback.isCorrect ? 'Correct! 🎉' : 'Try again. 😢'}
-                                    </h4>
-                                    <p className={`text-sm italic ${selectedFeedback.isCorrect ? 'text-green-700' : 'text-red-700'}`}>
-                                        {selectedFeedback.message}
-                                    </p>
+                                <div className={`${isCorrect ? 'bg-[#f0fdf4] border-green-500' : 'bg-[#fef2f2] border-red-500'} p-4 rounded-lg border-l-4`}>
+                                    <h4 className={`font-bold text-sm mb-1 ${isCorrect ? 'text-green-800' : 'text-red-800'}`}>{isCorrect ? 'Correct!' : 'Try again.'}</h4>
+                                    <p className={`text-sm italic ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>{isCorrect ? currentQuestion.eng_explanation : currentQuestion.eng_wrongAnswerExplanations[selectedOption]}</p>
                                 </div>
                             </div>
                         )}
-
                         <div className="flex justify-between items-center mt-4 border-t border-gray-100 pt-4 px-2 pb-2">
-                            <button
-                                onClick={handlePrev}
-                                disabled={currentQuestionIndex === 0}
-                                className={`px-6 py-1 rounded-xl font-bold flex items-center gap-2 transition-colors ${
-                                    currentQuestionIndex === 0 
-                                    ? 'text-gray-300 cursor-not-allowed' 
-                                    : 'text-gray-600 hover:bg-gray-100'
-                                }`}
-                            >
-                                <span className="text-lg">←</span>
-                                <span className="text-xs">이전 문제 (Prev)</span>
-                            </button>
-
-                            <button 
-                                onClick={handleNext}
-                                disabled={!isAnsweredCorrectly} // 정답을 맞힌 경우에만 다음으로 이동 가능
-                                className={`px-6 py-1 rounded-xl font-bold transition-colors flex items-center gap-2 shadow-md ${
-                                    !isAnsweredCorrectly
-                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                    : 'bg-gray-900 text-white hover:bg-black'
-                                }`}
-                            >
-                                <span className="text-xs">{currentQuestionIndex < QUIZ_LIST.length - 1 ? '다음 문제 (Next)' : '결과 보기 (Finish)'}</span>
-                                <span className="text-lg">→</span>
-                            </button>
+                            <button onClick={handlePrev} disabled={currentQuestionIndex === 0} className={`px-6 py-1 rounded-xl font-bold flex items-center gap-2 transition-colors ${currentQuestionIndex === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}><span className="text-lg">←</span><span className="text-xs">이전 문제 (Prev)</span></button>
+                            <button onClick={handleNext} disabled={!isCorrect} className={`px-6 py-1 rounded-xl font-bold flex items-center gap-2 shadow-md transition-colors ${!isCorrect ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gray-900 text-white hover:bg-black'}`}><span className="text-xs">{currentQuestionIndex < QUIZ_LIST.length - 1 ? '다음 문제 (Next)' : '결과 보기 (Finish)'}</span><span className="text-lg">→</span></button>
                         </div>
                     </div>
                 </div>
             );
         };
-        // --- END OF NEW QUIZ COMPONENT LOGIC ---
 
         const callGeminiWithBackoff = async (payload) => {
-            const apiKey = ""; // Runtime provided
+            const apiKey = ""; 
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
             const delays = [1000, 2000, 4000, 8000, 16000];
             
@@ -1334,6 +1855,7 @@
         };
 
         const FeedbackSection = ({ value, onChange, placeholder, question, keyPhrases }) => {
+            // ... FeedbackSection implementation ...
             const [feedback, setFeedback] = useState(null);
             const [isLoading, setIsLoading] = useState(false);
             const [error, setError] = useState(null);
@@ -1391,79 +1913,20 @@ Your response MUST be a JSON object with the specified schema.`;
                     {keyPhrases}
                     <div>
                         <h4 className="font-bold text-gray-900 mb-3 text-base">핵심 표현을 사용해서 질문에 대답해 보세요.</h4>
-                        <textarea 
-                            value={value} 
-                            onChange={onChange} 
-                            placeholder={placeholder}
-                            className="w-full p-4 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none min-h-[120px] resize-none text-base text-gray-800 placeholder-gray-400 mb-3"
-                        ></textarea>
-                        
-                        <button
-                            onClick={checkSentence}
-                            disabled={!value.trim() || isLoading}
-                            className={`flex items-center gap-2 px-5 py-[6px] text-[12px] leading-[12px] rounded-xl font-bold transition-all shadow-sm ${
-                                !value.trim() || isLoading
-                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-md'
-                            }`}
-                        >
-                            {isLoading ? (
-                                <>
-                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                    <span>분석 중... (Analyzing)</span>
-                                </>
-                            ) : (
-                                <>
-                                    <SparklesIcon className="w-5 h-5" />
-                                    <span>AI Feedback (피드백 받기)</span>
-                                </>
-                            )}
+                        <textarea value={value} onChange={onChange} placeholder={placeholder} className="w-full p-4 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none min-h-[120px] resize-none text-base text-gray-800 placeholder-gray-400 mb-3"></textarea>
+                        <button onClick={checkSentence} disabled={!value.trim() || isLoading} className={`flex items-center gap-2 px-5 py-[6px] text-[12px] leading-[12px] rounded-xl font-bold transition-all shadow-sm ${!value.trim() || isLoading ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-md'}`}>
+                            {isLoading ? (<><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>분석 중... (Analyzing)</span></>) : (<><SparklesIcon className="w-5 h-5" /><span>AI Feedback (피드백 받기)</span></>)}
                         </button>
-
-                        {error && (
-                            <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-xl border border-red-200 text-sm font-medium animate-fade-in">
-                                {error}
-                            </div>
-                        )}
-
+                        {error && <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-xl border border-red-200 text-sm font-medium animate-fade-in">{error}</div>}
                         {feedback && (
                             <div className={`mt-6 rounded-2xl p-6 border animate-fade-in ${feedback.is_correct ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
-                                <div className="flex items-center gap-2 mb-4">
-                                    <span className="text-2xl">🤖</span>
-                                    <h4 className="font-extrabold text-gray-900 text-lg">AI Tutor Feedback</h4>
-                                </div>
-                                
-                                <div className="mb-4">
-                                    <span className={`font-black text-sm px-3 py-1 rounded-full bg-white border shadow-sm ${feedback.is_correct ? 'text-green-600 border-green-200' : 'text-yellow-600 border-yellow-200'}`}>
-                                        {feedback.is_correct ? '🎉 Great Job!' : '⚠️ Needs Improvement'}
-                                    </span>
-                                </div>
-
+                                <div className="flex items-center gap-2 mb-4"><span className="text-2xl">🤖</span><h4 className="font-extrabold text-gray-900 text-lg">AI Tutor Feedback</h4></div>
+                                <div className="mb-4"><span className={`font-black text-sm px-3 py-1 rounded-full bg-white border shadow-sm ${feedback.is_correct ? 'text-green-600 border-green-200' : 'text-yellow-600 border-yellow-200'}`}>{feedback.is_correct ? '🎉 Great Job!' : '⚠️ Needs Improvement'}</span></div>
                                 <div className="space-y-4">
-                                    {feedback.feedback_message_eng && (
-                                        <div className="flex flex-col sm:flex-row gap-1 sm:gap-4">
-                                            <span className="font-bold text-gray-500 text-sm sm:w-24 shrink-0">Feedback</span>
-                                            <p className="text-gray-800 text-sm font-medium leading-relaxed">{feedback.feedback_message_eng}</p>
-                                        </div>
-                                    )}
-                                    {feedback.explanation_eng && (
-                                        <div className="flex flex-col sm:flex-row gap-1 sm:gap-4">
-                                            <span className="font-bold text-gray-500 text-sm sm:w-24 shrink-0">Explanation</span>
-                                            <p className="text-gray-800 text-sm font-medium leading-relaxed">{feedback.explanation_eng}</p>
-                                        </div>
-                                    )}
-                                    {feedback.corrected_sentence && (
-                                        <div className="flex flex-col sm:flex-row gap-1 sm:gap-4">
-                                            <span className="font-bold text-gray-500 text-sm sm:w-24 shrink-0">Correction</span>
-                                            <p className="text-gray-900 text-lg font-black leading-relaxed">{feedback.corrected_sentence}</p>
-                                        </div>
-                                    )}
-                                    {!feedback.is_relevant && (
-                                        <div className="flex flex-col sm:flex-row gap-1 sm:gap-4">
-                                            <span className="font-bold text-gray-500 text-sm sm:w-24 shrink-0">Relevance</span>
-                                            <p className="text-gray-800 text-sm font-medium leading-relaxed">{feedback.relevance_feedback_eng || "This answer doesn't seem relevant to the question."}</p>
-                                        </div>
-                                    )}
+                                    {feedback.feedback_message_eng && (<div className="flex flex-col sm:flex-row gap-1 sm:gap-4"><span className="font-bold text-gray-500 text-sm sm:w-24 shrink-0">Feedback</span><p className="text-gray-800 text-sm font-medium leading-relaxed">{feedback.feedback_message_eng}</p></div>)}
+                                    {feedback.explanation_eng && (<div className="flex flex-col sm:flex-row gap-1 sm:gap-4"><span className="font-bold text-gray-500 text-sm sm:w-24 shrink-0">Explanation</span><p className="text-gray-800 text-sm font-medium leading-relaxed">{feedback.explanation_eng}</p></div>)}
+                                    {feedback.corrected_sentence && (<div className="flex flex-col sm:flex-row gap-1 sm:gap-4"><span className="font-bold text-gray-500 text-sm sm:w-24 shrink-0">Correction</span><p className="text-gray-900 text-lg font-black leading-relaxed">{feedback.corrected_sentence}</p></div>)}
+                                    {!feedback.is_relevant && (<div className="flex flex-col sm:flex-row gap-1 sm:gap-4"><span className="font-bold text-gray-500 text-sm sm:w-24 shrink-0">Relevance</span><p className="text-gray-800 text-sm font-medium leading-relaxed">{feedback.relevance_feedback_eng || "This answer doesn't seem relevant to the question."}</p></div>)}
                                 </div>
                             </div>
                         )}
@@ -1472,33 +1935,121 @@ Your response MUST be a JSON object with the specified schema.`;
             );
         };
 
+        const DISCUSS_DATA = [
+            {
+                id: 1,
+                question: "1. 여러분은 원래 드라마를 자주 봐요? 최근에 무슨 드라마를 봤어요?",
+                translation: "Do you usually watch dramas? What drama did you watch recently?",
+                vocab: [
+                    { kor: "원래", eng: "Usually / Originally" },
+                    { kor: "최근에", eng: "Recently" }
+                ]
+            },
+            {
+                id: 2,
+                question: "2. 여러분은 드라마를 어떻게 봐요? 몰아서 봐요? 매주 한 편씩 봐요?",
+                translation: "How do you watch dramas? Do you binge-watch? Or do you watch one episode every week?",
+                vocab: [
+                    { kor: "몰아서 보다", eng: "To binge-watch" },
+                    { kor: "매주 한 편씩 보다", eng: "To watch one episode every week" }
+                ]
+            },
+            {
+                id: 3,
+                question: "3. 드라마를 보고 나서 일주일이 지났어요. 여러분은 드라마 내용을 잘 기억해요? 아니면 다 잊어버려요?",
+                translation: "A week has passed after watching a drama. Do you remember the plot well? Or do you forget everything?",
+                vocab: [
+                    { kor: "지나다", eng: "To pass (time)" },
+                    { kor: "내용", eng: "Content / Plot" },
+                    { kor: "기억하다", eng: "To remember" },
+                    { kor: "잊어버리다", eng: "To forget" }
+                ]
+            },
+            {
+                id: 4,
+                question: "4. 유나는 일주일 동안 다음 편을 기대해 보라고 했어요. 여러분도 다음 편을 기다리는 동안 보통 뭐해요?",
+                translation: "Yuna said to look forward to the next episode for a week. What do you usually do while waiting for the next episode?",
+                vocab: [
+                    { kor: "일주일 동안", eng: "For a week" },
+                    { kor: "다음 편", eng: "The next episode" },
+                    { kor: "기대하다", eng: "To look forward to" },
+                    { kor: "기다리다", eng: "To wait" }
+                ]
+            },
+            {
+                id: 5,
+                question: "5. 우디는 다음 이야기가 너무 궁금해서 잠을 못 잤어요. 여러분도 그런 적이 있어요?",
+                translation: "Woody couldn't sleep because he was so curious about the next story. Have you ever had that experience?",
+                vocab: [
+                    { kor: "궁금하다", eng: "To be curious" },
+                    { kor: "잠을 못 자다", eng: "Cannot sleep" },
+                    { kor: "그런 적이 있다", eng: "Have had such an experience" }
+                ]
+            },
+            {
+                id: 6,
+                question: "6. 여러분은 2시간 30분 영화를 볼 때 잘 몰입해요? 아니면 50분 드라마를 볼 때 잘 몰입해요?",
+                translation: "Do you get immersed well when watching a 2.5-hour movie? Or do you get immersed well when watching a 50-minute drama?",
+                vocab: [
+                    { kor: "-ㄹ/을 때", eng: "When (doing something)" },
+                    { kor: "몰입하다", eng: "To be immersed" }
+                ]
+            },
+            {
+                id: 7,
+                question: "7. 우디는 드라마가 완결될 때까지 안 봐요. 여러분은 완결을 기다릴 수 있어요?",
+                translation: "Woody doesn't watch a drama until it is completed. Can you wait for the completion?",
+                vocab: [
+                    { kor: "완결되다", eng: "To be completed" },
+                    { kor: "-ㄹ/을 때까지", eng: "Until..." },
+                    { kor: "기다리다", eng: "To wait" }
+                ]
+            },
+            {
+                id: 8,
+                question: "8. 드라마의 에피소드가 너무 많으면 그 드라마를 보기 부담스러워요?",
+                translation: "If a drama has too many episodes, is it burdensome to watch that drama?",
+                vocab: [
+                    { kor: "에피소드", eng: "Episode" },
+                    { kor: "-기 부담스럽다", eng: "To be burdensome to (do)" }
+                ]
+            },
+            {
+                id: 9,
+                question: "9. 여러분은 스포일러를 당한 적이 있어요? 누구한테 당했어요? 그때 기분이 어땠어요?",
+                translation: "Have you ever been spoiled? Who spoiled it for you? How did you feel then?",
+                vocab: [
+                    { kor: "스포일러를 당하다", eng: "To get spoiled" },
+                    { kor: "-ㄴ/은 적이 있다", eng: "Have ever done (experience)" },
+                    { kor: "누구한테", eng: "From whom / To whom" },
+                    { kor: "기분", eng: "Mood / Feeling" }
+                ]
+            },
+            {
+                id: 10,
+                question: "10. 여러분도 우디처럼 드라마 때문에 휴가를 쓰고 싶어요?",
+                translation: "Do you also want to take a vacation because of a drama like Woody?",
+                vocab: [
+                    { kor: "처럼", eng: "Like / As" },
+                    { kor: "휴가를 쓰다", eng: "To take a vacation" }
+                ]
+            }
+        ];
+
         const DiscussView = ({ updateProgress }) => {
-            
-            // 질문별 답변 상태 관리를 위한 훅
-            const [answerStates, setAnswerStates] = useState(
-                DISCUSSION_QUESTIONS.reduce((acc, q) => {
-                    acc[q.num] = { text: '', showTranslation: false };
-                    return acc;
-                }, {})
-            );
-            
-            const handleTextChange = (num, newText) => {
-                setAnswerStates(prev => ({
-                    ...prev,
-                    [num]: { ...prev[num], text: newText }
-                }));
-                updateProgress('discuss', true); // 토론 섹션을 완료로 표시
+            const [answers, setAnswers] = useState({});
+            const [visibleTranslations, setVisibleTranslations] = useState({});
+
+            const toggleTranslation = (id) => {
+                setVisibleTranslations(prev => ({ ...prev, [id]: !prev[id] }));
             };
-            
-            const toggleTranslation = (num) => {
-                setAnswerStates(prev => ({
-                    ...prev,
-                    [num]: { ...prev[num], showTranslation: !prev[num].showTranslation }
-                }));
+
+            const handleTextChange = (id, value) => {
+                setAnswers(prev => ({ ...prev, [id]: value }));
             };
-            
+
             return (
-                <div className="max-w-4xl mx-auto animate-fade-in">
+                <div className="max-w-4xl mx-auto animate-fade-in pb-20">
                     <div className="flex items-center gap-4 mb-8">
                         <div className="w-16 h-16 bg-[#EFF6FF] rounded-2xl flex items-center justify-center shrink-0">
                             <DiscussHeaderIcon className="w-10 h-10" />
@@ -1509,45 +2060,45 @@ Your response MUST be a JSON object with the specified schema.`;
                         </div>
                     </div>
                     
-                    <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-8 md:p-10 space-y-12">
-                        {DISCUSSION_QUESTIONS.map(q => (
-                            <div key={q.num} className={`pb-8 ${q.num < DISCUSSION_QUESTIONS.length ? 'border-b border-gray-100' : ''}`}>
+                    <div className="space-y-12">
+                        {DISCUSS_DATA.map((item) => (
+                            <div key={item.id} className="bg-white rounded-3xl border border-gray-200 shadow-sm p-8 md:p-10">
                                 <div className="mb-8">
-                                    <h3 className="text-xl font-bold text-gray-900 mb-2">{q.num}. {q.kor}</h3>
+                                    <h3 className="text-xl font-bold text-gray-900 mb-2 leading-relaxed">{item.question}</h3>
                                     
-                                    {answerStates[q.num].showTranslation && (
+                                    {visibleTranslations[item.id] && (
                                         <p className="text-gray-500 text-sm mb-3 animate-fade-in font-medium">
-                                            {q.eng}
+                                            {item.translation}
                                         </p>
                                     )}
 
                                     <button 
-                                        onClick={() => toggleTranslation(q.num)}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 ${answerStates[q.num].showTranslation ? 'bg-gray-200 text-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                        onClick={() => toggleTranslation(item.id)}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 ${visibleTranslations[item.id] ? 'bg-gray-200 text-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                                     >
                                         <TranslateIcon className="w-3 h-3" />
-                                        <span>{answerStates[q.num].showTranslation ? '번역 숨기기 (Hide)' : '번역 (Translation)'}</span>
+                                        <span>{visibleTranslations[item.id] ? '번역 숨기기 (Hide)' : '번역 (Translation)'}</span>
                                     </button>
                                 </div>
 
                                 <FeedbackSection 
-                                    question={`${q.num}. ${q.kor}`}
-                                    value={answerStates[q.num].text}
-                                    onChange={(e) => handleTextChange(q.num, e.target.value)}
+                                    question={item.question}
+                                    value={answers[item.id] || ''}
+                                    onChange={(e) => handleTextChange(item.id, e.target.value)}
                                     placeholder="여기에 답변을 입력하세요 (Type your response here)"
                                     keyPhrases={
-                                        <div className="mb-6 space-y-3">
+                                        <div className="mb-10 space-y-4">
                                             <div className="flex items-center gap-2">
                                                 <span className="text-red-500 text-lg">📍</span>
                                                 <h4 className="font-bold text-gray-900 text-lg">핵심 표현 (Essential phrases)</h4>
                                             </div>
 
-                                            <div className="flex flex-wrap gap-x-6 gap-y-2 pl-1">
-                                                {q.vocab.map((v, i) => (
-                                                    <div key={i} className="pl-4 border-l-4 border-green-500">
+                                            <div className="space-y-3 pl-1">
+                                                {item.vocab.map((v, idx) => (
+                                                    <div key={idx} className="pl-4 border-l-4 border-green-500">
                                                         <p className="text-gray-700">
-                                                            <span className="text-green-600 font-bold text-base mr-2">{v.term}:</span>
-                                                            <span className="text-sm">{v.meaning_eng}</span>
+                                                            <span className="text-green-600 font-bold text-lg mr-2">{v.kor}:</span>
+                                                            <span>{v.eng}</span>
                                                         </p>
                                                     </div>
                                                 ))}
@@ -1598,17 +2149,6 @@ Your response MUST be a JSON object with the specified schema.`;
                 setIsSidebarCollapsed(!isSidebarCollapsed);
             };
 
-            const renderMobileIcon = (tab) => {
-                switch(tab) {
-                    case 'home': return <HomeIcon className="w-6 h-6"/>;
-                    case 'learn': return <LearnIcon className="w-6 h-6"/>;
-                    case 'vocab': return <VocabIcon className="w-6 h-6"/>;
-                    case 'quiz': return <QuizIcon className="w-6 h-6"/>;
-                    case 'discuss': return <DiscussIcon className="w-6 h-6"/>;
-                    default: return null;
-                }
-            };
-
             const renderContent = () => {
                 switch(activeTab) {
                     case 'home': return <HomeView setActiveTab={setActiveTab} progress={progress} userLevel={userLevel} />;
@@ -1635,7 +2175,7 @@ Your response MUST be a JSON object with the specified schema.`;
                         <main className="flex-1 p-4 overflow-hidden flex flex-col">{renderContent()}</main>
                     </div>
                     <nav className="md:hidden fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-around p-3 z-50">
-                        {['home','learn','vocab','quiz','discuss'].map(t=><button key={t} onClick={()=>setActiveTab(t)} className={`p-2 rounded-lg ${activeTab===t?'text-green-600 bg-green-50':'text-gray-400'}`}>{renderMobileIcon(t)}</button>)}
+                        {['home','learn','vocab','quiz','discuss'].map(t=><button key={t} onClick={()=>setActiveTab(t)} className={`p-2 rounded-lg ${activeTab===t?'text-green-600 bg-green-50':'text-gray-400'}`}>{t==='home'?<HomeIcon className="w-6 h-6"/>:t==='learn'?<LearnIcon className="w-6 h-6"/>:t==='vocab'?<VocabIcon className="w-6 h-6"/>:t==='quiz'?<QuizIcon className="w-6 h-6"/>:<DiscussIcon className="w-6 h-6"/>}</button>)}
                     </nav>
                 </div>
             );
