@@ -1,0 +1,2159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenKorean - 식당: 음식이 잘못 나왔을 때</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- 폰트 링크: IBM Plex Sans KR, Jua, Noto Sans KR, Sunflower -->
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Jua&family=Noto+Sans+KR:wght@400;500;700;900&family=Sunflower:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* 기본 글꼴 설정: IBM Plex Sans KR */
+        body { font-family: 'IBM Plex Sans KR', sans-serif; background-color: #f9fafb; }
+        
+        /* 사용자 지정 폰트 유틸리티 클래스 */
+        .font-jua { font-family: 'Jua', sans-serif; }
+        .font-noto { font-family: 'Noto Sans KR', sans-serif; }
+        .font-sunflower { font-family: 'Sunflower', sans-serif; }
+        
+        /* 스크롤바 커스텀 */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* 애니메이션 */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+
+        /* Range Slider Custom Style */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #22c55e;
+            cursor: pointer;
+            margin-top: -6px;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #e2e8f0;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo, useCallback } = React;
+        const { createPortal } = ReactDOM;
+
+        // --- Data: Level Definitions & Styles ---
+        const LEVEL_DEFINITIONS = {
+            "A1": { title: "Novice", desc: "Can use and understand very simple everyday expressions. Can introduce themselves, ask and answer basic questions (name, age, where they live, etc.)." },
+            "A1+": { title: "Pre-Beginner", desc: "Still beginner, but can handle slightly more than A1: simple short conversations about familiar topics if the other person speaks slowly and clearly." },
+            "A2": { title: "Beginner", desc: "Can understand frequently used sentences (family, shopping, work, hobbies). Can handle simple routine tasks and short social exchanges." },
+            "A2+": { title: "Upper Beginner", desc: "Between A2 and B1. Can speak a bit more smoothly about daily life, give simple opinions, and manage short conversations with some support." },
+            "B1": { title: "Pre-Intermediate", desc: "Can understand the main points of clear standard speech or texts on familiar topics (school, work, leisure). Can describe experiences, plans, and briefly explain opinions." },
+            "B1+": { title: "Lower Intermediate", desc: "Stronger B1. More comfortable carrying conversations, handling some unexpected situations, and linking ideas more coherently, but still with gaps." },
+            "B2": { title: "Intermediate", desc: "Can understand the main ideas of complex texts, interact quite fluently with natives, and produce clear, detailed speech and writing on many topics." },
+            "B2+": { title: "Upper Intermediate", desc: "Near C1. Can argue a point logically, follow more abstract discussions, and use a wide range of vocabulary with fewer mistakes, though not fully “advanced”." },
+            "C1": { title: "Advanced", desc: "Can understand long, demanding texts and implied meanings; express ideas fluently and spontaneously; use language flexibly in academic, professional, and social settings." },
+            "C1+": { title: "Upper Advanced", desc: "Very strong C1, approaching native-like flexibility. Still occasional non-native patterns, but can operate comfortably in almost all situations." },
+            "C2": { title: "Proficient", desc: "Can understand virtually everything heard or read; express themselves very precisely, subtly, and naturally, even in complex, nuanced situations." }
+        };
+
+        const LEVEL_STYLES = {
+            "A1": "bg-orange-50 text-orange-600 border-orange-100", 
+            "A1+": "bg-orange-50 text-orange-600 border-orange-100", 
+            "A2": "bg-green-50 text-green-600 border-green-100",    
+            "A2+": "bg-green-50 text-green-600 border-green-100",    
+            "B1": "bg-blue-50 text-blue-600 border-blue-100",       
+            "B1+": "bg-blue-50 text-blue-600 border-blue-100",       
+            "B2": "bg-purple-50 text-purple-600 border-purple-100", 
+            "B2+": "bg-purple-50 text-purple-600 border-purple-100", 
+            "C1": "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-100", 
+            "C1+": "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-100", 
+            "C2": "bg-red-50 text-red-600 border-red-100",        
+        };
+
+        // --- Icons ---
+        const HomeIcon = ({ className }) => (<svg viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>);
+        const DashboardIcon = ({ className }) => (<svg viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z"/></svg>);
+        const LearnIcon = ({ className }) => (<svg viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M21.582,6.186c-0.23-0.86-0.908-1.538-1.768-1.768C18.254,4,12,4,12,4S5.746,4,4.186,4.418 c-0.86,0.23-1.538,0.908-1.768,1.768C2,7.746,2,12,2,12s0,4.254,0.418,5.814c0.23,0.86,0.908,1.538,1.768,1.768 C5.746,20,12,20,12,20s6.254,0,7.814-0.418c0.861-0.23,1.538-0.908,1.768-1.768C22,16.254,22,12,22,12S22,7.746,21.582,6.186z M10,15.464V8.536L16,12L10,15.464z"/></svg>);
+        const VocabIcon = ({ className }) => (<svg viewBox="0 0 24 24" fill="currentColor" className={className}><rect x="3" y="6" width="13" height="15" rx="2" transform="rotate(-8 9.5 13.5)" opacity="0.5" /><rect x="8" y="3" width="13" height="15" rx="2" transform="rotate(4 14.5 10.5)" /><circle cx="10.5" cy="6.5" r="1.2" fill="white" /></svg>);
+        const QuizIcon = ({ className }) => (<svg viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>);
+        const DiscussIcon = ({ className }) => (<svg viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M20 2H8C6.9 2 6 2.9 6 4V16C6 17.1 6.9 18 8 18H18L22 22V4C22 2.9 21.1 2 20 2ZM19 14H9V6H19V14Z"/><path d="M4 6H2V20C2 21.1 2.9 22 4 22H18V20H4V6Z"/></svg>);
+        const UserIcon = ({ className }) => (<svg viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>);
+        const QuizHeaderIcon = ({ className }) => (<svg viewBox="0 0 48 48" fill="none" className={className}><rect x="8" y="14" width="28" height="28" rx="4" stroke="#7C3AED" strokeWidth="4"/><rect x="14" y="6" width="28" height="28" rx="4" fill="#8B5CF6"/><path d="M28 14C30.2 14 32 15.8 32 18C32 20.2 30.2 22 28 22C26.8 22 26 22.8 26 24V25" stroke="white" strokeWidth="3" strokeLinecap="round"/><circle cx="26" cy="29" r="2" fill="white"/></svg>);
+        const VocabHeaderIcon = ({ className }) => (<svg viewBox="0 0 48 48" fill="none" className={className} xmlns="http://www.w3.org/2000/svg"><path d="M24 10C24 10 34 11 40 10V38C34 39 24 38 24 38V10Z" fill="#43A047"/><path d="M24 10C24 10 14 11 8 10V38C14 39 24 38 24 38V10Z" fill="#2E7D32"/><path d="M12 16H20" stroke="white" strokeWidth="3" strokeLinecap="round"/><path d="M12 22H20" stroke="white" strokeWidth="3" strokeLinecap="round"/><path d="M12 28H20" stroke="white" strokeWidth="3" strokeLinecap="round"/><path d="M12 34H17" stroke="white" strokeWidth="3" strokeLinecap="round"/><path d="M28 16H36" stroke="white" strokeWidth="3" strokeLinecap="round"/><path d="M28 22H36" stroke="white" strokeWidth="3" strokeLinecap="round"/><path d="M28 28H36" stroke="white" strokeWidth="3" strokeLinecap="round"/><path d="M28 34H33" stroke="white" strokeWidth="3" strokeLinecap="round"/></svg>);
+        const DiscussHeaderIcon = ({ className }) => (<svg viewBox="0 0 48 48" fill="none" className={className} xmlns="http://www.w3.org/2000/svg"><path d="M18 10H38C39.1 10 40 10.9 40 12V32C40 33.1 39.1 34 38 34H34V38L30 34H18C16.9 34 16 33.1 16 32V28" stroke="#3B82F6" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/><path d="M8 16H28C29.1 16 30 16.9 30 18V30C30 31.1 29.1 32 28 32H16L12 36V32H8C6.9 32 6 31.1 6 30V18C6 16.9 6.9 16 8 16Z" fill="#3B82F6"/><path d="M10 22H26" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.3"/></svg>);
+        const LineIcon = ({ d, className }) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d={d} /></svg>);
+        const PlayIconLine = (props) => <LineIcon {...props} d="M5 3l14 9-14 9V3z" />;
+        const OpenBookSolidIcon = ({ className }) => (<svg viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1z" /></svg>);
+        const TranslateIcon = (props) => <LineIcon {...props} d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1" />;
+        const ChevronLeft = ({ className }) => <LineIcon d="m15 18-6-6 6-6" className={className}/>;
+        const ChevronRight = ({ className }) => <LineIcon d="m9 18 6-6-6-6" className={className}/>;
+        const SpeedSolidIcon = ({ className }) => (<svg viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M20.38 8.57l-1.23 1.85a8 8 0 0 1-.22 7.58H5.07A8 8 0 0 1 15.58 6.85l1.85-1.23A10 10 0 0 0 3.35 19a2 2 0 0 0 1.72 1h13.85a2 2 0 0 0 1.74-1 10 10 0 0 0-.27-10.44z"/><path d="M10.59 15.41a2 2 0 0 0 2.83 0l5.66-8.49-8.49 5.66a2 2 0 0 0 0 2.83z"/></svg>);
+        const SparklesIcon = ({ className }) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" /></svg>);
+
+        // --- Component: Level Badge ---
+        const LevelBadge = ({ levelCode }) => {
+            const [isHovered, setIsHovered] = useState(false);
+            const info = LEVEL_DEFINITIONS[levelCode] || LEVEL_DEFINITIONS["A2+"];
+            
+            const getLevelStyle = (code) => {
+                if (LEVEL_STYLES[code]) return LEVEL_STYLES[code];
+                const base = code.substring(0, 2);
+                return LEVEL_STYLES[base] || "bg-gray-50 text-gray-600 border-gray-100";
+            };
+            
+            const badgeStyle = getLevelStyle(levelCode);
+
+            return (
+                <div 
+                    className="relative inline-flex items-center cursor-help z-50"
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                >
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wide shadow-sm font-sunflower ${badgeStyle}`}>
+                        Level: {info.title}
+                    </span>
+                    {isHovered && (
+                        <div className="absolute top-full left-0 mt-2 w-64 bg-gray-900/95 backdrop-blur text-white text-xs rounded-xl p-4 shadow-xl z-[100] animate-fade-in text-left">
+                            <p className={`font-bold mb-1.5 text-sm ${badgeStyle.split(' ')[1]}`}>{levelCode} – {info.title}</p>
+                            <p className="opacity-90 leading-relaxed font-medium">{info.desc}</p>
+                            <div className="absolute -top-1 left-4 w-2 h-2 bg-gray-900/95 rotate-45"></div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const VOCAB_DATA = [
+            {
+                term: '이 주제로 이야기해 봐요',
+                mainDef: "Let's Talk About This Topic",
+                examples: [],
+                subDefs: [
+                    { subTerm: '▢▢을/를 주제로 이야기하다', subDef: 'to talk about [something] as a topic' },
+                    { subTerm: '-아/어 보다', subDef: 'used to make gentle suggestions without sounding pushy' }
+                ]
+            },
+            {
+                term: '배고프다',
+                mainDef: 'to be hungry',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '-는 뜻이에요',
+                mainDef: '"It means that…"',
+                examples: [],
+                subDefs: [
+                    { subTerm: 'Usage', subDef: 'used to state the meaning of a word or phrase' }
+                ]
+            },
+            {
+                term: '먹고 싶다',
+                mainDef: 'to want to eat',
+                examples: [],
+                subDefs: [
+                    { subTerm: '먹다', subDef: 'to eat' },
+                    { subTerm: '-고 싶다', subDef: '"want to…"' }
+                ]
+            },
+            {
+                term: '짜장면',
+                mainDef: 'Jajangmyeon (noodles in black bean sauce)',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '좋은 생각',
+                mainDef: 'good idea',
+                examples: [],
+                subDefs: [
+                    { subTerm: '좋은', subDef: 'good' },
+                    { subTerm: '생각', subDef: 'idea' }
+                ]
+            },
+            {
+                term: '매운',
+                mainDef: 'spicy',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '짬뽕',
+                mainDef: 'Jjamppong (spicy seafood noodle soup)',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '먹을래요',
+                mainDef: 'I will eat / I want to eat',
+                examples: [],
+                subDefs: [
+                    { subTerm: '먹다', subDef: 'to eat' },
+                    { subTerm: '-래요/을래요', subDef: '"will/want to…"' }
+                ]
+            },
+            {
+                term: '주문하다',
+                mainDef: 'to order',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '‘음식 주세요’라고 말하는 거예요.',
+                mainDef: 'It means to say "Food, please."',
+                examples: [],
+                subDefs: [
+                    { subTerm: '-라고 말하다', subDef: 'to say that…' },
+                    { subTerm: '-는 것이다', subDef: 'used to state or explain a fact or essence...' }
+                ]
+            },
+            {
+                term: '사장님',
+                mainDef: 'owner (of a restaurant/store)',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '빨리 나오면 좋겠어요.',
+                mainDef: 'I hope it comes out quickly',
+                examples: [],
+                subDefs: [
+                    { subTerm: '빨리', subDef: 'quickly' },
+                    { subTerm: '나오다', subDef: 'to come out' },
+                    { subTerm: '-면 좋겠어요', subDef: '"I hope/wish that…"' }
+                ]
+            },
+            {
+                term: '나오다',
+                mainDef: 'to come out',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '잘 먹겠습니다',
+                mainDef: 'I will eat well',
+                examples: [],
+                subDefs: [
+                    { subTerm: 'Culture', subDef: 'A common phrase said before eating to show gratitude for the meal.' }
+                ]
+            },
+            {
+                term: '두 개네요',
+                mainDef: "It's two items!",
+                examples: [],
+                subDefs: [
+                    { subTerm: '두 개', subDef: 'two items' },
+                    { subTerm: '-네요', subDef: 'sentence ending expressing surprise or realization' }
+                ]
+            },
+            {
+                term: '그러니까요',
+                mainDef: 'I know, right? / Exactly',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '세상에',
+                mainDef: 'Oh my gosh / Oh my goodness',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '잘못 나오다',
+                mainDef: 'to come out wrong (for an order)',
+                examples: [],
+                subDefs: [
+                    { subTerm: '잘못', subDef: 'wrongly, incorrectly' },
+                    { subTerm: '나오다', subDef: 'to come out' }
+                ]
+            },
+            {
+                term: '주문한 음식이 아니다',
+                mainDef: "It's not the food I ordered",
+                examples: [],
+                subDefs: [
+                    { subTerm: '주문하다', subDef: 'to order' },
+                    { subTerm: '-ㄴ/은', subDef: 'used to turn a past-tense verb into an "adjective-ish" phrase...' }
+                ]
+            },
+            {
+                term: '-라는 뜻이에요',
+                mainDef: '"It means that…"',
+                examples: [],
+                subDefs: [
+                    { subTerm: 'Usage', subDef: 'used to state the meaning of a word or phrase' }
+                ]
+            },
+            {
+                term: '가서 말할게요.',
+                mainDef: "I'll go and tell them",
+                examples: [],
+                subDefs: [
+                    { subTerm: '가다', subDef: 'to go' },
+                    { subTerm: '-아서/어서', subDef: 'used when the first action is a necessary step...' },
+                    { subTerm: '말하다', subDef: 'to speak' },
+                    { subTerm: '-게요', subDef: '"I will…"' }
+                ]
+            },
+            {
+                term: '잠깐만요',
+                mainDef: 'Wait a moment',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '짬뽕 먹고 싶다고 했잖아요',
+                mainDef: 'You said you wanted to eat Jjamppong!',
+                examples: [],
+                subDefs: [
+                    { subTerm: '먹다', subDef: 'to eat' },
+                    { subTerm: '-고 싶다', subDef: '"want to…"' },
+                    { subTerm: '-다고 하다', subDef: 'used to quote what someone said' },
+                    { subTerm: '-잖아요', subDef: 'used to remind the listener of shared or obvious information...' }
+                ]
+            },
+            {
+                term: '차이가 없다',
+                mainDef: 'There is no difference',
+                examples: [],
+                subDefs: [
+                    { subTerm: '차이', subDef: 'difference' }
+                ]
+            },
+            {
+                term: '둘 다',
+                mainDef: 'both',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '문제',
+                mainDef: 'problem',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '돈을 내다',
+                mainDef: 'to pay money',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '주문한 음식이 먹는 건',
+                mainDef: 'eating the food that was ordered',
+                examples: [],
+                subDefs: [
+                    { subTerm: '주문하다', subDef: 'to order' },
+                    { subTerm: '-ㄴ/은', subDef: 'used to turn a past-tense verb into an "adjective-ish" phrase...' },
+                    { subTerm: '먹다', subDef: 'to eat' },
+                    { subTerm: '-는 건', subDef: 'A colloquial form of -ㄴ/은 것은, used to nominalize verbs...' }
+                ]
+            },
+            {
+                term: '권리',
+                mainDef: 'a right',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '내가 받아야 하는 것',
+                mainDef: 'the thing I must receive',
+                examples: [],
+                subDefs: [
+                    { subTerm: '받다', subDef: 'to receive' },
+                    { subTerm: '-야 하다', subDef: '"have to…" or "must…"; used to express necessity or obligation' },
+                    { subTerm: '-는 것', subDef: 'used to nominalize verbs...' }
+                ]
+            },
+            {
+                term: '다시 말하는 건',
+                mainDef: 'saying it again',
+                examples: [],
+                subDefs: [
+                    { subTerm: '다시', subDef: 'again' },
+                    { subTerm: '말하다', subDef: 'to speak' },
+                    { subTerm: '-는 건', subDef: 'A colloquial form of -ㄴ/은 것...' }
+                ]
+            },
+            {
+                term: '귀찮다',
+                mainDef: 'to be a hassle, to be bothersome',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '아무것도 안 하고 싶다',
+                mainDef: 'to not want to do anything',
+                examples: [],
+                subDefs: [
+                    { subTerm: '아무것도', subDef: 'nothing' }
+                ]
+            },
+            {
+                term: '다시 주문하는 건',
+                mainDef: 'ordering again',
+                examples: [],
+                subDefs: [
+                    { subTerm: '다시', subDef: 'again' },
+                    { subTerm: '주문하다', subDef: 'to order' },
+                    { subTerm: '-는 건', subDef: 'A colloquial form...' }
+                ]
+            },
+            {
+                term: '간단하다',
+                mainDef: 'to be simple, to be easy',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '쉽게',
+                mainDef: 'easily',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '직원',
+                mainDef: 'staff, employee',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '가서',
+                mainDef: 'go and then...',
+                examples: [],
+                subDefs: [
+                    { subTerm: '가다', subDef: 'to go' },
+                    { subTerm: '-아서/어서', subDef: 'used when the first action is a necessary step...' }
+                ]
+            },
+            {
+                term: '말하면 돼요',
+                mainDef: 'you just have to say...',
+                examples: [],
+                subDefs: [
+                    { subTerm: '말하다', subDef: 'to speak' },
+                    { subTerm: '-면 돼요', subDef: '"all one has to do is…" or "it is okay if…"' }
+                ]
+            },
+            {
+                term: '변호사',
+                mainDef: 'lawyer',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '같다',
+                mainDef: 'to be like, to seem',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '만약에',
+                mainDef: 'if, in case',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '비싼',
+                mainDef: 'expensive',
+                examples: [],
+                subDefs: [
+                    { subTerm: '비싸다', subDef: 'to be expensive' },
+                    { subTerm: '-ㄴ/은', subDef: 'used to turn a descriptive verb...' }
+                ]
+            },
+            {
+                term: '시켰는데',
+                mainDef: 'ordered, but...',
+                examples: [],
+                subDefs: [
+                    { subTerm: '시키다', subDef: 'to order' },
+                    { subTerm: '-는데', subDef: 'provides background' }
+                ]
+            },
+            {
+                term: '-고 말할 거예요?',
+                mainDef: 'Are you going to say that...?',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '다르죠',
+                mainDef: "It's different, of course",
+                examples: [],
+                subDefs: [
+                    { subTerm: '다르다', subDef: 'to be different' },
+                    { subTerm: '-이죠/죠', subDef: 'informal sentence ending used for confirmation or emphasis' }
+                ]
+            },
+            {
+                term: '거봐요',
+                mainDef: 'See? I told you so.',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '해결하고 올게요',
+                mainDef: "I'll solve it and come back",
+                examples: [],
+                subDefs: [
+                    { subTerm: '해결하다', subDef: 'to solve' },
+                    { subTerm: '-고', subDef: 'used to connect two verbs...' },
+                    { subTerm: '오다', subDef: 'to come' },
+                    { subTerm: '-게요', subDef: '"I will…"' }
+                ]
+            },
+            {
+                term: '해결하다',
+                mainDef: 'to solve',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '문제를 끝내다',
+                mainDef: 'to finish the problem',
+                examples: [],
+                subDefs: [
+                    { subTerm: '문제', subDef: 'problem' },
+                    { subTerm: '끝내다', subDef: 'to finish' }
+                ]
+            },
+            {
+                term: '말이 다 맞다',
+                mainDef: 'Everything you say is right.',
+                examples: [],
+                subDefs: [
+                    { subTerm: '말', subDef: 'words, speech' },
+                    { subTerm: '다', subDef: 'all' },
+                    { subTerm: '맞다', subDef: 'to be correct' }
+                ]
+            },
+            {
+                term: '대신',
+                mainDef: 'instead, in place of',
+                examples: [],
+                subDefs: []
+            },
+            {
+                term: '배운 단어',
+                mainDef: 'learned words/vocabulary',
+                examples: [],
+                subDefs: [
+                    { subTerm: '배우다', subDef: 'to learn' },
+                    { subTerm: '-ㄴ/은', subDef: 'used to turn a past-tense verb into an "adjective-ish" phrase...' },
+                    { subTerm: '단어', subDef: 'word, vocabulary' }
+                ]
+            },
+            {
+                term: '확인해 볼까요?',
+                mainDef: 'Shall we summarize?',
+                examples: [],
+                subDefs: [
+                    { subTerm: '확인하다', subDef: 'to check, confirm' },
+                    { subTerm: '-아/어 볼까요?', subDef: '"Shall we…?" "How about…?"; used to suggest trying something together' }
+                ]
+            },
+            {
+                term: '음식이 잘못 나왔을 때',
+                mainDef: 'when the food comes out wrong',
+                examples: [],
+                subDefs: [
+                    { subTerm: '잘못 나오다', subDef: 'to come out wrong' },
+                    { subTerm: '-ㄹ/을 때', subDef: '"when…"' }
+                ]
+            },
+            {
+                term: '여기까지예요',
+                mainDef: 'Should we stop here?',
+                examples: [],
+                subDefs: [
+                    { subTerm: '여기까지 하다', subDef: 'to stop here, wrap something up' },
+                    { subTerm: '-(으)ㄹ까요?', subDef: '"Shall we…?"' }
+                ]
+            },
+            {
+                term: '재미있는 이야기',
+                mainDef: 'an interesting story',
+                examples: [],
+                subDefs: [
+                    { subTerm: '재미있다', subDef: 'be fun, interesting' },
+                    { subTerm: '-는', subDef: 'used to turn a present-tense verb into an “adjective-ish” phrase...' }
+                ]
+            }
+        ];
+        
+        const QUIZ_LIST = [
+            {
+                id: 1,
+                questionKor: "왜 식당에 갔나요?",
+                questionEng: "Why did they go to the restaurant?",
+                sentence_pre: "민호와 조이는 ",
+                sentence_post: " 식당에 갔어요.",
+                correct_word: "배고파서",
+                translation: "Minho and Joy went to the restaurant because they were hungry.",
+                hint: "because they were hungry",
+                options: [
+                    { text: '배고파서', isCorrect: true, feedback: "The grammar pattern '-아서/어서' is used to show reason or cause. They went to the restaurant *because* they were hungry." },
+                    { text: '배고픈데', isCorrect: false, feedback: "'-(으)ㄴ데' provides background information." },
+                    { text: '배고프고', isCorrect: false, feedback: "'-고' connects two actions sequentially." },
+                    { text: '배고프면', isCorrect: false, feedback: "'-(으)면' means 'if'." }
+                ]
+            },
+            {
+                id: 2,
+                questionKor: "두 사람은 무엇을 했나요?",
+                questionEng: "What did the two people do?",
+                sentence_pre: "두 사람은 짜장면과 짬뽕을 ",
+                sentence_post: ".",
+                correct_word: "주문했어요",
+                translation: "The two people ordered Jajangmyeon and Jjamppong.",
+                hint: "ordered",
+                options: [
+                    { text: '주문했어요', isCorrect: true, feedback: "In the dialogue, they decide what to eat and then order. '주문하다' means 'to order'." },
+                    { text: '먹었어요', isCorrect: false, feedback: "'먹다' means to eat. They haven't eaten yet." },
+                    { text: '샀어요', isCorrect: false, feedback: "'사다' means to buy. While related, 'order' is more specific in a restaurant context." },
+                    { text: '만들었어요', isCorrect: false, feedback: "'만들다' means to make." }
+                ]
+            },
+            {
+                id: 3,
+                questionKor: "주문 후에 무슨 일이 있었나요?",
+                questionEng: "What happened after ordering?",
+                sentence_pre: "민호는 짬뽕을 시켰고 조이는 짜장면을 ",
+                sentence_post: " 짜장면이 두 개 나왔어요.",
+                correct_word: "주문했는데",
+                translation: "Minho ordered Jjamppong and Joy ordered Jajangmyeon, but two Jajangmyeons came out.",
+                hint: "ordered, but",
+                options: [
+                    { text: '주문했는데', isCorrect: true, feedback: "The grammar pattern '-(으)ㄴ/는데' is used to provide background information for the following clause, often with a sense of contrast. They ordered, *but* something unexpected happened." },
+                    { text: '주문해서', isCorrect: false, feedback: "'-아서/어서' indicates a cause-and-effect relationship." },
+                    { text: '주문하니까', isCorrect: false, feedback: "'-으니까' also indicates a reason, often one the listener is aware of." },
+                    { text: '주문하고', isCorrect: false, feedback: "'-고' simply connects two actions in sequence." }
+                ]
+            },
+            {
+                id: 4,
+                questionKor: "조이는 뭐라고 말하려고 했나요?",
+                questionEng: "What was Joy going to say?",
+                sentence_pre: "조이는 직원에게 “음식이 ",
+                sentence_post: "”라고 말하려고 했어요.",
+                correct_word: "잘못 나왔어요",
+                translation: "Joy was about to tell the staff, 'The food came out wrong'.",
+                hint: "came out wrong",
+                options: [
+                    { text: '잘못 나왔어요', isCorrect: true, feedback: "This is the specific phrase Joy used in the dialogue to describe the situation. '잘못 나오다' is the set phrase for a wrong order." },
+                    { text: '나빠요', isCorrect: false, feedback: "'나쁘다' means 'bad'. The food might not be bad, just incorrect." },
+                    { text: '먹을 수 없어요', isCorrect: false, feedback: "'먹을 수 없다' means 'cannot eat'. They can eat it, it's just not what they ordered." },
+                    { text: '이상해요', isCorrect: false, feedback: "'이상하다' means 'strange'. While the situation is strange, '잘못 나왔어요' is more precise." }
+                ]
+            },
+            {
+                id: 5,
+                questionKor: "민호는 왜 그냥 먹으려고 했나요?",
+                questionEng: "Why did Minho try to just eat it?",
+                sentence_pre: "하지만 민호는 다시 주문하기 ",
+                sentence_post: " 그냥 먹으려고 했어요.",
+                correct_word: "귀찮아서",
+                translation: "But Minho tried to just eat it because reordering was bothersome.",
+                hint: "because it was bothersome",
+                options: [
+                    { text: '귀찮아서', isCorrect: true, feedback: "Minho explicitly says it's '귀찮다' (bothersome) to reorder." },
+                    { text: '무서워서', isCorrect: false, feedback: "'무섭다' means 'scary'." },
+                    { text: '힘들어서', isCorrect: false, feedback: "'힘들다' means 'difficult' or 'tiring'." },
+                    { text: '어려워서', isCorrect: false, feedback: "'어렵다' means 'difficult'." }
+                ]
+            },
+            {
+                id: 6,
+                questionKor: "민호는 두 음식에 대해 어떻게 생각했나요?",
+                questionEng: "What did Minho think about the two foods?",
+                sentence_pre: "민호는 “짜장면과 짬뽕은 ",
+                sentence_post: "”고 말했지만, 조이는 그렇게 생각하지 않았어요.",
+                correct_word: "차이가 없어요",
+                translation: "Minho said, 'There is no difference between Jajangmyeon and Jjamppong,' but Joy didn't think so.",
+                hint: "there is no difference",
+                options: [
+                    { text: '차이가 없어요', isCorrect: true, feedback: "This is the direct quote from Minho in the dialogue. '차이가 없다' means 'there is no difference'." },
+                    { text: '차이가 커요', isCorrect: false, feedback: "Means 'there is a big difference'." },
+                    { text: '차이가 있어요', isCorrect: false, feedback: "Means 'there is a difference'." },
+                    { text: '차이가 많아요', isCorrect: false, feedback: "Means 'there are many differences'." }
+                ]
+            },
+            {
+                id: 7,
+                questionKor: "조이는 이것이 무엇이라고 했나요?",
+                questionEng: "What did Joy say this was?",
+                sentence_pre: "조이는 “돈을 냈으니까 다시 주문하는 것이 ",
+                sentence_post: "예요”라고 말했어요.",
+                correct_word: "권리",
+                translation: "Joy said, 'Since we paid, reordering is our right'.",
+                hint: "a right",
+                options: [
+                    { text: '권리', isCorrect: true, feedback: "Joy argues that it is their '권리' (right) to get the food they paid for." },
+                    { text: '차이', isCorrect: false, feedback: "'차이' means 'difference'." },
+                    { text: '문제', isCorrect: false, feedback: "'문제' means 'problem'." },
+                    { text: '의무', isCorrect: false, feedback: "'의무' means 'duty' or 'obligation'." }
+                ]
+            },
+            {
+                id: 8,
+                questionKor: "조이는 다시 주문하는 것에 대해 어떻게 말했나요?",
+                questionEng: "What did Joy say about reordering?",
+                sentence_pre: "조이는 “다시 주문하는 것이 ",
+                sentence_post: "”라고 말했어요.",
+                correct_word: "간단해요",
+                translation: "Joy said, 'Reordering is simple'.",
+                hint: "is simple",
+                options: [
+                    { text: '간단해요', isCorrect: true, feedback: "Joy's counter-argument to Minho's '귀찮다' is that it's '간단하다' (simple)." },
+                    { text: '복잡해요', isCorrect: false, feedback: "'복잡하다' means 'complicated', the opposite." },
+                    { text: '귀찮아요', isCorrect: false, feedback: "This is what Minho felt." },
+                    { text: '부끄러워요', isCorrect: false, feedback: "'부끄럽다' means 'shy' or 'embarrassed'." }
+                ]
+            },
+            {
+                id: 9,
+                questionKor: "민호는 무엇을 하기 싫어했나요?",
+                questionEng: "What did Minho not want to do?",
+                sentence_pre: "하지만 민호는 직원에게 ",
+                sentence_post: " 말하기 싫었어요.",
+                correct_word: "가서",
+                translation: "But Minho didn't want to go and talk to the staff.",
+                hint: "to go and",
+                options: [
+                    { text: '가서', isCorrect: true, feedback: "The grammar pattern '-아서/어서' connects two actions that happen in sequence, where the first is a necessary step for the second. He has to *go* in order to *talk*." },
+                    { text: '가고', isCorrect: false, feedback: "'-고' simply lists actions." },
+                    { text: '가니까', isCorrect: false, feedback: "'-으니까' means 'because he goes'." },
+                    { text: '가면', isCorrect: false, feedback: "'-면' means 'if he goes'." }
+                ]
+            },
+            {
+                id: 10,
+                questionKor: "결국 조이가 무엇을 할 건가요?",
+                questionEng: "What will Joy do in the end?",
+                sentence_pre: "그래서 조이가 민호 대신 문제를 ",
+                sentence_post: ".",
+                correct_word: "해결할 거예요",
+                translation: "So Joy will solve the problem instead of Minho.",
+                hint: "will solve",
+                options: [
+                    { text: '해결할 거예요', isCorrect: true, feedback: "Joy states her intention to '해결하다' (solve) the problem. '-(으)ㄹ 거예요' is the future tense." },
+                    { text: '만들 거예요', isCorrect: false, feedback: "'만들다' means 'to make'." },
+                    { text: '일으킬 거예요', isCorrect: false, feedback: "'일으키다' means 'to cause' (a problem)." },
+                    { text: '물어볼 거예요', isCorrect: false, feedback: "'물어보다' means 'to ask'." }
+                ]
+            }
+        ];
+
+        const DISCUSS_DATA = [
+            { 
+                num: 1, 
+                kor: "식당에서 음식이 잘못 나온 적이 있어요? 그냥 먹었어요? 아니면 다시 주문을 했어요?", 
+                eng: "Have you ever had your food come out wrong at a restaurant? Did you just eat it? Or did you reorder?", 
+                vocab: [{ term: "잘못 나오다", meaning: "to come out wrong", context: "조이: 음식이 잘못 나왔네요.", context_eng: "Joy: The food came out wrong." }, { term: "주문하다", meaning: "to order", context: "조이: 다시 주문하는 것은 아주 간단해요!", context_eng: "Joy: Re-ordering is very simple!" }] 
+            },
+            { 
+                num: 2, 
+                kor: "여러분이 햄버거를 주문했는데, 치킨버거가 나왔어요. 가격 차이가 없어요. 그러면, 그냥 먹을 거예요? 다시 주문할 거예요?", 
+                eng: "You ordered a hamburger, but a chicken burger came out. There's no price difference. In that case, will you just eat it? Or will you reorder?", 
+                vocab: [{ term: "주문하다", meaning: "to order", context: "조이: 다시 주문하는 것은 아주 간단해요!", context_eng: "Joy: Re-ordering is very simple!" }, { term: "차이가 없다", meaning: "there is no difference", context: "민호: 짜장면이랑 짬뽕은 큰 차이가 없어요.", context_eng: "Minho: There's not a big difference between Jajangmyeon and Jjamppong." }] 
+            },
+            { 
+                num: 3, 
+                kor: "여러분이 스테이크를 주문했는데, 햄버거가 나왔어요. 그러면, 그냥 먹을 거예요? 다시 주문할 거예요?", 
+                eng: "You ordered a steak, but a hamburger came out. In that case, will you just eat it? Or will you reorder?", 
+                vocab: [{ term: "주문하다", meaning: "to order", context: "조이: 다시 주문하는 것은 아주 간단해요!", context_eng: "Joy: Re-ordering is very simple!" }] 
+            },
+            { 
+                num: 4, 
+                kor: "여러분이 레어 스테이크를 주문했는데, 미디움 스테이크가 나왔어요. 그냥 먹을 거예요? 다시 주문할 거예요?", 
+                eng: "You ordered a rare steak, but a medium steak came out. Will you just eat it? Or will you reorder?", 
+                vocab: [{ term: "주문하다", meaning: "to order", context: "조이: 다시 주문하는 것은 아주 간단해요!", context_eng: "Joy: Re-ordering is very simple!" }] 
+            },
+            { 
+                num: 5, 
+                kor: "여러분이 너무 배고플 때, 음식이 잘못 나오면, 그냥 먹을 거예요? 다시 주문할 거예요?", 
+                eng: "When you are very hungry and the food comes out wrong, will you just eat it? Or will you reorder?", 
+                vocab: [{ term: "배고프다", meaning: "to be hungry", context: "민호: 조이 씨, 오늘 저 진짜 배고파요.", context_eng: "Joy, I'm really hungry today." }, { term: "잘못 나오다", meaning: "to come out wrong", context: "조이: 음식이 잘못 나왔네요.", context_eng: "Joy: The food came out wrong." }] 
+            },
+            { 
+                num: 6, 
+                kor: "여러분은 음식이 잘못 나왔을 때, 귀찮아서 다시 말 안 한 적이 있어요?", 
+                eng: "Have you ever not said anything because you were bothered when your food came out wrong?", 
+                vocab: [{ term: "잘못 나오다", meaning: "to come out wrong", context: "조이: 음식이 잘못 나왔네요.", context_eng: "Joy: The food came out wrong." }, { term: "귀찮다", meaning: "to be a hassle", context: "민호: 다시 말하는 건 너무 귀찮아요.", context_eng: "Minho: Saying it again is so bothersome." }] 
+            },
+            { 
+                num: 7, 
+                kor: "여러분에게 다시 주문하는 것이 간단해요? 아니면 어려워요?", 
+                eng: "Is reordering simple for you? Or is it difficult?", 
+                vocab: [{ term: "주문하다", meaning: "to order", context: "조이: 다시 주문하는 것은 아주 간단해요!", context_eng: "Joy: Re-ordering is very simple!" }, { term: "간단하다", meaning: "to be simple", context: "조이: 다시 주문하는 것은 아주 간단해요!", context_eng: "Joy: Re-ordering is very simple!" }] 
+            },
+            { 
+                num: 8, 
+                kor: "식당에서 손님의 권리가 뭘까요?", 
+                eng: "What are a customer's rights at a restaurant?", 
+                vocab: [{ term: "권리", meaning: "a right", context: "조이: 우리가 주문한 음식을 먹는 건 우리의 '권리'예요!", context_eng: "Joy: Eating the food we ordered is our 'right'!" }] 
+            },
+            { 
+                num: 9, 
+                kor: "식당에서 어떤 문제가 생길 수 있을까요?", 
+                eng: "What kind of problems can happen at a restaurant?", 
+                vocab: [{ term: "문제", meaning: "problem", context: "조이: 제가 가서 이 문제를 해결하고 올게요.", context_eng: "Joy: I'll go and solve this problem." }] 
+            },
+            { 
+                num: 10, 
+                kor: "문제가 있을 때 누구한테 도움을 요청해요? 혼자 해결해요?", 
+                eng: "When there is a problem, who do you ask for help? Do you solve it by yourself?", 
+                vocab: [{ term: "문제", meaning: "problem", context: "조이: 제가 가서 이 문제를 해결하고 올게요.", context_eng: "Joy: I'll go and solve this problem." }, { term: "해결하다", meaning: "to solve", context: "조이: 제가 가서 이 문제를 해결하고 올게요.", context_eng: "Joy: I'll go and solve this problem." }] 
+            }
+        ];
+
+        const SCRIPT_DATA = [
+            { id: 's1', speaker: '민호', kor: '💬 안녕하세요! <이 주제로 이야기해 봐요> 팟캐스트예요. 저는 민호예요.', time: [0, 5], eng: "Hello! This is the <Let's Talk About This Topic> podcast. I'm Minho." },
+            { id: 's2', speaker: '조이', kor: '💬 안녕하세요. 저는 조이예요.', time: [5, 8], eng: "Hello. I'm Joy." },
+            { id: 's3', speaker: '민호', kor: '💬 조이 씨, 오늘 저 진짜 배고파요. ‘배고프다’는 ‘음식을 먹고 싶다’는 뜻이에요. 점심 뭐 먹을까요?', time: [8, 15], eng: "Joy, I'm really hungry today. '배고프다' means 'to want to eat food'. What should we eat for lunch?" },
+            { id: 's4', speaker: '조이', kor: '💬 저는 짜장면이 먹고 싶어요!', time: [15, 18], eng: "I want to eat Jajangmyeon!" },
+            { id: 's5', speaker: '민호', kor: '💬 오, 좋은 생각이에요! 그럼 저는 매운 짬뽕을 먹을래요!', time: [18, 22], eng: "Oh, good idea! Then I'll have spicy Jjamppong!" },
+            { id: 's6', speaker: '조이', kor: '💬 자, 우리가 식당에 왔어요. 주문할까요? ‘주문하다’는 ‘음식 주세요’라고 말하는 거예요. "사장님! 여기 짜장면 하나, 짬뽕 하나 주세요!"', time: [22, 30], eng: "Okay, we're at the restaurant. Shall we order? '주문하다' means to say 'Please give us food'. \"Excuse me! One Jajangmyeon and one Jjamppong, please!\"" },
+            { id: 's7', speaker: '민호', kor: '💬 빨리 나오면 좋겠어요. 너무 배고파요.', time: [30, 34], eng: "I hope it comes out quickly. I'm so hungry." },
+            { id: 's8', speaker: '조이', kor: '💬 와, 음식이 나왔어요! 잘 먹겠습니다!', time: [34, 38], eng: "Wow, the food is here! Let's eat well!" },
+            { id: 's9', speaker: '민호', kor: '💬 어?😯 조이 씨, 이것 좀 봐요.', time: [38, 42], eng: "Huh?😯 Joy, look at this." },
+            { id: 's10', speaker: '조이', kor: '💬 네?😮 왜요? …어?😳 짜장면이... 두 개네요? 민호 씨 짬뽕은 어디 갔어요?🧐', time: [42, 50], eng: "Yes?😮 Why? ...Huh?😳 There are... two Jajangmyeons? Where did your Jjamppong go?🧐" },
+            { id: 's11', speaker: '민호', kor: '💬 그러니까요. 제 짬뽕이 없어요.', time: [50, 53], eng: "I know. My Jjamppong is missing." },
+            { id: 's12', speaker: '조이', kor: '💬 세상에.‼️ 음식이 잘못 나왔네요. \'잘못 나오다\'는 ‘주문한 음식이 아니다‘라는 뜻이에요. 제가 가서 말할게요.', time: [53, 60], eng: "Oh my gosh.‼️ The food came out wrong. '잘못 나오다' means 'it's not the food that was ordered'. I'll go and tell them." },
+            { id: 's13', speaker: '민호', kor: '💬 아, 아니에요! 조이 씨, 잠깐만요! 그냥 먹어요.', time: [60, 65], eng: "Ah, no! Joy, wait a minute! Let's just eat." },
+            { id: 's14', speaker: '조이', kor: '💬 네?😧 민호 씨는 짬뽕 먹고 싶다고 했잖아요.', time: [65, 70], eng: "What?😧 Minho, you said you wanted to eat Jjamppong." },
+            { id: 's15', speaker: '민호', kor: '💬 괜찮아요. 짜장면이랑 짬뽕은 큰 차이가 없어요.😅 \'차이가 없다\'는 \'다르지 않다\'는 뜻이에요. 둘 다 맛있어요.', time: [70, 78], eng: "It's okay. There's not a big difference between Jajangmyeon and Jjamppong.😅 '차이가 없다' means 'not different'. Both are delicious." },
+            { id: 's16', speaker: '조이', kor: '💬 그게 문제가 아니에요!😤 우리는 돈을 냈어요. 우리가 주문한 음식을 먹는 건 우리의 \'권리\'예요! \'권리\'는 \'내가 받아야 하는 것\'이라는 뜻이에요.', time: [78, 88], eng: "That's not the problem!😤 We paid money. Eating the food we ordered is our 'right'! '권리' means 'what I deserve to receive'." },
+            { id: 's17', speaker: '민호', kor: '💬 다시 말하는 건 너무 귀찮아요. 😅 ‘귀찮다’는 ‘아무것도 안 하고 싶다’는 뜻이에요.', time: [88, 94], eng: "Saying it again is so bothersome. 😅 '귀찮다' means 'to not want to do anything'." },
+            { id: 's18', speaker: '조이', kor: '💬 다시 주문하는 것은 아주 간단해요! 🤨‘간단하다’는 ‘쉽게 할 수 있다’라는 뜻이에요. 그냥 직원에게 가서 "음식이 잘못 나왔어요"라고 말하면 돼요.', time: [94, 102], eng: "Re-ordering is very simple! 🤨 '간단하다' means 'can be done easily'. You just have to go to the staff and say, \"The food came out wrong.\"" },
+            { id: 's19', speaker: '민호', kor: '💬 조이 씨는 꼭 변호사 같아요. 하지만 저는 그냥 먹을래요.', time: [102, 108], eng: "Joy, you're just like a lawyer. But I'll just eat it." },
+            { id: 's20', speaker: '조이', kor: '💬 아, 민호 씨!😩 만약에 우리가 비싼 스테이크를 시켰는데, 햄버거가 나오면, 그때도 차이가 없다고 말할 거예요?', time: [108, 116], eng: "Ah, Minho!😩 If we ordered an expensive steak and a hamburger came out, would you still say there's no difference then?" },
+            { id: 's21', speaker: '민호', kor: '💬 🤔 음... 그건... 다르죠.', time: [116, 120], eng: "🤔 Um... that's... different." },
+            { id: 's22', speaker: '조이', kor: '💬 거봐요!🤫 제가 가서 이 문제를 해결하고 올게요.😎 \'해결하다\'는 \'문제를 끝내다\'라는 뜻이에요.', time: [120, 126], eng: "See!🤫 I'll go and solve this problem.😎 '해결하다' means 'to finish a problem'." },
+            { id: 's23', speaker: '민호', kor: '💬 😮‍💨 알겠어요. 조이 씨 말이 다 맞아요. 대신😏 조이 씨가 가서 말해주세요.😉', time: [126, 134], eng: "😮‍💨 Okay. Everything you say is right, Joy. Instead,😏 please you go and tell them.😉" },
+            { id: 's24', speaker: '조이', kor: '💬 자, 그럼 오늘 배운 단어를 다시 확인해 볼까요?', time: [134, 138], eng: "Okay, then shall we check the words we learned today again?" },
+            { id: 's29', speaker: '민호', kor: '💬 네, 좋아요!', time: [138, 140], eng: "Yes, sounds good!" },
+            { id: 's25', speaker: '조이', kor: '💬 ∙ 배고프다: 음식을 먹고 싶다', time: [140, 143], eng: "∙ 배고프다: to want to eat food (to be hungry)" },
+            { id: 's26', speaker: '조이', kor: '💬 ∙ 주문하다: 음식 주세요', time: [143, 146], eng: "∙ 주문하다: to order food" },
+            { id: 's27', speaker: '조이', kor: '💬 ∙ 잘못 나오다: 주문한 음식이 아니다', time: [146, 149], eng: "∙ 잘못 나오다: the order is not what you ordered" },
+            { id: 's28', speaker: '조이', kor: '💬 ∙ 귀찮다: 아무것도 안 하고 싶다', time: [149, 152], eng: "∙ 귀찮다: to not want to do anything (to be a hassle)" },
+            { id: 's30', speaker: '민호', kor: '💬 ∙ 차이가 없다: 다르지 않다', time: [152, 155], eng: "∙ 차이가 없다: not different" },
+            { id: 's31', speaker: '민호', kor: '💬 ∙ 권리: 내가 받아야 하는 것', time: [155, 158], eng: "∙ 권리: what I deserve to receive (a right)" },
+            { id: 's32', speaker: '민호', kor: '💬 ∙ 간단하다: 쉽게 할 수 있다', time: [158, 161], eng: "∙ 간단하다: can be done easily (simple)" },
+            { id: 's33', speaker: '민호', kor: '💬 ∙ 해결하다: 문제를 끝내다', time: [161, 164], eng: "∙ 해결하다: to finish a problem (to solve)" },
+            { id: 's34', speaker: '조이', kor: '💬 여러분은 음식이 잘못 나왔을 때, 그냥 먹어요? 아니면 다시 주문을 해요?', time: [164, 168], eng: "Everyone, when your food comes out wrong, do you just eat it? Or do you reorder?" },
+            { id: 's35', speaker: '민호', kor: '💬 여러분의 생각을 알려주세요. 그럼 오늘은 여기까지 할까요?', time: [168, 172], eng: "Please let us know your thoughts. Then shall we stop here for today?" },
+            { id: 's36', speaker: '조이', kor: '💬 네, 다음에 또 재미있는 이야기로 만나요! 안녕히 계세요!', time: [172, 175], eng: "Yes, see you next time with another interesting story! Goodbye!" }
+        ];
+
+        // --- Sidebar Component ---
+        const Sidebar = ({ activeTab, setActiveTab, isCollapsed, toggleSidebar, userLevel }) => {
+            const menus = [
+                { id: 'home', label: '홈', subLabel: 'Home', icon: DashboardIcon },
+                { id: 'learn', label: '대화 스크립트', subLabel: 'Transcript', icon: LearnIcon },
+                { id: 'vocab', label: '핵심 어휘', subLabel: 'Key Vocabulary', icon: VocabIcon },
+                { id: 'quiz', label: '내용 확인 퀴즈', subLabel: 'Comprehension Quiz', icon: QuizIcon },
+                { id: 'discuss', label: '생각해 보기', subLabel: 'Food For Thought', icon: DiscussIcon },
+            ];
+            
+            const getLevelColor = (code) => {
+                // If direct match exists in LEVEL_STYLES, use it. Otherwise fallback to base.
+                if (LEVEL_STYLES[code]) return LEVEL_STYLES[code];
+                const base = code.substring(0, 2);
+                return LEVEL_STYLES[base] || "bg-gray-50 text-gray-600 border-gray-100";
+            };
+
+            const currentStyle = getLevelColor(userLevel);
+            // Extract the background class (e.g., "bg-orange-50") and text class (e.g., "text-orange-600")
+            const bgClass = currentStyle.split(' ')[0];
+            const textClass = currentStyle.split(' ')[1];
+
+            return (
+                <aside className={`bg-white border-r border-gray-200 fixed h-full hidden md:flex flex-col z-50 transition-all duration-300 ease-in-out font-noto ${isCollapsed ? 'w-[88px]' : 'w-64'}`}>
+                    <div className={`p-6 flex items-center gap-3 relative ${isCollapsed ? 'justify-center px-0' : ''}`}>
+                        <img 
+                            src="https://raw.githubusercontent.com/openkoreanlearninglab/Lets-talk-about-this-topic/02d57eda9b250e56fab00389758ecad51ce0c54a/OpenKoreanLearningLab_Logo.jpeg" 
+                            alt="Logo" 
+                            className={`rounded-2xl shadow-lg shrink-0 transition-all duration-300 object-cover ${isCollapsed ? 'w-[48px] h-[48px]' : 'w-[60px] h-[60px]'}`}
+                        />
+                        {!isCollapsed && (
+                            <div className="animate-fade-in overflow-hidden whitespace-nowrap flex flex-col justify-center">
+                                <span className="font-extrabold text-[20px] text-black leading-none font-jua">Open</span>
+                                <span className={`font-bold text-[14px] leading-none font-jua ${textClass}`}>KoreanLearningLab</span>
+                            </div>
+                        )}
+                        <button 
+                            onClick={toggleSidebar}
+                            className="absolute -right-3 top-1/2 -translate-y-1/2 bg-white border border-gray-200 rounded-full p-1 shadow-sm text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors z-10"
+                        >
+                            {isCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
+                        </button>
+                    </div>
+                    
+                    <nav className={`flex-1 space-y-3 mt-4 ${isCollapsed ? 'px-3' : 'px-4'}`}>
+                        {menus.map((menu) => {
+                            const IconComp = menu.icon;
+                            const isActive = activeTab === menu.id;
+                            return (
+                                <button
+                                    key={menu.id}
+                                    onClick={() => setActiveTab(menu.id)}
+                                    className={`w-full flex items-center transition-all duration-200 group relative ${
+                                        isCollapsed 
+                                        ? 'justify-center h-14 rounded-2xl' 
+                                        : 'gap-3 px-4 py-3 rounded-2xl'
+                                    } ${
+                                        isActive 
+                                        ? 'bg-[#ecfdf5] text-green-600' 
+                                        : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'
+                                    }`}
+                                >
+                                    {isActive && isCollapsed && (
+                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-green-500 rounded-r-lg"></div>
+                                    )}
+                                    {isActive && !isCollapsed && (
+                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-green-500 rounded-r-lg"></div>
+                                    )}
+                                    
+                                    <IconComp className={`shrink-0 transition-all duration-200 ${isCollapsed ? 'w-7 h-7' : 'w-6 h-6'} ${isActive ? 'text-green-600' : 'text-gray-400 group-hover:text-gray-50'}`} />
+                                    
+                                    {!isCollapsed && (
+                                        <div className="flex flex-col items-start animate-fade-in overflow-hidden whitespace-nowrap">
+                                            <span className="font-bold text-sm leading-none">{menu.label}</span>
+                                            <span className="text-[10px] font-medium text-gray-400 mt-0.5 leading-none">{menu.subLabel}</span>
+                                        </div>
+                                    )}
+                                    
+                                    {isCollapsed && (
+                                        <div className="absolute left-full ml-3 px-3 py-1.5 bg-gray-900 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-xl flex flex-col items-start">
+                                            <span className="text-xs font-bold">{menu.label}</span>
+                                            <span className="text-[10px] opacity-80">{menu.subLabel}</span>
+                                            <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+                                        </div>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </nav>
+
+                    <div className="p-4 border-t border-gray-100">
+                        <div className={`flex items-center gap-3 p-2 rounded-xl transition-colors hover:bg-gray-50 cursor-pointer ${isCollapsed ? 'justify-center' : ''}`}>
+                            <div className={`w-[44px] h-[44px] rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300 ${bgClass} border ${currentStyle.split(' ')[2]}`}>
+                                <span className={`text-sm font-extrabold ${textClass}`}>{userLevel}</span>
+                            </div>
+                            {!isCollapsed && (
+                                <div className="animate-fade-in overflow-hidden whitespace-nowrap flex-1">
+                                    <p className="text-sm font-extrabold text-gray-900 mb-[1px] font-sunflower">학습자(Learner)</p>
+                                    <div className="mt-[1px]">
+                                        <span className={`block w-fit px-[2px] py-0.5 rounded text-[9px] font-bold border uppercase tracking-wide shadow-sm text-left cursor-default font-sunflower ${currentStyle}`}>
+                                            Level: {LEVEL_DEFINITIONS[userLevel].title}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </aside>
+            );
+        };
+
+        // --- View Components ---
+
+        const HomeView = ({ setActiveTab, progress, userLevel }) => {
+            const completedCount = Object.values(progress).filter(val => val === true || (typeof val === 'number' && val > 0)).length;
+            const percentage = Math.round((completedCount / 4) * 100);
+
+            // 퀴즈 진행률 표시 로직
+            const quizScoreDisplay = typeof progress.quiz === 'number' ? `${progress.quiz}%` : (progress.quiz ? '100%' : '0%');
+            const quizColorClass = (progress.quiz === 100 || progress.quiz === true) ? 'text-green-600' : 'text-gray-900';
+            const quizIconBg = (progress.quiz === 100 || progress.quiz === true) ? 'bg-green-100 text-green-600' : 'bg-purple-50 text-purple-600';
+
+            return (
+                <div className="space-y-10 animate-fade-in max-w-6xl mx-auto">
+                    <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                            <span className="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-md tracking-wider">NEW</span>
+                            <span className="text-xs font-bold text-green-600 tracking-wide uppercase">Today's Topic</span>
+                        </div>
+                        <h1 className="text-4xl font-black text-gray-900 tracking-tight font-jua">식당: 음식이 잘못 나왔을 때</h1>
+                        <p className="text-gray-500 text-lg">Restaurant: When the food comes out wrong</p>
+                    </div>
+
+                    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col md:flex-row h-auto md:h-80">
+                        <div className="md:w-5/12 relative group bg-black cursor-pointer overflow-hidden" onClick={() => setActiveTab('learn')}>
+                            <img src="https://img.youtube.com/vi/klxx6ChKQFg/maxresdefault.jpg" alt="Thumbnail" className="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition-opacity duration-300" />
+                            <div className="absolute top-6 left-6">
+                                <span className="bg-[#ea3323] text-white text-[10px] font-bold px-2 py-1 rounded border border-[#ea3323] shadow-sm tracking-wider">ON AIR</span>
+                            </div>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                    <PlayIconLine className="w-6 h-6 text-green-600 fill-current ml-1" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="md:w-7/12 p-8 md:p-10 flex flex-col justify-center">
+                            <div className="flex items-center gap-2 mb-4">
+                                <span className="px-2 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold rounded uppercase tracking-wide">Listening</span>
+                                {/* Level Badge Applied */}
+                                <LevelBadge levelCode={userLevel} />
+                            </div>
+                            
+                            <div className="mb-3">
+                                <h2 className="text-2xl font-black text-gray-900">대화 스크립트</h2>
+                                <span className="text-sm font-bold text-gray-400">Transcript</span>
+                            </div>
+                            
+                            <div className="text-gray-600 text-sm leading-relaxed mb-8 pr-4">
+                                <p>팟캐스트를 듣고 식당에서 주문 실수가 생겼을 때의 상황을 배워보세요.</p>
+                                <p className="mt-1 text-gray-400 text-xs">Listen to the podcast about handling order mistakes at a restaurant.</p>
+                            </div>
+                            
+                            <div className="flex items-center gap-3">
+                                <button 
+                                    onClick={() => setActiveTab('learn')}
+                                    className="px-6 py-3 bg-[#111827] text-white rounded-xl hover:bg-black transition-colors shadow-md flex flex-col items-center leading-tight"
+                                >
+                                    <span className="text-sm font-bold">동영상 보러 가기</span>
+                                    <span className="text-[10px] opacity-70 font-medium">Watch Video</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Card 1: Vocabulary */}
+                        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between h-40 hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <div className="flex flex-col">
+                                        <span className="text-xs font-bold text-gray-500 font-jua">핵심 어휘</span>
+                                        <span className="text-[10px] text-gray-400 font-medium">Key Vocabulary</span>
+                                    </div>
+                                    <p className="text-4xl font-black text-gray-900 mt-1">{VOCAB_DATA.length}개</p>
+                                </div>
+                                <div className="w-10 h-10 bg-green-50 text-green-600 rounded-xl flex items-center justify-center">
+                                    <VocabIcon className="w-5 h-5" />
+                                </div>
+                            </div>
+                            <button onClick={() => setActiveTab('vocab')} className="group flex items-center gap-1 transition-colors">
+                                <div className="flex flex-col items-start">
+                                    <span className="text-xs font-bold text-gray-400 group-hover:text-green-600">핵심 어휘 확인</span>
+                                    <span className="text-[10px] text-gray-300 group-hover:text-green-400 font-medium">Check Vocabulary</span>
+                                </div>
+                                <span className="text-lg leading-none text-gray-400 group-hover:text-green-600 ml-1">→</span>
+                            </button>
+                        </div>
+
+                        {/* Card 2: Quiz Progress */}
+                        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between h-40 hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <div className="flex flex-col">
+                                        <span className="text-xs font-bold text-gray-500 font-jua">내용 확인 퀴즈</span>
+                                        <span className="text-[10px] text-gray-400 font-medium">Comprehension Quiz</span>
+                                    </div>
+                                    <p className={`text-4xl font-black mt-1 transition-all duration-500 ${quizColorClass}`}>
+                                        {quizScoreDisplay}
+                                    </p>
+                                </div>
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${quizIconBg}`}>
+                                    <QuizIcon className="w-5 h-5" />
+                                </div>
+                            </div>
+                            <button onClick={() => setActiveTab('quiz')} className="group flex items-center gap-1 transition-colors">
+                                <div className="flex flex-col items-start">
+                                    <span className="text-xs font-bold text-gray-400 group-hover:text-purple-600">퀴즈 시작하기</span>
+                                    <span className="text-[10px] text-gray-300 group-hover:text-purple-400 font-medium">Start Quiz</span>
+                                </div>
+                                <span className="text-lg leading-none text-gray-400 group-hover:text-purple-600 ml-1">→</span>
+                            </button>
+                        </div>
+
+                        {/* Card 3: Food For Thought -> Modified to Gemini AI Feedback */}
+                        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between h-40 hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <div className="flex flex-col">
+                                        <span className="text-xs font-bold text-gray-500 font-jua">생각해 보기</span>
+                                        <span className="text-[10px] text-gray-400 font-medium">Food For Thought</span>
+                                    </div>
+                                    <div className="flex flex-col mt-3">
+                                        <a 
+                                            href="https://gemini.google.com/share/fd2560721f8f" 
+                                            target="_blank" 
+                                            rel="noopener noreferrer" 
+                                            className="text-xl font-black text-blue-600 hover:text-blue-800 hover:underline transition-colors block leading-tight"
+                                        >
+                                            Gemini AI Feedback
+                                        </a>
+                                    </div>
+                                </div>
+                                <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                                    <DiscussIcon className="w-5 h-5" />
+                                </div>
+                            </div>
+                            
+                            <button onClick={() => setActiveTab('discuss')} className="group flex items-center gap-1 transition-colors">
+                                <div className="flex flex-col items-start">
+                                    <span className="text-xs font-bold text-gray-400 group-hover:text-blue-600">다음 질문들을 생각해 보세요.</span>
+                                    <span className="text-[10px] text-gray-300 group-hover:text-blue-400 font-medium">Have a think about the following questions.</span>
+                                </div>
+                                <span className="text-lg leading-none text-gray-400 group-hover:text-blue-600 ml-1">→</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const LearnView = ({ updateProgress }) => {
+            const [player, setPlayer] = useState(null);
+            const playerRef = useRef(null); 
+            const [currentTime, setCurrentTime] = useState(0);
+            const [activeLine, setActiveLine] = useState(null);
+            const [autoScroll, setAutoScroll] = useState(true);
+            const [showVocab, setShowVocab] = useState(false);
+            const [playbackRate, setPlaybackRate] = useState(1.0);
+            const [translations, setTranslations] = useState({});
+            const [popup, setPopup] = useState({ show: false, fixed: false, data: null, x: 0, y: 0 });
+            
+            // New state for vocab highlight
+            const [activeVocabTerm, setActiveVocabTerm] = useState(null);
+            const sidebarVocabRefs = useRef({});
+
+            const scriptRefs = useRef({});
+            const intervalRef = useRef(null);
+
+            useEffect(() => {
+                const loadVideo = () => {
+                    if (window.YT && window.YT.Player) {
+                        new window.YT.Player('youtube-player', {
+                            videoId: 'klxx6ChKQFg',
+                            width: '100%',
+                            height: '100%',
+                            playerVars: { 'autoplay': 0, 'controls': 1, 'rel': 0 },
+                            events: {
+                                'onReady': (event) => {
+                                    playerRef.current = event.target;
+                                    setPlayer(event.target);
+                                },
+                                'onStateChange': (event) => {
+                                    if (event.data === window.YT.PlayerState.PLAYING) {
+                                        startInterval();
+                                        updateProgress('learn');
+                                    } else stopInterval();
+                                }
+                            }
+                        });
+                    }
+                };
+                if (!window.YT) {
+                    const tag = document.createElement('script');
+                    tag.src = "https://www.youtube.com/iframe_api";
+                    const firstScriptTag = document.getElementsByTagName('script')[0];
+                    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+                    window.onYouTubeIframeAPIReady = loadVideo;
+                } else {
+                    loadVideo();
+                }
+                return () => stopInterval();
+            }, []);
+
+            useEffect(() => {
+                const handleGlobalClick = () => {
+                    if (popup.fixed) {
+                        setPopup(prev => ({ ...prev, show: false, fixed: false }));
+                    }
+                };
+                if (popup.fixed) {
+                    window.addEventListener('click', handleGlobalClick);
+                }
+                return () => window.removeEventListener('click', handleGlobalClick);
+            }, [popup.fixed]);
+
+            const startInterval = () => {
+                stopInterval();
+                intervalRef.current = setInterval(() => {
+                    const p = playerRef.current;
+                    if (p && p.getCurrentTime) {
+                        const time = p.getCurrentTime();
+                        setCurrentTime(time);
+                        const currentLine = SCRIPT_DATA.find(line => time >= line.time[0] && time < line.time[1]);
+                        if (currentLine) setActiveLine(currentLine.id);
+                    }
+                }, 200);
+            };
+            const stopInterval = () => clearInterval(intervalRef.current);
+
+            const handleSpeedChange = (e) => {
+                const rate = parseFloat(e.target.value);
+                setPlaybackRate(rate);
+                if (player && player.setPlaybackRate) player.setPlaybackRate(rate);
+            };
+
+            useEffect(() => {
+                if (popup.show) return;
+                if (activeLine && autoScroll && scriptRefs.current[activeLine]) {
+                    scriptRefs.current[activeLine].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, [activeLine, autoScroll, popup.show]);
+
+            const handleLineClick = (time) => {
+                if (player) {
+                    player.seekTo(time);
+                    player.playVideo();
+                }
+            };
+
+            const toggleTranslation = (id) => {
+                setTranslations(prev => ({...prev, [id]: !prev[id]}));
+            };
+
+            const scrollToVocab = (term) => {
+                const element = sidebarVocabRefs.current[term];
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            };
+
+            const handleVocabEnter = (e, wordData) => {
+                if (popup.fixed) return; 
+                const rect = e.target.getBoundingClientRect();
+                setPopup({
+                    show: true,
+                    fixed: false, // 호버 시에는 fixed: false (간단히 보이기)
+                    data: wordData,
+                    x: rect.left + rect.width / 2, 
+                    y: rect.bottom
+                });
+
+                // Scroll sidebar if open
+                if (showVocab) {
+                    setActiveVocabTerm(wordData.term);
+                    scrollToVocab(wordData.term);
+                }
+            };
+
+            const handleVocabLeave = () => {
+                if (popup.fixed) return;
+                setPopup(prev => ({ ...prev, show: false }));
+            };
+
+            const handleVocabClick = (e, wordData) => {
+                e.stopPropagation(); 
+                // Popup logic
+                if (popup.fixed && popup.data && popup.data.term === wordData.term) {
+                    setPopup(prev => ({ ...prev, show: false, fixed: false }));
+                    return;
+                }
+                const rect = e.target.getBoundingClientRect();
+                setPopup({
+                    show: true,
+                    fixed: true, // 클릭 시에는 fixed: true (자세히 보이기)
+                    data: wordData,
+                    x: rect.left + rect.width / 2,
+                    y: rect.bottom
+                });
+
+                // Sidebar logic
+                if (!showVocab) {
+                   // Do NOT open sidebar. Only show popup.
+                } else {
+                    setActiveVocabTerm(wordData.term);
+                    scrollToVocab(wordData.term);
+                }
+            };
+
+            const renderTextWithVocab = (text) => {
+                let parts = [text];
+                VOCAB_DATA.forEach(vocab => {
+                    const nextParts = [];
+                    parts.forEach(part => {
+                        if (typeof part === 'string') {
+                            const split = part.split(vocab.term);
+                            split.forEach((s, i) => {
+                                if (s) nextParts.push(s);
+                                if (i < split.length - 1) {
+                                    nextParts.push({ isVocab: true, ...vocab });
+                                }
+                            });
+                        } else {
+                            nextParts.push(part);
+                        }
+                    });
+                    parts = nextParts;
+                });
+
+                return parts.map((part, index) => {
+                    if (typeof part === 'string') return part;
+                    const isActive = (popup.show && popup.data && popup.data.term === part.term) || (showVocab && activeVocabTerm === part.term);
+                    return (
+                        <span 
+                            key={index}
+                            className={`cursor-pointer border-b-2 transition-all duration-200 font-bold inline-block leading-tight
+                                ${isActive 
+                                    ? 'text-green-700 border-green-500 bg-green-100 rounded-sm px-0.5 mx-0.5' 
+                                    : 'text-gray-900 border-dashed border-gray-400 hover:text-green-600 hover:border-green-400 hover:bg-green-50'
+                                }`}
+                            onMouseEnter={(e) => handleVocabEnter(e, part)}
+                            onMouseLeave={handleVocabLeave}
+                            onClick={(e) => handleVocabClick(e, part)}
+                        >
+                            {part.term}
+                        </span>
+                    );
+                });
+            };
+
+            return (
+                <div className="flex h-[calc(100vh-4rem)] gap-4 animate-fade-in overflow-hidden relative">
+                    {/* Vocab Popup */}
+                    {popup.show && popup.data && createPortal(
+                        <div 
+                            className="fixed z-[9999] bg-white rounded-xl shadow-xl border border-gray-200 p-4 w-72 animate-fade-in pointer-events-none"
+                            style={{ 
+                                left: popup.x, 
+                                top: popup.y + 12,
+                                transform: 'translate(-50%, 0)'
+                            }}
+                        >
+                            <div className="flex items-center justify-between mb-2">
+                                <h3 className="text-lg font-black text-gray-900">{popup.data.term}</h3>
+                            </div>
+                            <p className="text-sm text-gray-700 font-medium mb-3 leading-snug">{popup.data.mainDef}</p>
+                            
+                            {/* 예문 대신 관련 표현(subTerms) 표시: 클릭 시(fixed=true)에만 보임 */}
+                            {popup.fixed && popup.data.subDefs && popup.data.subDefs.length > 0 && (
+                                <div className="space-y-1 mt-2">
+                                    {popup.data.subDefs.map((sub, idx) => (
+                                        <div key={idx} className="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                                            <p className="text-xs text-blue-900 font-bold">{sub.subTerm}</p>
+                                            <p className="text-[10px] text-blue-700">{sub.subDef}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white border-l border-t border-gray-200 rotate-45"></div>
+                        </div>,
+                        document.body
+                    )}
+
+                    <div className={`bg-black rounded-xl overflow-hidden shadow-lg transition-all duration-300 ${showVocab ? 'w-5/12' : 'flex-1'}`}>
+                         <div id="youtube-player" className="w-full h-full"></div>
+                    </div>
+
+                    <div className={`flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm transition-all duration-300 ${showVocab ? 'w-4/12' : 'w-5/12'}`}>
+                        {/* --- Controls Header (Modified for Responsive Layout) --- */}
+                        <div className="flex flex-col xl:flex-row items-center justify-between p-3 border-b border-gray-100 bg-white rounded-t-xl z-10 gap-3 xl:gap-0">
+                            {/* Speed Control Group */}
+                            <div className="w-full xl:w-auto flex items-center justify-between gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl shadow-sm">
+                                <div className="flex items-center gap-1.5 text-gray-600 shrink-0">
+                                    <SpeedSolidIcon className="w-5 h-5 text-gray-500" />
+                                    <span className="text-sm font-extrabold text-gray-600">Speed</span>
+                                </div>
+                                <div className="flex items-center gap-2 flex-1 xl:flex-none justify-center px-2">
+                                    <span className="text-[10px] font-medium text-gray-400">0.5x</span>
+                                    <input 
+                                        type="range" min="0.5" max="1.0" step="0.01" 
+                                        value={playbackRate} onChange={handleSpeedChange}
+                                        className="flex-1 xl:w-32 h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer"
+                                    />
+                                    <span className="text-[10px] font-medium text-gray-400">1.0x</span>
+                                </div>
+                                <div className="bg-[#ecfdf5] px-2 py-1 rounded-md min-w-[3rem] text-center border border-green-100 shrink-0">
+                                    <span className="text-xs font-bold text-green-700">{playbackRate.toFixed(2)}x</span>
+                                </div>
+                            </div>
+
+                            {/* Right Group: Auto Scroll & Vocabulary */}
+                            <div className="w-full xl:w-auto flex items-center justify-between xl:justify-end gap-3">
+                                <div className="flex items-center gap-2 cursor-pointer group" onClick={() => setAutoScroll(!autoScroll)}>
+                                    <div className={`w-9 h-5 rounded-full relative transition-colors duration-200 ease-in-out ${autoScroll ? 'bg-green-500' : 'bg-gray-300'}`}>
+                                        <div className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-transform duration-200 ${autoScroll ? 'left-5' : 'left-1'}`}></div>
+                                    </div>
+                                    <span className="text-sm font-bold text-gray-600 group-hover:text-gray-800 transition-colors whitespace-nowrap">Auto Scroll</span>
+                                </div>
+
+                                <button 
+                                    onClick={() => setShowVocab(!showVocab)}
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all shadow-sm ${showVocab ? 'bg-gray-100 border-gray-300' : 'bg-white border-gray-300 hover:bg-gray-50'}`}
+                                >
+                                    <OpenBookSolidIcon className="w-4 h-4 text-gray-600" />
+                                    <span className="text-sm font-bold text-gray-700 whitespace-nowrap">Vocabulary</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                            {SCRIPT_DATA.map(line => {
+                                const isActive = activeLine === line.id;
+                                return (
+                                    <div key={line.id} ref={el => scriptRefs.current[line.id] = el} className="flex flex-col">
+                                        <div className="flex items-center gap-2 mb-1 ml-1">
+                                            <span className="text-xs font-bold text-gray-600">{line.speaker}</span>
+                                            <button onClick={(e) => { e.stopPropagation(); handleLineClick(line.time[0]); }} className="text-[10px] text-blue-500 hover:underline flex items-center gap-0.5">
+                                                <PlayIconLine className="w-3 h-3 fill-current" /> 재생 (Play)
+                                            </button>
+                                        </div>
+                                        <div 
+                                            onClick={() => handleLineClick(line.time[0])}
+                                            className={`p-5 rounded-2xl border transition-all duration-300 cursor-pointer relative group ${
+                                                isActive 
+                                                ? 'bg-yellow-100 border-yellow-400 shadow-md ring-1 ring-yellow-200 scale-[1.01]' 
+                                                : 'bg-white border-gray-200 hover:border-gray-300'
+                                            }`}
+                                        >
+                                            <p className="text-lg text-gray-800 leading-relaxed font-medium">
+                                                {renderTextWithVocab(line.kor)}
+                                            </p>
+                                            
+                                            <div className="my-3 border-t border-dashed border-gray-200"></div>
+                                            {translations[line.id] ? (
+                                                <p className="text-sm text-gray-500 animate-fade-in">{line.eng}</p>
+                                            ) : (
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); toggleTranslation(line.id); }}
+                                                    className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1"
+                                                >
+                                                    <TranslateIcon className="w-3 h-3" /> 번역 (Translation)
+                                                </button>
+                                            )}
+                                            {translations[line.id] && (
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); toggleTranslation(line.id); }}
+                                                    className="absolute bottom-4 right-4 text-[10px] text-gray-300 hover:text-gray-500"
+                                                >
+                                                    접기
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                            <div className="h-32"></div>
+                        </div>
+                    </div>
+
+                    {showVocab && (
+                        <div className="w-3/12 flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm animate-fade-in">
+                            <div className="p-4 border-b border-gray-100 flex items-center gap-2 bg-white rounded-t-xl">
+                                <VocabIcon className="w-5 h-5 text-green-600" />
+                                <div className="flex flex-col leading-none">
+                                    <h2 className="font-bold text-gray-900 text-sm font-jua">핵심 어휘</h2>
+                                    <span className="text-[10px] text-gray-400 font-medium">Key Vocabulary</span>
+                                </div>
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                                {VOCAB_DATA.map((word, idx) => (
+                                    <div 
+                                        key={idx} 
+                                        ref={el => sidebarVocabRefs.current[word.term] = el}
+                                        className={`p-4 rounded-xl border transition-all duration-500 ${
+                                            activeVocabTerm === word.term 
+                                            ? 'border-green-500 bg-green-50 ring-2 ring-green-200 shadow-md scale-105' 
+                                            : 'bg-white border-gray-200 shadow-sm'
+                                        }`}
+                                    >
+                                        <div className="flex justify-between items-start mb-2">
+                                            <h3 className="text-lg font-extrabold text-gray-900">{word.term}</h3>
+                                        </div>
+                                        <p className="text-sm text-gray-600 mb-3 font-medium">{word.mainDef}</p>
+                                        
+                                        {/* 예문 대신 관련 표현(subDefs) 표시로 변경 */}
+                                        {word.subDefs && word.subDefs.length > 0 && (
+                                            <div className="space-y-2 bg-blue-50 p-2.5 rounded-lg border border-blue-100">
+                                                {word.subDefs.map((sub, i) => (
+                                                    <div key={i}>
+                                                        <p className="text-xs text-blue-900 font-bold leading-snug">{sub.subTerm}</p>
+                                                        <p className="text-[10px] text-blue-700">{sub.subDef}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // 새로 추가된 VocabCard 컴포넌트
+        const VocabCard = ({ word }) => {
+            const [isOpen, setIsOpen] = useState(false);
+
+            return (
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all h-full flex flex-col">
+                    <div className="flex justify-between mb-4">
+                        <h3 className="text-2xl font-extrabold text-gray-900">{word.term}</h3>
+                    </div>
+                    <div className="pl-4 border-l-4 border-green-500 mb-6">
+                        <p className="text-lg text-gray-600 font-medium">{word.mainDef}</p>
+                    </div>
+                    
+                    <div className="flex-1 flex flex-col">
+                        {word.examples && word.examples.length > 0 && (
+                            <>
+                                <button 
+                                    onClick={() => setIsOpen(!isOpen)}
+                                    className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all group border border-transparent hover:border-gray-200"
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <span className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${isOpen ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                                        <span className={`text-xs font-bold uppercase tracking-wider transition-colors duration-300 ${isOpen ? 'text-green-700' : 'text-gray-500'}`}>
+                                            Examples (예문)
+                                        </span>
+                                    </div>
+                                    <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${isOpen ? 'rotate-90' : ''}`} />
+                                </button>
+
+                                <div 
+                                    className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}
+                                >
+                                    <div className="bg-gray-50 rounded-xl p-4 space-y-3 border border-gray-100">
+                                        {word.examples.map((ex, i) => (
+                                            <div key={i}>
+                                                <p className="font-bold text-gray-800 text-sm leading-relaxed">{ex.kor}</p>
+                                                <p className="text-gray-500 text-xs mt-0.5">{ex.eng}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {word.subDefs && word.subDefs.length > 0 && (
+                            <div className="bg-blue-50 rounded-xl p-5 space-y-2 border border-blue-100 mt-4">
+                                <h4 className="font-bold text-blue-800 text-xs mb-2 flex items-center gap-2 uppercase tracking-wider">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                    Related & Grammar
+                                </h4>
+                                {word.subDefs.map((sub, i) => (
+                                    <div key={i} className="flex flex-col">
+                                        <span className="font-bold text-blue-900 text-sm">{sub.subTerm}</span>
+                                        <span className="text-xs text-blue-600">{sub.subDef}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const VocabView = ({ updateProgress }) => {
+            useEffect(() => {
+                updateProgress('vocab');
+            }, []);
+
+            return (
+            <div className="max-w-5xl animate-fade-in mx-auto">
+                <div className="flex items-center gap-4 mb-8">
+                    <div className="w-16 h-16 bg-[#DCFCE7] rounded-2xl flex items-center justify-center shrink-0">
+                        <VocabHeaderIcon className="w-10 h-10" />
+                    </div>
+                    <div className="flex flex-col">
+                        <h2 className="text-3xl font-black text-gray-900 font-jua">핵심 어휘</h2>
+                        <span className="text-base text-gray-500 font-medium">Key Vocabulary</span>
+                    </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {VOCAB_DATA.map((word, idx) => (
+                        <VocabCard key={idx} word={word} />
+                    ))}
+                </div>
+            </div>
+            );
+        };
+
+        const QuizView = ({ updateProgress }) => {
+            const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+            const [answers, setAnswers] = useState({});
+            const [firstAttempts, setFirstAttempts] = useState({}); 
+            const [showHint, setShowHint] = useState(false);
+            const [showTranslation, setShowTranslation] = useState(false);
+            const [isFinished, setIsFinished] = useState(false);
+
+            const currentQuestion = QUIZ_LIST[currentQuestionIndex];
+
+            // 선택지 랜덤 섞기: 문제가 바뀔 때만(currentQuestion 변경 시) 섞이고, 리렌더링 시에는 순서 유지
+            const shuffledOptions = useMemo(() => {
+                return [...currentQuestion.options].sort(() => Math.random() - 0.5);
+            }, [currentQuestion]);
+
+            const selectedOption = answers[currentQuestionIndex] || null;
+            const isCorrect = selectedOption?.isCorrect;
+
+            const handleOptionClick = (option) => {
+                // 이미 정답을 맞췄다면 더 이상 선택 불가
+                if (selectedOption?.isCorrect) return; 
+
+                // 첫 시도 기록 (최초 클릭 시에만 기록)
+                if (firstAttempts[currentQuestionIndex] === undefined) {
+                    setFirstAttempts(prev => ({
+                        ...prev,
+                        [currentQuestionIndex]: option.isCorrect
+                    }));
+                }
+
+                // 현재 선택한 답변 업데이트 (오답이어도 계속 선택 가능)
+                setAnswers(prev => ({
+                    ...prev,
+                    [currentQuestionIndex]: option
+                }));
+                
+                setShowHint(false); 
+            };
+
+            const handlePrev = () => {
+                if (currentQuestionIndex > 0) {
+                    setCurrentQuestionIndex(prev => prev - 1);
+                    setShowHint(false);
+                    setShowTranslation(false);
+                }
+            };
+
+            const handleNext = () => {
+                if (currentQuestionIndex < QUIZ_LIST.length - 1) {
+                    setCurrentQuestionIndex(prev => prev + 1);
+                    setShowHint(false);
+                    setShowTranslation(false);
+                } else {
+                    finishQuiz();
+                }
+            };
+
+            const finishQuiz = () => {
+                setIsFinished(true);
+                const totalQuestions = QUIZ_LIST.length;
+                const correctCount = Object.values(firstAttempts).filter(isCorrect => isCorrect === true).length;
+                const finalScore = Math.round((correctCount / totalQuestions) * 100);
+                updateProgress('quiz', finalScore);
+            };
+
+            const handleRetry = () => {
+                setCurrentQuestionIndex(0);
+                setAnswers({});
+                setFirstAttempts({});
+                setIsFinished(false);
+                updateProgress('quiz', 0); 
+            };
+
+            if (isFinished) {
+                const correctCount = Object.values(firstAttempts).filter(isCorrect => isCorrect === true).length;
+                return (
+                    <div className="max-w-4xl animate-fade-in mx-auto text-center py-10">
+                        <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-10">
+                            <div className="w-20 h-20 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <QuizIcon className="w-10 h-10" />
+                            </div>
+                            <h2 className="text-3xl font-black text-gray-900 mb-2">퀴즈 완료!</h2>
+                            <p className="text-gray-500 mb-8">
+                                총 {QUIZ_LIST.length}문제 중 {correctCount}문제를 한 번에 맞혔습니다.
+                            </p>
+                            <div className="text-5xl font-black text-purple-600 mb-10">
+                                {Math.round((correctCount / QUIZ_LIST.length) * 100)}%
+                            </div>
+                            <button 
+                                onClick={handleRetry}
+                                className="px-8 py-3 rounded-xl bg-purple-600 text-white font-bold hover:bg-purple-700 transition-colors"
+                            >
+                                다시 풀기 (Try Again)
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="max-w-4xl animate-fade-in mx-auto">
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center shrink-0">
+                            <QuizHeaderIcon className="w-10 h-10" />
+                        </div>
+                        <div className="flex flex-col">
+                            <h2 className="text-3xl font-black text-gray-900 font-jua">내용 확인 퀴즈</h2>
+                            <span className="text-base text-gray-500 font-medium">Comprehension Quiz ({currentQuestionIndex + 1}/{QUIZ_LIST.length})</span>
+                        </div>
+                    </div>
+
+                    <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                        <p className="font-bold text-gray-800">다음 빈칸에 알맞은 말을 고르세요.</p>
+                        <p className="text-gray-500 text-sm">Choose the correct word for the blank.</p>
+                    </div>
+
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-2">
+                        <div className="flex items-start gap-3 p-4">
+                            <span className="bg-purple-100 text-purple-700 font-black rounded-lg px-2 py-1 text-sm shrink-0">Q{currentQuestion.id}</span>
+                            <div className="flex flex-col">
+                                <h3 className="font-bold text-gray-900 text-lg leading-snug">{currentQuestion.questionKor}</h3>
+                                <p className="text-gray-500 font-medium text-sm mt-1">{currentQuestion.questionEng}</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-gray-50 rounded-xl p-4 mb-4 mx-1">
+                            <div>
+                                <div className="flex items-center flex-wrap gap-2 leading-relaxed">
+                                    <span className="text-xl font-bold text-gray-900">{currentQuestion.sentence_pre}</span>
+                                    
+                                    <div className={`px-4 py-1 rounded-md font-bold text-xl transition-all duration-300 min-w-[80px] text-center border-b-2 
+                                        ${selectedOption 
+                                            ? (isCorrect 
+                                                ? 'bg-[#dcfce7] text-green-700 border-green-500' 
+                                                : 'bg-[#fee2e2] text-red-700 border-red-500')
+                                            : (showHint ? 'bg-[#fef08a] text-yellow-800 border-yellow-400' : 'bg-[#fef08a] text-transparent border-yellow-400 select-none')
+                                        }`}
+                                    >
+                                        {selectedOption 
+                                            ? selectedOption.text 
+                                            : (showHint ? `[ ${currentQuestion.hint} ]` : "___")
+                                        }
+                                    </div>
+                                    
+                                    <span className="text-xl font-bold text-gray-900">
+                                        {currentQuestion.sentence_post}
+                                        {selectedOption && (
+                                            <span className={`ml-2 text-lg ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+                                                {isCorrect ? '✓' : '✗'}
+                                            </span>
+                                        )}
+                                    </span>
+                                </div>
+
+                                {showTranslation && (
+                                    <div className="mt-4 pt-4 border-t border-gray-200 text-gray-500 italic text-sm animate-fade-in font-medium">
+                                        {currentQuestion.translation}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex gap-2 mb-4 px-2">
+                            <button 
+                                onClick={() => { setShowHint(!showHint); }}
+                                disabled={selectedOption?.isCorrect}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${selectedOption?.isCorrect ? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400' : (showHint ? 'bg-yellow-200 text-yellow-800 ring-2 ring-yellow-400' : 'bg-[#fef08a] text-yellow-800 hover:bg-yellow-200')}`}
+                            >
+                                힌트 (Hint)
+                            </button>
+                            <button 
+                                onClick={() => setShowTranslation(!showTranslation)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${showTranslation ? 'bg-gray-300 text-gray-800 ring-2 ring-gray-400' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                            >
+                                번역 (Translation)
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 px-2">
+                            {shuffledOptions.map((option, idx) => {
+                                const isSelected = selectedOption === option;
+                                let btnClass = "bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300";
+                                
+                                if (isSelected) {
+                                    if (option.isCorrect) {
+                                        btnClass = "bg-green-500 border-green-600 text-white shadow-md ring-2 ring-green-200";
+                                    } else {
+                                        btnClass = "bg-red-500 border-red-600 text-white shadow-md ring-2 ring-red-200";
+                                    }
+                                } else if (selectedOption?.isCorrect) {
+                                    // 정답을 맞췄을 때만 나머지 버튼 비활성화 스타일 적용
+                                    btnClass = "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed";
+                                }
+
+                                return (
+                                    <button
+                                        key={idx}
+                                        onClick={() => handleOptionClick(option)}
+                                        disabled={selectedOption?.isCorrect}
+                                        className={`py-3 px-4 rounded-xl border font-bold text-base transition-all duration-200 ${btnClass}`}
+                                    >
+                                        {option.text}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {selectedOption && (
+                            <div className="p-4 rounded-xl border-l-4 mb-4 mx-2 animate-fade-in transition-all bg-[#f8fafc] border-gray-300">
+                                <div className={`${isCorrect ? 'bg-[#f0fdf4] border-green-500' : 'bg-[#fef2f2] border-red-500'} p-4 rounded-lg border-l-4`}>
+                                    <h4 className={`font-bold text-sm mb-1 ${isCorrect ? 'text-green-800' : 'text-red-800'}`}>
+                                        {isCorrect ? 'Correct!' : 'Try again.'}
+                                    </h4>
+                                    <p className={`text-sm italic ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
+                                        {selectedOption.feedback}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="flex justify-between items-center mt-4 border-t border-gray-100 pt-4 px-2 pb-2">
+                            <button
+                                onClick={handlePrev}
+                                disabled={currentQuestionIndex === 0}
+                                className={`px-6 py-1 rounded-xl font-bold flex items-center gap-2 transition-colors ${
+                                    currentQuestionIndex === 0 
+                                    ? 'text-gray-300 cursor-not-allowed' 
+                                    : 'text-gray-600 hover:bg-gray-100'
+                                }`}
+                            >
+                                <span className="text-lg">←</span>
+                                <span className="text-xs">이전 문제 (Prev)</span>
+                            </button>
+
+                            <button 
+                                onClick={handleNext}
+                                disabled={!isCorrect} 
+                                className={`px-6 py-1 rounded-xl font-bold flex items-center gap-2 shadow-md transition-colors ${
+                                    !isCorrect
+                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    : 'bg-gray-900 text-white hover:bg-black'
+                                }`}
+                            >
+                                <span className="text-xs">{currentQuestionIndex < QUIZ_LIST.length - 1 ? '다음 문제 (Next)' : '결과 보기 (Finish)'}</span>
+                                <span className="text-lg">→</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const callGeminiWithBackoff = async (payload) => {
+            const apiKey = ""; // Runtime provided
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const delays = [1000, 2000, 4000, 8000, 16000];
+            
+            for (let i = 0; i <= delays.length; i++) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) {
+                        if (response.status === 429 || response.status >= 500) {
+                            throw new Error(`Server error: ${response.status}`);
+                        }
+                        throw new Error(`API error: ${response.statusText}`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    if (i === delays.length) throw error;
+                    await new Promise(resolve => setTimeout(resolve, delays[i]));
+                }
+            }
+        };
+
+        const FeedbackSection = ({ value, onChange, placeholder, question, keyPhrases }) => {
+            const [feedback, setFeedback] = useState(null);
+            const [isLoading, setIsLoading] = useState(false);
+            const [error, setError] = useState(null);
+
+            const checkSentence = async () => {
+                if (!value || value.trim() === '') {
+                    setError("문장을 입력해야 피드백을 받을 수 있어요.");
+                    setFeedback(null);
+                    return;
+                }
+                setIsLoading(true);
+                setError(null);
+                setFeedback(null);
+
+                const systemPrompt = `You are an advanced Korean language tutor AI for A2 level learners. Analyze the user's sentence in response to a specific question.
+The user's answer is in Korean.
+Your goal is to provide feedback in ENGLISH to help the learner understand.
+
+Instructions:
+1. "feedback_message_eng": Write the feedback status or brief comment in English.
+2. "explanation_eng": Explain the grammar or vocabulary mistake in English. You can quote Korean words but the explanation must be in English.
+3. "corrected_sentence": Provide the natural and correct Korean sentence.
+4. "relevance_feedback_eng": If the answer is irrelevant, explain why in English.
+
+Question: "${question}"
+User's Answer: "${value}"
+
+Your response MUST be a JSON object with the specified schema.`;
+                const payload = {
+                    contents: [{ role: "user", parts: [{ text: systemPrompt }, { text: `Please provide feedback on my answer.\n\nQuestion: "${question}"\nUser's Answer: "${value}"` }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: { type: "OBJECT", properties: { "is_relevant": { "type": "BOOLEAN" }, "relevance_feedback_eng": { "type": "STRING", "nullable": true }, "is_correct": { "type": "BOOLEAN", "nullable": true }, "feedback_message_eng": { "type": "STRING", "nullable": true }, "corrected_sentence": { "type": "STRING", "nullable": true }, "explanation_eng": { "type": "STRING", "nullable": true }, "alternative_expressions": { "type": "ARRAY", "items": { "type": "OBJECT", "properties": { "expression_kor": { "type": "STRING" }, "expression_eng": { "type": "STRING" } }, "required": ["expression_kor", "expression_eng"] } } }, "required": ["is_relevant"] }
+                    }
+                };
+
+                try {
+                    const result = await callGeminiWithBackoff(payload);
+                    if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
+                        const parsedJson = JSON.parse(result.candidates[0].content.parts[0].text);
+                        setFeedback(parsedJson);
+                    } else {
+                        setError("AI의 응답을 처리하는 데 문제가 발생했어요.");
+                    }
+                } catch (err) {
+                    console.error("Error checking sentence:", err);
+                    setError("문장 검사에 실패했어요. 다시 시도해 주세요.");
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            return (
+                <div>
+                    {keyPhrases}
+                    <div>
+                        <h4 className="font-bold text-gray-900 mb-3 text-base">핵심 표현을 사용해서 질문에 대답해 보세요.</h4>
+                        <textarea 
+                            value={value} 
+                            onChange={onChange} 
+                            placeholder={placeholder}
+                            className="w-full p-4 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none min-h-[120px] resize-none text-base text-gray-800 placeholder-gray-400 mb-3"
+                        ></textarea>
+                        
+                        <button
+                            onClick={checkSentence}
+                            disabled={!value.trim() || isLoading}
+                            className={`flex items-center gap-2 px-5 py-[6px] text-[12px] leading-[12px] rounded-xl font-bold transition-all shadow-sm ${
+                                !value.trim() || isLoading
+                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-md'
+                            }`}
+                        >
+                            {isLoading ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    <span>분석 중... (Analyzing)</span>
+                                </>
+                            ) : (
+                                <>
+                                    <SparklesIcon className="w-5 h-5" />
+                                    <span>AI Feedback (피드백 받기)</span>
+                                </>
+                            )}
+                        </button>
+
+                        {error && (
+                            <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-xl border border-red-200 text-sm font-medium animate-fade-in">
+                                {error}
+                            </div>
+                        )}
+
+                        {feedback && (
+                            <div className={`mt-6 rounded-2xl p-6 border animate-fade-in ${feedback.is_correct ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
+                                <div className="flex items-center gap-2 mb-4">
+                                    <span className="text-2xl">🤖</span>
+                                    <h4 className="font-extrabold text-gray-900 text-lg">AI Tutor Feedback</h4>
+                                </div>
+                                
+                                <div className="mb-4">
+                                    <span className={`font-black text-sm px-3 py-1 rounded-full bg-white border shadow-sm ${feedback.is_correct ? 'text-green-600 border-green-200' : 'text-yellow-600 border-yellow-200'}`}>
+                                        {feedback.is_correct ? '🎉 Great Job!' : '⚠️ Needs Improvement'}
+                                    </span>
+                                </div>
+
+                                <div className="space-y-4">
+                                    {feedback.feedback_message_eng && (
+                                        <div className="flex flex-col sm:flex-row gap-1 sm:gap-4">
+                                            <span className="font-bold text-gray-500 text-sm sm:w-24 shrink-0">Feedback</span>
+                                            <p className="text-gray-800 text-sm font-medium leading-relaxed">{feedback.feedback_message_eng}</p>
+                                        </div>
+                                    )}
+                                    {feedback.explanation_eng && (
+                                        <div className="flex flex-col sm:flex-row gap-1 sm:gap-4">
+                                            <span className="font-bold text-gray-500 text-sm sm:w-24 shrink-0">Explanation</span>
+                                            <p className="text-gray-800 text-sm font-medium leading-relaxed">{feedback.explanation_eng}</p>
+                                        </div>
+                                    )}
+                                    {feedback.corrected_sentence && (
+                                        <div className="flex flex-col sm:flex-row gap-1 sm:gap-4">
+                                            <span className="font-bold text-gray-500 text-sm sm:w-24 shrink-0">Correction</span>
+                                            <p className="text-gray-900 text-lg font-black leading-relaxed">{feedback.corrected_sentence}</p>
+                                        </div>
+                                    )}
+                                    {!feedback.is_relevant && (
+                                        <div className="flex flex-col sm:flex-row gap-1 sm:gap-4">
+                                            <span className="font-bold text-gray-500 text-sm sm:w-24 shrink-0">Relevance</span>
+                                            <p className="text-gray-800 text-sm font-medium leading-relaxed">{feedback.relevance_feedback_eng || "This answer doesn't seem relevant to the question."}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const DiscussCard = ({ item }) => {
+            const [answer, setAnswer] = useState('');
+            const [showTrans, setShowTrans] = useState(false);
+
+            const keyPhrasesNode = (
+                <div className="mb-10 space-y-4">
+                    <div className="flex items-center gap-2">
+                        <span className="text-red-500 text-lg">📍</span>
+                        <h4 className="font-bold text-gray-900 text-lg">핵심 표현 (Essential phrases)</h4>
+                    </div>
+                    <div className="space-y-4 pl-1">
+                        {item.vocab.map((v, idx) => (
+                            <div key={idx} className="pl-4 border-l-4 border-green-500">
+                                <p className="text-gray-700">
+                                    <span className="text-green-600 font-bold text-lg mr-2">{v.term}:</span>
+                                    <span>{v.meaning}</span>
+                                </p>
+                                {v.context && <p className="text-sm text-gray-500 mt-1 italic">"{v.context}"</p>}
+                                {v.context_eng && <p className="text-xs text-gray-400">({v.context_eng})</p>}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className="mb-12 border-b border-gray-100 pb-12 last:border-0 last:pb-0">
+                    <div className="mb-8">
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">{item.num}. {item.kor}</h3>
+                        {showTrans && (
+                            <p className="text-gray-500 text-sm mb-3 animate-fade-in font-medium">
+                                {item.eng}
+                            </p>
+                        )}
+                        <button 
+                            onClick={() => setShowTrans(!showTrans)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 ${showTrans ? 'bg-gray-200 text-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                        >
+                            <TranslateIcon className="w-3 h-3" />
+                            <span>{showTrans ? '번역 숨기기 (Hide)' : '번역 (Translation)'}</span>
+                        </button>
+                    </div>
+
+                    <FeedbackSection 
+                        question={item.kor}
+                        value={answer}
+                        onChange={(e) => setAnswer(e.target.value)}
+                        placeholder="여기에 답변을 입력하세요 (Type your response here)"
+                        keyPhrases={keyPhrasesNode}
+                    />
+                </div>
+            );
+        };
+
+        const DiscussView = ({ updateProgress }) => {
+            return (
+                <div className="max-w-4xl mx-auto animate-fade-in">
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="w-16 h-16 bg-[#EFF6FF] rounded-2xl flex items-center justify-center shrink-0">
+                            <DiscussHeaderIcon className="w-10 h-10" />
+                        </div>
+                        <div className="flex flex-col">
+                            <h2 className="text-3xl font-black text-gray-900 font-jua">생각해 보기</h2>
+                            <span className="text-base text-gray-500 font-medium">Food For Thought</span>
+                        </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-8 md:p-10">
+                        {DISCUSS_DATA.map(item => <DiscussCard key={item.num} item={item} />)}
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('home');
+            const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+            const [userLevel, setUserLevel] = useState("A2+"); // Default level fixed to A2+ (Upper Beginner)
+            
+            const [progress, setProgress] = useState({
+                learn: false,
+                vocab: false,
+                quiz: 0,
+                discuss: false
+            });
+
+            const updateProgress = (key, value = true) => {
+                setProgress(prev => {
+                    if (prev[key] === value) return prev;
+                    return { ...prev, [key]: value };
+                });
+            };
+
+            useEffect(() => {
+                const handleResize = () => {
+                    if (window.innerWidth < 1024) {
+                        setIsSidebarCollapsed(true);
+                    } else {
+                        setIsSidebarCollapsed(false);
+                    }
+                };
+                window.addEventListener('resize', handleResize);
+                handleResize(); 
+                return () => window.removeEventListener('resize', handleResize);
+            }, []);
+
+            const toggleSidebar = () => {
+                setIsSidebarCollapsed(!isSidebarCollapsed);
+            };
+
+            const renderContent = () => {
+                switch(activeTab) {
+                    case 'home': return <HomeView setActiveTab={setActiveTab} progress={progress} userLevel={userLevel} />;
+                    case 'learn': return <LearnView updateProgress={updateProgress} />;
+                    case 'vocab': return <VocabView updateProgress={updateProgress} />;
+                    case 'quiz': return <QuizView updateProgress={updateProgress} />;
+                    case 'discuss': return <DiscussView updateProgress={updateProgress} />;
+                    default: return <HomeView setActiveTab={setActiveTab} progress={progress} userLevel={userLevel} />;
+                }
+            };
+
+            return (
+                <div className="flex min-h-screen bg-[#f9fafb]">
+                    <Sidebar 
+                        activeTab={activeTab} 
+                        setActiveTab={setActiveTab} 
+                        isCollapsed={isSidebarCollapsed} 
+                        toggleSidebar={toggleSidebar}
+                        userLevel={userLevel}
+                        // setUserLevel removed as level is fixed for this content
+                    />
+                    <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'md:ml-[88px]' : 'md:ml-64'}`}>
+                        <header className={`h-16 bg-white sticky top-0 z-40 transition-all duration-300 ${isSidebarCollapsed ? 'md:left-[88px]' : 'md:left-64'}`}></header>
+                        <main className="flex-1 p-4 overflow-hidden flex flex-col">{renderContent()}</main>
+                    </div>
+                    <nav className="md:hidden fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-around p-3 z-50">
+                        {['home','learn','vocab','quiz','discuss'].map(t=><button key={t} onClick={()=>setActiveTab(t)} className={`p-2 rounded-lg ${activeTab===t?'text-green-600 bg-green-50':'text-gray-400'}`}>{t==='home'?<HomeIcon className="w-6 h-6"/>:t==='learn'?<LearnIcon className="w-6 h-6"/>:t==='vocab'?<VocabIcon className="w-6 h-6"/>:t==='quiz'?<QuizIcon className="w-6 h-6"/>:<DiscussIcon className="w-6 h-6"/>}</button>)}
+                    </nav>
+                </div>
+            );
+        };
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
